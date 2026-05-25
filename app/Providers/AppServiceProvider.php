@@ -2,6 +2,23 @@
 
 namespace App\Providers;
 
+use App\Models\Ecclesiastes\Chapel;
+use App\Models\Ecclesiastes\Church;
+use App\Models\Ecclesiastes\Deanery;
+use App\Models\Ecclesiastes\Diocese;
+use App\Models\Module;
+use App\Models\Regions\Community;
+use App\Models\Regions\Municipality;
+use App\Models\Regions\State;
+use App\Policies\ChapelPolicy;
+use App\Policies\ChurchPolicy;
+use App\Policies\CommunityPolicy;
+use App\Policies\DeaneryPolicy;
+use App\Policies\DiocesePolicy;
+use App\Policies\ModulePolicy;
+use App\Policies\MunicipalityPolicy;
+use App\Policies\StatePolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +36,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::policy(Module::class, ModulePolicy::class);
+        Gate::policy(State::class, StatePolicy::class);
+        Gate::policy(Municipality::class, MunicipalityPolicy::class);
+        Gate::policy(Community::class, CommunityPolicy::class);
+        Gate::policy(Diocese::class, DiocesePolicy::class);
+        Gate::policy(Deanery::class, DeaneryPolicy::class);
+        Gate::policy(Church::class, ChurchPolicy::class);
+        Gate::policy(Chapel::class, ChapelPolicy::class);
     }
 }

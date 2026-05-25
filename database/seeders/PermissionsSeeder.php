@@ -13,6 +13,7 @@ class PermissionsSeeder extends Seeder
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $modules = [
+            'modulos' => 'core',
             'estados' => 'regions',
             'municipios' => 'regions',
             'comunidades' => 'regions',
