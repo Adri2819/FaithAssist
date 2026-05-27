@@ -14,5 +14,9 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Dashboard');
     })->name('home');
 
+    Route::get('/profile', function () {
+        return Inertia::render('Profile/Show');
+    })->name('profile.show');
+
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

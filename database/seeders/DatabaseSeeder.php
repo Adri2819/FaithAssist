@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             PermissionsSeeder::class,
             SyncRolePermissionsSeeder::class,
             UsersPerRoleSeeder::class,
+            ProfileSeeder::class,
             ModuleSeeder::class,
             StateSeeder::class,
             DioceseSeeder::class,
