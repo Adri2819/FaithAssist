@@ -1,4 +1,5 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import './global-ui.css';
 
 @source "../**/*.blade.php";
 @source "../**/*.js";
