@@ -80,15 +80,23 @@ const getOptionLabel = (col, value) =>
 const getBadgeClass = (col, value) =>
   col.badges?.[value] ?? 'badge-ghost';
 
+const validateRow = (data) => {
+  const errors = {};
+  props.columns.forEach((col) => {
+    if (col.required && (data[col.key] === "" || data[col.key] === null || data[col.key] === undefined)) {
+      errors[col.key] = ["El campo " + col.label + " es obligatorio."];
+    }
+  });
+  return errors;
+};
+
 const initNewRow = () => {
   const data = {};
   props.columns.forEach((col) => {
-    data[col.key] =
-      col.default ?? (col.type === 'select' ? (col.options?.[0]?.value ?? '') : '');
+    data[col.key] = col.default !== undefined ? col.default : "";
   });
   return data;
 };
-
 const startAdd = () => {
   if (isAdding.value || editingId.value !== null) return;
   newRowData.value = initNewRow();
@@ -105,9 +113,14 @@ const cancelAdd = () => {
 };
 
 const saveAdd = async () => {
-  loading.value = true;
   addErrors.value = {};
-  addGeneralError.value = '';
+  addGeneralError.value = "";
+  const clientErrors = validateRow(newRowData.value);
+  if (Object.keys(clientErrors).length) {
+    addErrors.value = clientErrors;
+    return;
+  }
+  loading.value = true;
   try {
     const json = await apiFetch(props.storeUrl, 'POST', newRowData.value);
     rows.value.push(json.data);
@@ -140,9 +153,14 @@ const cancelEdit = () => {
 };
 
 const saveEdit = async (row) => {
-  loading.value = true;
   editErrors.value = {};
-  editGeneralError.value = '';
+  editGeneralError.value = "";
+  const clientErrors = validateRow(editData.value);
+  if (Object.keys(clientErrors).length) {
+    editErrors.value = clientErrors;
+    return;
+  }
+  loading.value = true;
   try {
     const json = await apiFetch(`${props.baseUrl}/${row.id}`, 'PUT', editData.value);
     const idx = rows.value.findIndex((r) => r.id === row.id);
@@ -253,16 +271,18 @@ const confirmDelete = async (row) => {
             <td v-for="col in columns" :key="col.key" class="px-4 py-2">
               <input
                 v-if="col.type === 'text'"
-                v-model="newRowData[col.key]"
+                :value="newRowData[col.key]"
                 type="text"
-                class="input input-bordered input-sm w-full"
+                class="input input-bordered input-sm w-full uppercase"
                 :placeholder="col.label"
+                @input="newRowData[col.key] = $event.target.value.toUpperCase()"
               />
               <select
                 v-else-if="col.type === 'select'"
                 v-model="newRowData[col.key]"
                 class="select select-bordered select-sm w-full"
               >
+                <option v-if="col.default === undefined" value="" disabled>Elige una opcion</option>
                 <option v-for="opt in col.options" :key="opt.value" :value="opt.value">
                   {{ opt.label }}
                 </option>
@@ -303,16 +323,18 @@ const confirmDelete = async (row) => {
               <td v-for="col in columns" :key="col.key" class="px-4 py-2">
                 <input
                   v-if="col.type === 'text'"
-                  v-model="editData[col.key]"
+                  :value="editData[col.key]"
                   type="text"
-                  class="input input-bordered input-sm w-full"
+                  class="input input-bordered input-sm w-full uppercase"
                   :placeholder="col.label"
+                  @input="editData[col.key] = $event.target.value.toUpperCase()"
                 />
                 <select
                   v-else-if="col.type === 'select'"
                   v-model="editData[col.key]"
                   class="select select-bordered select-sm w-full"
                 >
+                  <option v-if="col.default === undefined" value="" disabled>Elige una opcion</option>
                   <option v-for="opt in col.options" :key="opt.value" :value="opt.value">
                     {{ opt.label }}
                   </option>

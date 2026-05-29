@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import { BookOpen, Building2, Home, Landmark, MapPinned, Users } from 'lucide-vue-next';
@@ -21,7 +21,7 @@ const modules = [
     titleClass: 'text-sky-700',
     items: [
       { label: 'Diocesis', icon: Landmark, href: '/diocesis' },
-      { label: 'Decanatos', icon: BookOpen, href: null },
+      { label: 'Decanatos', icon: BookOpen, href: '/decanatos' },
       { label: 'Parroquias', icon: Home, href: null },
       { label: 'Iglesias', icon: Landmark, href: null },
     ],

@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Http\Requests\Regions;
+namespace App\Http\Requests\Ecclesiastes;
 
 use App\Globals\Status;
 use App\Http\Requests\Concerns\UppercasesFields;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StateRequest extends FormRequest
+class DeaneryRequest extends FormRequest
 {
     use UppercasesFields;
 
     protected function textFields(): array
     {
-        return ['name', 'short_name'];
+        return ['name'];
     }
 
     public function authorize(): bool
@@ -23,11 +23,11 @@ class StateRequest extends FormRequest
 
     public function rules(): array
     {
-        $stateId = $this->route('estado')?->id;
+        $deaneryId = $this->route('decanato')?->id;
 
         return [
-            'name'       => ['required', 'string', 'max:150', Rule::unique('states', 'name')->ignore($stateId)->whereNull('deleted_at')],
-            'short_name' => ['nullable', 'string', 'max:10'],
+            'diocese_id' => ['required', 'integer', Rule::exists('dioceses', 'id')->whereNull('deleted_at')],
+            'name'       => ['required', 'string', 'max:150', Rule::unique('deaneries', 'name')->ignore($deaneryId)->whereNull('deleted_at')],
             'status'     => ['required', Rule::in([Status::ACTIVE, Status::INACTIVE])],
         ];
     }
@@ -35,8 +35,8 @@ class StateRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'name'       => 'Nombre del estado',
-            'short_name' => 'Abreviatura',
+            'diocese_id' => 'Diocesis',
+            'name'       => 'Nombre del decanato',
             'status'     => 'Estatus',
         ];
     }

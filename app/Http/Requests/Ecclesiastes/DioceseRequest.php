@@ -3,11 +3,19 @@
 namespace App\Http\Requests\Ecclesiastes;
 
 use App\Globals\Status;
+use App\Http\Requests\Concerns\UppercasesFields;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class DioceseRequest extends FormRequest
 {
+    use UppercasesFields;
+
+    protected function textFields(): array
+    {
+        return ['name', 'bishop'];
+    }
+
     public function authorize(): bool
     {
         return true;

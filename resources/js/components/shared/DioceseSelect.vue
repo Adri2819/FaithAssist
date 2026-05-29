@@ -1,8 +1,8 @@
 <script setup>
 defineProps({
   modelValue: { type: [Number, String], default: null },
-  states: { type: Array, default: () => [] },
-  placeholder: { type: String, default: 'Seleccionar estado...' },
+  dioceses: { type: Array, default: () => [] },
+  placeholder: { type: String, default: 'Seleccionar diocesis...' },
   size: { type: String, default: 'sm' },
   disabled: { type: Boolean, default: false },
 });
@@ -26,8 +26,8 @@ const handleChange = (event) => {
     @change="handleChange"
   >
     <option value="">{{ placeholder }}</option>
-    <option v-for="state in states" :key="state.id" :value="state.id">
-      {{ state.name }}{{ state.short_name ? ` (${state.short_name})` : '' }}
+    <option v-for="diocese in dioceses" :key="diocese.id" :value="diocese.id">
+      {{ diocese.name }}
     </option>
   </select>
 </template>
