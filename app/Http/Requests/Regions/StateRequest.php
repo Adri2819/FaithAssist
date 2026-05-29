@@ -24,15 +24,12 @@ class StateRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
+    public function attributes(): array
     {
         return [
-            'name.required'   => 'El nombre del estado es obligatorio.',
-            'name.unique'     => 'Ya existe un estado con ese nombre.',
-            'name.max'        => 'El nombre no puede exceder 150 caracteres.',
-            'short_name.max'  => 'La abreviatura no puede exceder 10 caracteres.',
-            'status.required' => 'El estatus es obligatorio.',
-            'status.in'       => 'El estatus no es valido.',
+            'name' => 'Nombre del estado',
+            'short_name' => 'Abreviatura',
+            'status' => 'Estatus',
         ];
     }
 }

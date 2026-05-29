@@ -1,5 +1,6 @@
-﻿<script setup>
+<script setup>
 import { computed, ref } from 'vue';
+import { Check, Pencil, Trash2, X } from 'lucide-vue-next';
 import Swal from 'sweetalert2';
 
 const props = defineProps({
@@ -20,6 +21,10 @@ const editData = ref({});
 const isAdding = ref(false);
 const newRowData = ref({});
 const loading = ref(false);
+const addErrors = ref({});
+const editErrors = ref({});
+const addGeneralError = ref('');
+const editGeneralError = ref('');
 
 const filteredRows = computed(() => {
   if (!searchTerm.value || !props.searchKey) return rows.value;
@@ -59,13 +64,14 @@ const toast = (icon, title) =>
     timerProgressBar: true,
   });
 
-const showErrors = (err) => {
-  if (err?.errors) {
-    const msgs = Object.values(err.errors).flat().join('\n');
-    Swal.fire({ icon: 'error', title: 'Error de validacion', text: msgs });
-  } else {
-    Swal.fire({ icon: 'error', title: 'Error', text: err?.message ?? 'Ocurrio un error inesperado.' });
-  }
+const parseErrors = (err) => {
+  const fieldErrors = err?.errors ?? {};
+  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
+
+  return {
+    fieldErrors,
+    generalError: hasFieldErrors ? '' : (err?.message ?? 'Ocurrio un error inesperado.'),
+  };
 };
 
 const getOptionLabel = (col, value) =>
@@ -86,16 +92,22 @@ const initNewRow = () => {
 const startAdd = () => {
   if (isAdding.value || editingId.value !== null) return;
   newRowData.value = initNewRow();
+  addErrors.value = {};
+  addGeneralError.value = '';
   isAdding.value = true;
 };
 
 const cancelAdd = () => {
   isAdding.value = false;
   newRowData.value = {};
+  addErrors.value = {};
+  addGeneralError.value = '';
 };
 
 const saveAdd = async () => {
   loading.value = true;
+  addErrors.value = {};
+  addGeneralError.value = '';
   try {
     const json = await apiFetch(props.storeUrl, 'POST', newRowData.value);
     rows.value.push(json.data);
@@ -104,7 +116,9 @@ const saveAdd = async () => {
     toast('success', json.message ?? 'Registro creado correctamente.');
     emit('row-added', json.data);
   } catch (err) {
-    showErrors(err);
+    const { fieldErrors, generalError } = parseErrors(err);
+    addErrors.value = fieldErrors;
+    addGeneralError.value = generalError;
   } finally {
     loading.value = false;
   }
@@ -114,15 +128,21 @@ const startEdit = (row) => {
   if (isAdding.value) return;
   editingId.value = row.id;
   editData.value = { ...row };
+  editErrors.value = {};
+  editGeneralError.value = '';
 };
 
 const cancelEdit = () => {
   editingId.value = null;
   editData.value = {};
+  editErrors.value = {};
+  editGeneralError.value = '';
 };
 
 const saveEdit = async (row) => {
   loading.value = true;
+  editErrors.value = {};
+  editGeneralError.value = '';
   try {
     const json = await apiFetch(`${props.baseUrl}/${row.id}`, 'PUT', editData.value);
     const idx = rows.value.findIndex((r) => r.id === row.id);
@@ -132,7 +152,9 @@ const saveEdit = async (row) => {
     toast('success', json.message ?? 'Registro actualizado correctamente.');
     emit('row-updated', json.data);
   } catch (err) {
-    showErrors(err);
+    const { fieldErrors, generalError } = parseErrors(err);
+    editErrors.value = fieldErrors;
+    editGeneralError.value = generalError;
   } finally {
     loading.value = false;
   }
@@ -157,7 +179,7 @@ const confirmDelete = async (row) => {
     toast('success', json.message ?? 'Registro eliminado correctamente.');
     emit('row-deleted', row.id);
   } catch (err) {
-    showErrors(err);
+    toast('error', err?.message ?? 'Ocurrio un error inesperado.');
   } finally {
     loading.value = false;
   }
@@ -245,16 +267,31 @@ const confirmDelete = async (row) => {
                   {{ opt.label }}
                 </option>
               </select>
+              <p v-if="addErrors[col.key]?.length" class="mt-1 text-xs text-red-600 dark:text-red-400">
+                {{ addErrors[col.key][0] }}
+              </p>
             </td>
             <td class="px-4 py-2 text-right">
+              <p v-if="addGeneralError" class="mb-1 text-left text-xs text-red-600 dark:text-red-400">
+                {{ addGeneralError }}
+              </p>
               <button
                 class="btn btn-success btn-xs mr-1"
                 :disabled="loading"
                 @click="saveAdd"
+                aria-label="Guardar nuevo registro"
+                title="Guardar"
               >
-                Guardar
+                <Check class="h-3.5 w-3.5" />
               </button>
-              <button class="btn btn-ghost btn-xs" @click="cancelAdd">Cancelar</button>
+              <button
+                class="btn btn-ghost btn-xs"
+                @click="cancelAdd"
+                aria-label="Cancelar nuevo registro"
+                title="Cancelar"
+              >
+                <X class="h-3.5 w-3.5" />
+              </button>
             </td>
           </tr>
 
@@ -280,16 +317,31 @@ const confirmDelete = async (row) => {
                     {{ opt.label }}
                   </option>
                 </select>
+                <p v-if="editErrors[col.key]?.length" class="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {{ editErrors[col.key][0] }}
+                </p>
               </td>
               <td class="px-4 py-2 text-right">
+                <p v-if="editGeneralError" class="mb-1 text-left text-xs text-red-600 dark:text-red-400">
+                  {{ editGeneralError }}
+                </p>
                 <button
                   class="btn btn-warning btn-xs mr-1"
                   :disabled="loading"
                   @click="saveEdit(row)"
+                  aria-label="Guardar cambios"
+                  title="Guardar"
                 >
-                  Guardar
+                  <Check class="h-3.5 w-3.5" />
                 </button>
-                <button class="btn btn-ghost btn-xs" @click="cancelEdit">Cancelar</button>
+                <button
+                  class="btn btn-ghost btn-xs"
+                  @click="cancelEdit"
+                  aria-label="Cancelar edicion"
+                  title="Cancelar"
+                >
+                  <X class="h-3.5 w-3.5" />
+                </button>
               </td>
             </tr>
 
@@ -314,15 +366,19 @@ const confirmDelete = async (row) => {
                   class="btn btn-ghost btn-xs mr-1 text-sky-600 hover:bg-sky-50 hover:text-sky-700 dark:text-sky-400 dark:hover:bg-sky-950/40"
                   :disabled="isAdding || editingId !== null || loading"
                   @click="startEdit(row)"
+                  aria-label="Editar registro"
+                  title="Editar"
                 >
-                  Editar
+                  <Pencil class="h-3.5 w-3.5" />
                 </button>
                 <button
                   class="btn btn-ghost btn-xs text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-950/40"
                   :disabled="loading"
                   @click="confirmDelete(row)"
+                  aria-label="Eliminar registro"
+                  title="Eliminar"
                 >
-                  Eliminar
+                  <Trash2 class="h-3.5 w-3.5" />
                 </button>
               </td>
             </tr>
