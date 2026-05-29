@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Ecclesiastes\ChurchController;
+use App\Http\Controllers\Ecclesiastes\ChapelController;
 use App\Http\Controllers\Ecclesiastes\DeaneryController;
 use App\Http\Controllers\Ecclesiastes\DioceseController;
+use App\Http\Controllers\Regions\CommunityController;
 use App\Http\Controllers\Regions\MunicipalityController;
 use App\Http\Controllers\Regions\StateController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +36,10 @@ Route::middleware('auth')->group(function () {
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['municipios' => 'municipio']);
 
+    Route::resource('comunidades', CommunityController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['comunidades' => 'comunidad']);
+
     // Catalogos - Eclesiasticos
     Route::resource('diocesis', DioceseController::class)
         ->only(['index', 'store', 'update', 'destroy'])
@@ -46,4 +52,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('parroquias', ChurchController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['parroquias' => 'parroquia']);
+
+    Route::resource('capillas', ChapelController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['capillas' => 'capilla']);
 });

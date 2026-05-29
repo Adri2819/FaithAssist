@@ -12,7 +12,7 @@ const modules = [
     items: [
       { label: 'Estados', icon: MapPinned, href: '/estados' },
       { label: 'Municipios', icon: Building2, href: '/municipios' },
-      { label: 'Comunidades', icon: Users, href: null },
+      { label: 'Comunidades', icon: Users, href: '/comunidades' },
     ],
   },
   {
@@ -23,7 +23,7 @@ const modules = [
       { label: 'Diocesis', icon: Landmark, href: '/diocesis' },
       { label: 'Decanatos', icon: BookOpen, href: '/decanatos' },
       { label: 'Parroquias', icon: Home, href: '/parroquias' },
-      { label: 'Iglesias', icon: Landmark, href: null },
+      { label: 'Iglesias', icon: Landmark, href: '/capillas' },
     ],
   },
 ];
