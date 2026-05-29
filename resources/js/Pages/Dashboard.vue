@@ -20,7 +20,7 @@ const modules = [
     accent: 'from-blue-200 via-sky-100 to-slate-100',
     titleClass: 'text-sky-700',
     items: [
-      { label: 'Diocesis', icon: Landmark, href: null },
+      { label: 'Diocesis', icon: Landmark, href: '/diocesis' },
       { label: 'Decanatos', icon: BookOpen, href: null },
       { label: 'Parroquias', icon: Home, href: null },
       { label: 'Iglesias', icon: Landmark, href: null },

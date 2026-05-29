@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Ecclesiastes\DioceseController;
 use App\Http\Controllers\Regions\StateController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,4 +26,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('estados', StateController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['estados' => 'estado']);
+
+    // Catalogos - Eclesiasticos
+    Route::resource('diocesis', DioceseController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['diocesis' => 'diocesis']);
 });
