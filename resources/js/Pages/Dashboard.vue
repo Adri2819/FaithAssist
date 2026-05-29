@@ -11,7 +11,7 @@ const modules = [
     titleClass: 'text-sky-700',
     items: [
       { label: 'Estados', icon: MapPinned, href: '/estados' },
-      { label: 'Municipios', icon: Building2, href: null },
+      { label: 'Municipios', icon: Building2, href: '/municipios' },
       { label: 'Comunidades', icon: Users, href: null },
     ],
   },
