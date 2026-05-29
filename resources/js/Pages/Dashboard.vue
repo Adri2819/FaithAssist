@@ -22,7 +22,7 @@ const modules = [
     items: [
       { label: 'Diocesis', icon: Landmark, href: '/diocesis' },
       { label: 'Decanatos', icon: BookOpen, href: '/decanatos' },
-      { label: 'Parroquias', icon: Home, href: null },
+      { label: 'Parroquias', icon: Home, href: '/parroquias' },
       { label: 'Iglesias', icon: Landmark, href: null },
     ],
   },

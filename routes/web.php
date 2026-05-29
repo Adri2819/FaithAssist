@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Ecclesiastes\ChurchController;
 use App\Http\Controllers\Ecclesiastes\DeaneryController;
 use App\Http\Controllers\Ecclesiastes\DioceseController;
 use App\Http\Controllers\Regions\MunicipalityController;
@@ -41,4 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('decanatos', DeaneryController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['decanatos' => 'decanato']);
+
+    Route::resource('parroquias', ChurchController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['parroquias' => 'parroquia']);
 });
