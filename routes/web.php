@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Regions\StateController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -19,4 +20,9 @@ Route::middleware('auth')->group(function () {
     })->name('profile.show');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Catalogos - Regiones
+    Route::resource('estados', StateController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['estados' => 'estado']);
 });

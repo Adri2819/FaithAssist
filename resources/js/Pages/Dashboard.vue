@@ -1,5 +1,6 @@
-<script setup>
+﻿<script setup>
 import { Head } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import { BookOpen, Building2, Home, Landmark, MapPinned, Users } from 'lucide-vue-next';
 import AppShell from '../components/layouts/AppShell.vue';
 
@@ -9,20 +10,20 @@ const modules = [
     accent: 'from-slate-400 via-slate-300 to-slate-200',
     titleClass: 'text-sky-700',
     items: [
-      { label: 'Estados', icon: MapPinned },
-      { label: 'Municipios', icon: Building2 },
-      { label: 'Comunidades', icon: Users },
+      { label: 'Estados', icon: MapPinned, href: '/estados' },
+      { label: 'Municipios', icon: Building2, href: null },
+      { label: 'Comunidades', icon: Users, href: null },
     ],
   },
   {
-    name: 'Eclesiásticos',
+    name: 'Eclesiasticos',
     accent: 'from-blue-200 via-sky-100 to-slate-100',
     titleClass: 'text-sky-700',
     items: [
-      { label: 'Diócesis', icon: Landmark },
-      { label: 'Decanatos', icon: BookOpen },
-      { label: 'Parroquias', icon: Home },
-      { label: 'Iglesias', icon: Landmark },
+      { label: 'Diocesis', icon: Landmark, href: null },
+      { label: 'Decanatos', icon: BookOpen, href: null },
+      { label: 'Parroquias', icon: Home, href: null },
+      { label: 'Iglesias', icon: Landmark, href: null },
     ],
   },
 ];
@@ -48,11 +49,13 @@ const modules = [
         </header>
 
         <div class="grid gap-3 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
-          <button
+          <component
+            :is="item.href ? Link : 'button'"
             v-for="item in module.items"
             :key="item.label"
-            type="button"
+            v-bind="item.href ? { href: item.href } : { type: 'button' }"
             class="group flex min-h-28 flex-col items-center justify-center rounded-[1.25rem] border border-slate-200 bg-slate-50 px-3 py-4 text-center transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:bg-white hover:shadow-lg dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700 dark:hover:bg-slate-800"
+            :class="{ 'opacity-50 cursor-not-allowed hover:translate-y-0 hover:shadow-none': !item.href }"
           >
             <span
               class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 transition group-hover:bg-sky-100 group-hover:text-sky-700 group-hover:ring-sky-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:group-hover:bg-sky-900/30 dark:group-hover:text-sky-200 dark:group-hover:ring-sky-800"
@@ -65,7 +68,7 @@ const modules = [
             >
               {{ item.label }}
             </span>
-          </button>
+          </component>
         </div>
       </article>
     </div>
