@@ -14,6 +14,7 @@ class SyncRolePermissionsSeeder extends Seeder
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $allActions = ['create', 'read', 'update', 'delete', 'show'];
+        $readAndShowActions = ['read', 'show'];
 
         $superadmin = Role::query()->firstOrCreate([
             'name' => 'Superadmin',
@@ -37,15 +38,18 @@ class SyncRolePermissionsSeeder extends Seeder
 
         $superadmin->syncPermissions(Permission::all());
 
-        $coordinador->syncPermissions(
-            $this->permissionsForModules(['municipios', 'comunidades', 'parroquias', 'capillas'], $allActions)
-        );
+        $coordinador->syncPermissions(array_merge(
+            $this->permissionsForModules(['municipios'], $readAndShowActions),
+            $this->permissionsForModules(['comunidades', 'parroquias', 'capillas'], $allActions)
+        ));
 
         $catequista->syncPermissions(
-            $this->permissionsForModules(['capillas'], $allActions)
+            $this->permissionsForModules(['parroquias', 'capillas'], $readAndShowActions)
         );
 
-        $capturista->syncPermissions(['capillas.show']);
+        $capturista->syncPermissions(
+            $this->permissionsForModules(['capillas'], $readAndShowActions)
+        );
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

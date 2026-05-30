@@ -13,7 +13,12 @@ use Inertia\Response;
 
 class DeaneryController extends Controller
 {
-    public function index(Request $request): Response
+    public function __construct()
+    {
+        $this->authorizeResource(Deanery::class, 'decanato');
+    }
+
+        public function index(Request $request): Response
     {
         $search = $request->input('search', '');
 

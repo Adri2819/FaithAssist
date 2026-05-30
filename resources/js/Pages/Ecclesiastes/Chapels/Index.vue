@@ -79,6 +79,7 @@ const columns = computed(() => [
       :initial-rows="chapels"
       store-url="/capillas"
       base-url="/capillas"
+      permission-module="capillas"
       search-key="name"
       search-placeholder="Buscar por nombre de capilla..."
     />

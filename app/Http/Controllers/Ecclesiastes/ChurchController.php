@@ -14,7 +14,12 @@ use Inertia\Response;
 
 class ChurchController extends Controller
 {
-    public function index(Request $request): Response
+    public function __construct()
+    {
+        $this->authorizeResource(Church::class, 'parroquia');
+    }
+
+        public function index(Request $request): Response
     {
         $search = $request->input('search', '');
 

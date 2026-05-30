@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { Check, Pencil, Trash2, X } from 'lucide-vue-next';
 import Swal from 'sweetalert2';
 
@@ -8,6 +9,7 @@ const props = defineProps({
   initialRows: { type: Array, default: () => [] },
   storeUrl: { type: String, required: true },
   baseUrl: { type: String, required: true },
+  permissionModule: { type: String, default: null },
   searchKey: { type: String, default: null },
   searchPlaceholder: { type: String, default: 'Buscar...' },
 });
@@ -25,6 +27,20 @@ const addErrors = ref({});
 const editErrors = ref({});
 const addGeneralError = ref('');
 const editGeneralError = ref('');
+const page = usePage();
+
+const permissions = computed(() => page.props.auth?.permissions ?? []);
+
+const hasPermission = (action) => {
+  if (!props.permissionModule) return true;
+
+  return permissions.value.includes(`${props.permissionModule}.${action}`);
+};
+
+const canCreate = computed(() => hasPermission('create'));
+const canUpdate = computed(() => hasPermission('update'));
+const canDelete = computed(() => hasPermission('delete'));
+const showActions = computed(() => canCreate.value || canUpdate.value || canDelete.value);
 
 const filteredRows = computed(() => {
   if (!searchTerm.value || !props.searchKey) return rows.value;
@@ -98,6 +114,7 @@ const initNewRow = () => {
   return data;
 };
 const startAdd = () => {
+  if (!canCreate.value) return;
   if (isAdding.value || editingId.value !== null) return;
   newRowData.value = initNewRow();
   addErrors.value = {};
@@ -113,6 +130,7 @@ const cancelAdd = () => {
 };
 
 const saveAdd = async () => {
+  if (!canCreate.value) return;
   addErrors.value = {};
   addGeneralError.value = "";
   const clientErrors = validateRow(newRowData.value);
@@ -138,6 +156,7 @@ const saveAdd = async () => {
 };
 
 const startEdit = (row) => {
+  if (!canUpdate.value) return;
   if (isAdding.value) return;
   editingId.value = row.id;
   editData.value = { ...row };
@@ -153,6 +172,7 @@ const cancelEdit = () => {
 };
 
 const saveEdit = async (row) => {
+  if (!canUpdate.value) return;
   editErrors.value = {};
   editGeneralError.value = "";
   const clientErrors = validateRow(editData.value);
@@ -179,6 +199,7 @@ const saveEdit = async (row) => {
 };
 
 const confirmDelete = async (row) => {
+  if (!canDelete.value) return;
   const result = await Swal.fire({
     title: 'Eliminar registro',
     text: 'Esta accion no se puede deshacer.',
@@ -242,6 +263,7 @@ const confirmDelete = async (row) => {
       </label>
 
       <button
+        v-if="canCreate"
         class="btn btn-primary btn-sm gap-1.5"
         :disabled="isAdding || editingId !== null || loading"
         @click="startAdd"
@@ -260,7 +282,7 @@ const confirmDelete = async (row) => {
             <th v-for="col in columns" :key="col.key" class="px-4 py-3 font-semibold">
               {{ col.label }}
             </th>
-            <th class="px-4 py-3 text-right font-semibold">Acciones</th>
+            <th v-if="showActions" class="px-4 py-3 text-right font-semibold">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -291,7 +313,7 @@ const confirmDelete = async (row) => {
                 {{ addErrors[col.key][0] }}
               </p>
             </td>
-            <td class="px-4 py-2 text-right">
+            <td v-if="showActions" class="px-4 py-2 text-right">
               <p v-if="addGeneralError" class="mb-1 text-left text-xs text-red-600 dark:text-red-400">
                 {{ addGeneralError }}
               </p>
@@ -343,7 +365,7 @@ const confirmDelete = async (row) => {
                   {{ editErrors[col.key][0] }}
                 </p>
               </td>
-              <td class="px-4 py-2 text-right">
+              <td v-if="showActions" class="px-4 py-2 text-right">
                 <p v-if="editGeneralError" class="mb-1 text-left text-xs text-red-600 dark:text-red-400">
                   {{ editGeneralError }}
                 </p>
@@ -383,8 +405,9 @@ const confirmDelete = async (row) => {
                 </span>
                 <span v-else>{{ row[col.key] ?? '' }}</span>
               </td>
-              <td class="px-4 py-3 text-right">
+              <td v-if="showActions" class="px-4 py-3 text-right">
                 <button
+                  v-if="canUpdate"
                   class="btn btn-ghost btn-xs mr-1 text-sky-600 hover:bg-sky-50 hover:text-sky-700 dark:text-sky-400 dark:hover:bg-sky-950/40"
                   :disabled="isAdding || editingId !== null || loading"
                   @click="startEdit(row)"
@@ -394,6 +417,7 @@ const confirmDelete = async (row) => {
                   <Pencil class="h-3.5 w-3.5" />
                 </button>
                 <button
+                  v-if="canDelete"
                   class="btn btn-ghost btn-xs text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-950/40"
                   :disabled="loading"
                   @click="confirmDelete(row)"
@@ -408,7 +432,7 @@ const confirmDelete = async (row) => {
 
           <tr v-if="filteredRows.length === 0 && !isAdding">
             <td
-              :colspan="columns.length + 1"
+              :colspan="columns.length + (showActions ? 1 : 0)"
               class="px-4 py-12 text-center text-sm text-slate-400 dark:text-slate-500"
             >
               <span v-if="searchTerm">

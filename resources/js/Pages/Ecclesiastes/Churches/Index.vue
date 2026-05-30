@@ -97,6 +97,7 @@ const columns = computed(() => [
       :initial-rows="churches"
       store-url="/parroquias"
       base-url="/parroquias"
+      permission-module="parroquias"
       search-key="name"
       search-placeholder="Buscar por nombre de parroquia..."
     />

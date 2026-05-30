@@ -70,6 +70,7 @@ const columns = computed(() => [
       :initial-rows="dioceses"
       store-url="/diocesis"
       base-url="/diocesis"
+      permission-module="diocesis"
       search-key="name"
       search-placeholder="Buscar por nombre de diocesis..."
     />

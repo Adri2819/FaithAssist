@@ -79,6 +79,7 @@ const columns = computed(() => [
       :initial-rows="municipalities"
       store-url="/municipios"
       base-url="/municipios"
+      permission-module="municipios"
       search-key="name"
       search-placeholder="Buscar por nombre de municipio..."
     />

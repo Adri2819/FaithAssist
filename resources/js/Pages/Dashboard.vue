@@ -1,18 +1,26 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { BookOpen, Building2, Home, Landmark, MapPinned, Users } from 'lucide-vue-next';
 import AppShell from '../components/layouts/AppShell.vue';
 
-const modules = [
+const page = usePage();
+
+const permissions = computed(() => page.props.auth?.permissions ?? []);
+
+const hasReadPermission = (moduleKey) => permissions.value.includes(`${moduleKey}.show`);
+
+const modules = computed(() => [
   {
     name: 'Regiones',
     accent: 'from-slate-400 via-slate-300 to-slate-200',
     titleClass: 'text-sky-700',
     items: [
-      { label: 'Estados', icon: MapPinned, href: '/estados' },
-      { label: 'Municipios', icon: Building2, href: '/municipios' },
-      { label: 'Comunidades', icon: Users, href: '/comunidades' },
+      { label: 'Estados', icon: MapPinned, href: '/estados', moduleKey: 'estados' },
+      { label: 'Municipios', icon: Building2, href: '/municipios', moduleKey: 'municipios' },
+      { label: 'Comunidades', icon: Users, href: '/comunidades', moduleKey: 'comunidades' },
     ],
   },
   {
@@ -20,13 +28,16 @@ const modules = [
     accent: 'from-blue-200 via-sky-100 to-slate-100',
     titleClass: 'text-sky-700',
     items: [
-      { label: 'Diocesis', icon: Landmark, href: '/diocesis' },
-      { label: 'Decanatos', icon: BookOpen, href: '/decanatos' },
-      { label: 'Parroquias', icon: Home, href: '/parroquias' },
-      { label: 'Iglesias', icon: Landmark, href: '/capillas' },
+      { label: 'Diocesis', icon: Landmark, href: '/diocesis', moduleKey: 'diocesis' },
+      { label: 'Decanatos', icon: BookOpen, href: '/decanatos', moduleKey: 'decanato' },
+      { label: 'Parroquias', icon: Home, href: '/parroquias', moduleKey: 'parroquias' },
+      { label: 'Iglesias', icon: Landmark, href: '/capillas', moduleKey: 'capillas' },
     ],
   },
-];
+].map((module) => ({
+  ...module,
+  items: module.items.filter((item) => hasReadPermission(item.moduleKey)),
+})).filter((module) => module.items.length > 0));
 </script>
 
 <template>

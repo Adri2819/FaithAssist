@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { Head } from '@inertiajs/vue3';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
@@ -54,6 +54,7 @@ const columns = [
       :initial-rows="states"
       store-url="/estados"
       base-url="/estados"
+      permission-module="estados"
       search-key="name"
       search-placeholder="Buscar por nombre de estado..."
     />

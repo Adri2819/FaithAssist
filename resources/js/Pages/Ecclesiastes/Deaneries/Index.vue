@@ -64,6 +64,7 @@ const columns = computed(() => [
       :initial-rows="deaneries"
       store-url="/decanatos"
       base-url="/decanatos"
+      permission-module="decanato"
       search-key="name"
       search-placeholder="Buscar por nombre de decanato..."
     />

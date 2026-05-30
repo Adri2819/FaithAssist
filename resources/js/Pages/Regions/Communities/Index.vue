@@ -61,6 +61,7 @@ const columns = computed(() => [
       :initial-rows="communities"
       store-url="/comunidades"
       base-url="/comunidades"
+      permission-module="comunidades"
       search-key="name"
       search-placeholder="Buscar por nombre de comunidad..."
     />

@@ -12,7 +12,12 @@ use Inertia\Response;
 
 class StateController extends Controller
 {
-    public function index(Request $request): Response
+    public function __construct()
+    {
+        $this->authorizeResource(State::class, 'estado');
+    }
+
+        public function index(Request $request): Response
     {
         $search = $request->input('search', '');
 
