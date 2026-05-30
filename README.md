@@ -56,3 +56,101 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+---
+
+## FaithAssist - Levantar en local
+
+### Requisitos
+
+- PHP 8.3+
+- Composer 2+
+- Node.js 20+ y npm
+- SQLite (configuracion por defecto del proyecto)
+
+### Pasos de instalacion
+
+1. Clonar el repositorio
+
+```bash
+git clone <url-del-repo>
+cd FaithAssist
+```
+
+2. Instalar dependencias de PHP
+
+```bash
+composer install
+```
+
+3. Configurar variables de entorno
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+4. Ejecutar migraciones y seeders
+
+```bash
+php artisan migrate --seed
+```
+
+5. Instalar dependencias de frontend
+
+```bash
+pnpm install
+```
+
+6. Iniciar entorno de desarrollo
+
+```bash
+composer run dev
+```
+
+Este comando levanta:
+
+- Servidor Laravel
+- Worker de colas
+- Logs con pail
+- Vite en modo desarrollo
+
+### Usuarios de prueba
+
+Generados por el seeder de usuarios:
+
+- superadmin@faithassistqr.test / password
+- coordinador@faithassistqr.test / password
+- catequista@faithassistqr.test / password
+- capturista@faithassistqr.test / password
+
+### Comandos utiles
+
+Ejecutar pruebas:
+
+```bash
+composer test
+```
+
+Compilar frontend para produccion:
+
+```bash
+pnpm run build
+```
+
+Si ajustas permisos/roles y quieres refrescarlos:
+
+```bash
+php artisan db:seed --class=PermissionsSeeder
+php artisan db:seed --class=SyncRolePermissionsSeeder
+php artisan permission:cache-reset
+```
+
+### Solucion de problemas
+
+Si no se reflejan cambios de permisos/policies:
+
+```bash
+php artisan optimize:clear
+php artisan permission:cache-reset
+```
