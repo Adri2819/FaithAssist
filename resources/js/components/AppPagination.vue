@@ -1,5 +1,6 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
 
 defineProps({
   links: { type: Array, required: true },
@@ -30,9 +31,7 @@ defineProps({
           :class="{ 'pointer-events-none cursor-not-allowed opacity-40': !link.url }"
           aria-label="Página anterior"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
+          <ChevronLeft class="h-4 w-4" />
         </Link>
 
         <!-- Page numbers -->
@@ -57,9 +56,7 @@ defineProps({
           :class="{ 'pointer-events-none cursor-not-allowed opacity-40': !link.url }"
           aria-label="Página siguiente"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 18l6-6-6-6" />
-          </svg>
+          <ChevronRight class="h-4 w-4" />
         </Link>
       </template>
     </div>

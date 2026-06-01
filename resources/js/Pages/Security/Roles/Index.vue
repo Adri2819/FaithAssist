@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Pencil } from 'lucide-vue-next';
+import { Pencil, Plus, Search, X } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import AppPagination from '../../../components/AppPagination.vue';
@@ -39,19 +39,7 @@ watch(searchTerm, (val) => {
       <label
         class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-100 sm:w-80 dark:border-slate-700 dark:bg-slate-900 dark:focus-within:border-sky-600 dark:focus-within:ring-sky-900/40"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4 shrink-0 text-slate-400"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
+        <Search class="h-4 w-4 shrink-0 text-slate-400" />
         <input
           v-model="searchTerm"
           type="text"
@@ -64,9 +52,7 @@ watch(searchTerm, (val) => {
           class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           @click="searchTerm = ''"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 6 6 18M6 6l12 12" />
-          </svg>
+          <X class="h-3.5 w-3.5" />
         </button>
       </label>
 
@@ -74,9 +60,7 @@ watch(searchTerm, (val) => {
         href="/roles/create"
         class="btn btn-primary btn-sm gap-1.5"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+        <Plus class="h-4 w-4" />
         Nuevo
       </Link>
     </div>
