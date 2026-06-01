@@ -13,14 +13,15 @@ class PermissionsSeeder extends Seeder
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $modules = [
-            'modulos' => 'core',
-            'estados' => 'regions',
+            'modulos'    => 'core',
+            'estados'    => 'regions',
             'municipios' => 'regions',
             'comunidades' => 'regions',
-            'diocesis' => 'ecclesiastes',
-            'decanato' => 'ecclesiastes',
+            'diocesis'   => 'ecclesiastes',
+            'decanato'   => 'ecclesiastes',
             'parroquias' => 'ecclesiastes',
-            'capillas' => 'ecclesiastes',
+            'capillas'   => 'ecclesiastes',
+            'roles'      => 'security',
         ];
 
         $actions = ['create', 'read', 'update', 'delete', 'show'];
@@ -29,13 +30,13 @@ class PermissionsSeeder extends Seeder
             foreach ($actions as $action) {
                 Permission::query()->updateOrCreate(
                     [
-                        'name' => "{$module}.{$action}",
+                        'name'       => "{$module}.{$action}",
                         'guard_name' => 'web',
                     ],
                     [
                         'description' => "Permite {$action} en {$module}",
-                        'module_key' => $moduleKey,
-                        'arg' => null,
+                        'module_key'  => $moduleKey,
+                        'arg'         => null,
                     ]
                 );
             }

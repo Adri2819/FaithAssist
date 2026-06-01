@@ -8,6 +8,7 @@ use App\Http\Controllers\Ecclesiastes\DioceseController;
 use App\Http\Controllers\Regions\CommunityController;
 use App\Http\Controllers\Regions\MunicipalityController;
 use App\Http\Controllers\Regions\StateController;
+use App\Http\Controllers\Security\RoleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -56,4 +57,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('capillas', ChapelController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['capillas' => 'capilla']);
+
+    // Seguridad
+    Route::resource('roles', RoleController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update']);
 });

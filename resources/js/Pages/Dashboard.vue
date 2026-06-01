@@ -3,13 +3,11 @@ import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { BookOpen, Building2, Home, Landmark, MapPinned, Users } from 'lucide-vue-next';
+import { BookOpen, Building2, Home, Landmark, MapPinned, ShieldCheck, Users } from 'lucide-vue-next';
 import AppShell from '../components/layouts/AppShell.vue';
 
 const page = usePage();
-
 const permissions = computed(() => page.props.auth?.permissions ?? []);
-
 const hasReadPermission = (moduleKey) => permissions.value.includes(`${moduleKey}.show`);
 
 const modules = computed(() => [
@@ -32,6 +30,14 @@ const modules = computed(() => [
       { label: 'Decanatos', icon: BookOpen, href: '/decanatos', moduleKey: 'decanato' },
       { label: 'Parroquias', icon: Home, href: '/parroquias', moduleKey: 'parroquias' },
       { label: 'Iglesias', icon: Landmark, href: '/capillas', moduleKey: 'capillas' },
+    ],
+  },
+  {
+    name: 'Seguridad',
+    accent: 'from-blue-200 via-sky-100 to-slate-100',
+    titleClass: 'text-sky-700',
+    items: [
+      { label: 'Roles', icon: ShieldCheck, href: '/roles', moduleKey: 'roles' },
     ],
   },
 ].map((module) => ({
