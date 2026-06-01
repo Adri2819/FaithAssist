@@ -17,9 +17,11 @@ use App\Policies\DeaneryPolicy;
 use App\Policies\DiocesePolicy;
 use App\Policies\ModulePolicy;
 use App\Policies\MunicipalityPolicy;
+use App\Policies\PermissionPolicy;
 use App\Policies\StatePolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Spatie\Permission\Models\Permission;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Module::class, ModulePolicy::class);
+        Gate::policy(Permission::class, PermissionPolicy::class);
         Gate::policy(State::class, StatePolicy::class);
         Gate::policy(Municipality::class, MunicipalityPolicy::class);
         Gate::policy(Community::class, CommunityPolicy::class);

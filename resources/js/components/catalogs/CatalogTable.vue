@@ -292,9 +292,9 @@ const confirmDelete = async (row) => {
                 v-if="col.type === 'text'"
                 :value="newRowData[col.key]"
                 type="text"
-                class="input input-bordered input-sm w-full uppercase"
+                :class="['input input-bordered input-sm w-full', col.uppercase !== false ? 'uppercase' : '']"
                 :placeholder="col.label"
-                @input="newRowData[col.key] = $event.target.value.toUpperCase()"
+                @input="newRowData[col.key] = col.uppercase !== false ? $event.target.value.toUpperCase() : $event.target.value"
               />
               <select
                 v-else-if="col.type === 'select'"
@@ -344,9 +344,9 @@ const confirmDelete = async (row) => {
                   v-if="col.type === 'text'"
                   :value="editData[col.key]"
                   type="text"
-                  class="input input-bordered input-sm w-full uppercase"
+                  :class="['input input-bordered input-sm w-full', col.uppercase !== false ? 'uppercase' : '']"
                   :placeholder="col.label"
-                  @input="editData[col.key] = $event.target.value.toUpperCase()"
+                  @input="editData[col.key] = col.uppercase !== false ? $event.target.value.toUpperCase() : $event.target.value"
                 />
                 <select
                   v-else-if="col.type === 'select'"

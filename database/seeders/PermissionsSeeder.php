@@ -14,6 +14,7 @@ class PermissionsSeeder extends Seeder
 
         $modules = [
             'modulos'    => 'core',
+            'permisos'   => 'core',
             'estados'    => 'regions',
             'municipios' => 'regions',
             'comunidades' => 'regions',
