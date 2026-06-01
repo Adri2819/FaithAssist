@@ -22,7 +22,7 @@ class RoleController extends Controller
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%")
                 ->orWhere('description', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
         return Inertia::render('Security/Roles/Index', [

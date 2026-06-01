@@ -6,8 +6,9 @@ import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import CatalogTable from '../../../components/catalogs/CatalogTable.vue';
 
 const props = defineProps({
-  communities: { type: Array, default: () => [] },
+  communities: { type: Object, required: true },
   municipalities: { type: Array, default: () => [] },
+  search: { type: String, default: '' },
 });
 
 const municipalityOptions = computed(() =>
@@ -53,16 +54,16 @@ const columns = computed(() => [
       title="Comunidades"
       subtitle="Catalogo de comunidades"
       back-href="/"
-      :count="communities.length"
+      :count="communities.total"
     />
 
     <CatalogTable
       :columns="columns"
-      :initial-rows="communities"
+      :pagination="communities"
+      :search="search"
       store-url="/comunidades"
       base-url="/comunidades"
       permission-module="comunidades"
-      search-key="name"
       search-placeholder="Buscar por nombre de comunidad..."
     />
   </AppShell>

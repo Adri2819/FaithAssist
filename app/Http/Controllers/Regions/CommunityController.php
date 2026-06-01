@@ -25,7 +25,8 @@ class CommunityController extends Controller
         $communities = Community::query()
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->get(['id', 'municipality_id', 'name', 'status']);
+            ->paginate(15, ['id', 'municipality_id', 'name', 'status'])
+            ->withQueryString();
 
         $municipalities = Municipality::query()
             ->where('status', 'active')

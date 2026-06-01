@@ -26,7 +26,8 @@ class ChapelController extends Controller
         $chapels = Chapel::query()
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->get(['id', 'community_id', 'church_id', 'name', 'address', 'status']);
+            ->paginate(15, ['id', 'community_id', 'church_id', 'name', 'address', 'status'])
+            ->withQueryString();
 
         $communities = Community::query()
             ->where('status', 'active')

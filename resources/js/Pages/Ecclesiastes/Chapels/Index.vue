@@ -6,9 +6,10 @@ import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import CatalogTable from '../../../components/catalogs/CatalogTable.vue';
 
 const props = defineProps({
-  chapels: { type: Array, default: () => [] },
+  chapels: { type: Object, required: true },
   communities: { type: Array, default: () => [] },
   churches: { type: Array, default: () => [] },
+  search: { type: String, default: '' },
 });
 
 const communityOptions = computed(() =>
@@ -71,16 +72,16 @@ const columns = computed(() => [
       title="Capillas"
       subtitle="Catalogo de capillas"
       back-href="/"
-      :count="chapels.length"
+      :count="chapels.total"
     />
 
     <CatalogTable
       :columns="columns"
-      :initial-rows="chapels"
+      :pagination="chapels"
+      :search="search"
       store-url="/capillas"
       base-url="/capillas"
       permission-module="capillas"
-      search-key="name"
       search-placeholder="Buscar por nombre de capilla..."
     />
   </AppShell>

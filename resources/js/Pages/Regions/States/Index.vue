@@ -5,7 +5,8 @@ import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import CatalogTable from '../../../components/catalogs/CatalogTable.vue';
 
 defineProps({
-  states: { type: Array, default: () => [] },
+  states: { type: Object, required: true },
+  search: { type: String, default: '' },
 });
 
 const columns = [
@@ -46,16 +47,16 @@ const columns = [
       title="Estados"
       subtitle="Catalogo de estados del pais"
       back-href="/"
-      :count="states.length"
+      :count="states.total"
     />
 
     <CatalogTable
       :columns="columns"
-      :initial-rows="states"
+      :pagination="states"
+      :search="search"
       store-url="/estados"
       base-url="/estados"
       permission-module="estados"
-      search-key="name"
       search-placeholder="Buscar por nombre de estado..."
     />
   </AppShell>

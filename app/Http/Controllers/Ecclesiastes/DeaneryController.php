@@ -25,7 +25,8 @@ class DeaneryController extends Controller
         $deaneries = Deanery::query()
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->get(['id', 'diocese_id', 'name', 'status']);
+            ->paginate(15, ['id', 'diocese_id', 'name', 'status'])
+            ->withQueryString();
 
         $dioceses = Diocese::query()
             ->where('status', 'active')

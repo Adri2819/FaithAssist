@@ -25,7 +25,8 @@ class DioceseController extends Controller
         $dioceses = Diocese::query()
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->get(['id', 'state_id', 'name', 'bishop', 'status']);
+            ->paginate(15, ['id', 'state_id', 'name', 'bishop', 'status'])
+            ->withQueryString();
 
         $states = State::query()
             ->where('status', 'active')

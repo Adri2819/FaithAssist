@@ -26,7 +26,8 @@ class MunicipalityController extends Controller
         $municipalities = Municipality::query()
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->get(['id', 'state_id', 'diocese_id', 'name', 'status']);
+            ->paginate(15, ['id', 'state_id', 'diocese_id', 'name', 'status'])
+            ->withQueryString();
 
         $states = State::query()
             ->where('status', 'active')

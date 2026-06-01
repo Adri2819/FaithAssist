@@ -69,11 +69,12 @@ onBeforeUnmount(() => {
       <div
         class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
       >
-        <div
-          class="text-lg font-black uppercase tracking-[0.24em] text-slate-800 sm:text-xl dark:text-slate-100"
+        <Link
+          href="/"
+          class="text-lg font-black uppercase tracking-[0.24em] text-slate-800 sm:text-xl dark:text-slate-100 hover:opacity-75 transition-opacity"
         >
           {{ appName }}
-        </div>
+        </Link>
 
         <div class="flex items-center gap-2 sm:gap-3">
           <button

@@ -1,9 +1,10 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Pencil, ShieldCheck } from 'lucide-vue-next';
+import { Pencil } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
+import AppPagination from '../../../components/AppPagination.vue';
 
 const props = defineProps({
   roles: { type: Object, required: true },
@@ -20,9 +21,6 @@ watch(searchTerm, (val) => {
   }, 400);
 });
 
-const paginationLinks = computed(() =>
-  props.roles.links.filter((l) => l.label !== '&laquo; Previous' && l.label !== 'Next &raquo;'),
-);
 </script>
 
 <template>
@@ -130,30 +128,11 @@ const paginationLinks = computed(() =>
     </div>
 
     <!-- Pagination -->
-    <div v-if="roles.last_page > 1" class="mt-4 flex items-center justify-between text-sm">
-      <span class="text-slate-500 dark:text-slate-400">
-        Mostrando {{ roles.from }}{{ roles.to }} de {{ roles.total }} registros
-      </span>
-      <div class="flex items-center gap-1">
-        <Link
-          v-for="link in roles.links"
-          :key="link.label"
-          :href="link.url ?? ''"
-          class="inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm transition"
-          :class="[
-            link.active
-              ? 'bg-sky-600 font-semibold text-white shadow-sm'
-              : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300',
-            !link.url ? 'cursor-not-allowed opacity-40' : '',
-          ]"
-          :aria-disabled="!link.url"
-          v-html="link.label"
-        />
-      </div>
-    </div>
-
-    <div v-else-if="roles.total > 0" class="mt-2 text-right text-xs text-slate-400 dark:text-slate-500">
-      {{ roles.total }} registro{{ roles.total !== 1 ? 's' : '' }}
-    </div>
+    <AppPagination
+      :links="roles.links"
+      :from="roles.from"
+      :to="roles.to"
+      :total="roles.total"
+    />
   </AppShell>
 </template>

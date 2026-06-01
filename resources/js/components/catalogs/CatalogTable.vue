@@ -1,23 +1,24 @@
 <script setup>
-import { computed, ref } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import { Check, Pencil, Trash2, X } from 'lucide-vue-next';
 import Swal from 'sweetalert2';
+import AppPagination from '../AppPagination.vue';
 
 const props = defineProps({
   columns: { type: Array, required: true },
-  initialRows: { type: Array, default: () => [] },
+  pagination: { type: Object, required: true },
+  search: { type: String, default: '' },
   storeUrl: { type: String, required: true },
   baseUrl: { type: String, required: true },
   permissionModule: { type: String, default: null },
-  searchKey: { type: String, default: null },
   searchPlaceholder: { type: String, default: 'Buscar...' },
 });
 
 const emit = defineEmits(['row-added', 'row-updated', 'row-deleted']);
 
-const rows = ref([...props.initialRows]);
-const searchTerm = ref('');
+const rows = ref([...props.pagination.data]);
+const searchTerm = ref(props.search);
 const editingId = ref(null);
 const editData = ref({});
 const isAdding = ref(false);
@@ -29,11 +30,31 @@ const addGeneralError = ref('');
 const editGeneralError = ref('');
 const page = usePage();
 
+let debounce = null;
+
+watch(searchTerm, (val) => {
+  clearTimeout(debounce);
+  debounce = setTimeout(() => {
+    router.get(props.baseUrl, { search: val, page: 1 }, { preserveState: true, replace: true });
+  }, 400);
+});
+
+watch(
+  () => props.pagination.data,
+  (newData) => {
+    rows.value = [...newData];
+    isAdding.value = false;
+    editingId.value = null;
+    editData.value = {};
+    editErrors.value = {};
+    editGeneralError.value = '';
+  },
+);
+
 const permissions = computed(() => page.props.auth?.permissions ?? []);
 
 const hasPermission = (action) => {
   if (!props.permissionModule) return true;
-
   return permissions.value.includes(`${props.permissionModule}.${action}`);
 };
 
@@ -41,14 +62,6 @@ const canCreate = computed(() => hasPermission('create'));
 const canUpdate = computed(() => hasPermission('update'));
 const canDelete = computed(() => hasPermission('delete'));
 const showActions = computed(() => canCreate.value || canUpdate.value || canDelete.value);
-
-const filteredRows = computed(() => {
-  if (!searchTerm.value || !props.searchKey) return rows.value;
-  const q = searchTerm.value.toLowerCase();
-  return rows.value.filter(r =>
-    String(r[props.searchKey] ?? '').toLowerCase().includes(q),
-  );
-});
 
 const getCsrf = () =>
   document.querySelector('meta[name="csrf-token"]')?.content ?? '';
@@ -337,7 +350,7 @@ const confirmDelete = async (row) => {
             </td>
           </tr>
 
-          <template v-for="row in filteredRows" :key="row.id">
+          <template v-for="row in rows" :key="row.id">
             <tr
               v-if="editingId === row.id"
               class="border-b border-amber-100 bg-amber-50/60 dark:border-amber-900/20 dark:bg-amber-950/10"
@@ -430,7 +443,7 @@ const confirmDelete = async (row) => {
             </tr>
           </template>
 
-          <tr v-if="filteredRows.length === 0 && !isAdding">
+          <tr v-if="rows.length === 0 && !isAdding">
             <td
               :colspan="columns.length + (showActions ? 1 : 0)"
               class="px-4 py-12 text-center text-sm text-slate-400 dark:text-slate-500"
@@ -446,8 +459,11 @@ const confirmDelete = async (row) => {
       </table>
     </div>
 
-    <div v-if="rows.length > 0" class="mt-2 text-right text-xs text-slate-400 dark:text-slate-500">
-      {{ filteredRows.length }} de {{ rows.length }} registro{{ rows.length !== 1 ? 's' : '' }}
-    </div>
+    <AppPagination
+      :links="pagination.links"
+      :from="pagination.from"
+      :to="pagination.to"
+      :total="pagination.total"
+    />
   </div>
 </template>

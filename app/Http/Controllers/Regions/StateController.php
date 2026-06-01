@@ -24,7 +24,8 @@ class StateController extends Controller
         $states = State::query()
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->get(['id', 'name', 'short_name', 'status']);
+            ->paginate(15, ['id', 'name', 'short_name', 'status'])
+            ->withQueryString();
 
         return Inertia::render('Regions/States/Index', [
             'states' => $states,

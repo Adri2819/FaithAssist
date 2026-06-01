@@ -6,8 +6,9 @@ import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import CatalogTable from '../../../components/catalogs/CatalogTable.vue';
 
 const props = defineProps({
-  deaneries: { type: Array, default: () => [] },
+  deaneries: { type: Object, required: true },
   dioceses: { type: Array, default: () => [] },
+  search: { type: String, default: '' },
 });
 
 const dioceseOptions = computed(() =>
@@ -56,16 +57,16 @@ const columns = computed(() => [
       title="Decanatos"
       subtitle="Catalogo de decanatos"
       back-href="/"
-      :count="deaneries.length"
+      :count="deaneries.total"
     />
 
     <CatalogTable
       :columns="columns"
-      :initial-rows="deaneries"
+      :pagination="deaneries"
+      :search="search"
       store-url="/decanatos"
       base-url="/decanatos"
       permission-module="decanato"
-      search-key="name"
       search-placeholder="Buscar por nombre de decanato..."
     />
   </AppShell>

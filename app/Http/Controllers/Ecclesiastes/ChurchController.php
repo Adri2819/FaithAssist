@@ -26,7 +26,8 @@ class ChurchController extends Controller
         $churches = Church::query()
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->get(['id', 'municipality_id', 'deanery_id', 'name', 'alias', 'email', 'phone', 'address', 'status']);
+            ->paginate(15, ['id', 'municipality_id', 'deanery_id', 'name', 'alias', 'email', 'phone', 'address', 'status'])
+            ->withQueryString();
 
         $municipalities = Municipality::query()
             ->where('status', 'active')

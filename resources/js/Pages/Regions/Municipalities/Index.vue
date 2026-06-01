@@ -6,9 +6,10 @@ import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import CatalogTable from '../../../components/catalogs/CatalogTable.vue';
 
 const props = defineProps({
-  municipalities: { type: Array, default: () => [] },
+  municipalities: { type: Object, required: true },
   states: { type: Array, default: () => [] },
   dioceses: { type: Array, default: () => [] },
+  search: { type: String, default: '' },
 });
 
 const stateOptions = computed(() =>
@@ -71,16 +72,16 @@ const columns = computed(() => [
       title="Municipios"
       subtitle="Catalogo de municipios"
       back-href="/"
-      :count="municipalities.length"
+      :count="municipalities.total"
     />
 
     <CatalogTable
       :columns="columns"
-      :initial-rows="municipalities"
+      :pagination="municipalities"
+      :search="search"
       store-url="/municipios"
       base-url="/municipios"
       permission-module="municipios"
-      search-key="name"
       search-placeholder="Buscar por nombre de municipio..."
     />
   </AppShell>

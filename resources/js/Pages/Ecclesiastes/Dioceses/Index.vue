@@ -6,8 +6,9 @@ import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import CatalogTable from '../../../components/catalogs/CatalogTable.vue';
 
 const props = defineProps({
-  dioceses: { type: Array, default: () => [] },
+  dioceses: { type: Object, required: true },
   states: { type: Array, default: () => [] },
+  search: { type: String, default: '' },
 });
 
 const stateOptions = computed(() =>
@@ -62,16 +63,16 @@ const columns = computed(() => [
       title="Diocesis"
       subtitle="Catalogo de diocesis"
       back-href="/"
-      :count="dioceses.length"
+      :count="dioceses.total"
     />
 
     <CatalogTable
       :columns="columns"
-      :initial-rows="dioceses"
+      :pagination="dioceses"
+      :search="search"
       store-url="/diocesis"
       base-url="/diocesis"
       permission-module="diocesis"
-      search-key="name"
       search-placeholder="Buscar por nombre de diocesis..."
     />
   </AppShell>
