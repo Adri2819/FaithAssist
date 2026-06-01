@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Head } from '@inertiajs/vue3';
+import { Home } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import CatalogTable from '../../../components/catalogs/CatalogTable.vue';
@@ -91,6 +92,7 @@ const columns = computed(() => [
       subtitle="Catalogo de parroquias"
       back-href="/"
       :count="churches.total"
+      :icon="Home"
     />
 
     <CatalogTable

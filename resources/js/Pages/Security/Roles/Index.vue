@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Pencil, Plus, Search, X } from 'lucide-vue-next';
+import { Pencil, Plus, Search, ShieldCheck, X } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import AppPagination from '../../../components/AppPagination.vue';
@@ -32,6 +32,7 @@ watch(searchTerm, (val) => {
       subtitle="Catalogo de roles del sistema"
       back-href="/"
       :count="roles.total"
+      :icon="ShieldCheck"
     />
 
     <!-- Toolbar -->

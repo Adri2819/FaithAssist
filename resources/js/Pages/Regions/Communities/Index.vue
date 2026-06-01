@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Head } from '@inertiajs/vue3';
+import { Users } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import CatalogTable from '../../../components/catalogs/CatalogTable.vue';
@@ -55,6 +56,7 @@ const columns = computed(() => [
       subtitle="Catalogo de comunidades"
       back-href="/"
       :count="communities.total"
+      :icon="Users"
     />
 
     <CatalogTable

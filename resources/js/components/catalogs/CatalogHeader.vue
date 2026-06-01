@@ -1,12 +1,13 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { CalendarDays, ChevronLeft } from 'lucide-vue-next';
+import { ChevronLeft, LayoutGrid } from 'lucide-vue-next';
 
 defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
   backHref: { type: String, default: '/' },
   count: { type: Number, default: null },
+  icon: { type: [Object, Function], default: () => LayoutGrid },
 });
 </script>
 
@@ -25,7 +26,7 @@ defineProps({
       <div>
         <div class="flex items-center gap-2.5">
           <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-900/40 dark:text-sky-300">
-            <CalendarDays class="h-4 w-4" />
+            <component :is="icon" class="h-4 w-4" />
           </span>
 
           <h1 class="text-2xl font-black tracking-tight text-slate-800 dark:text-slate-100">

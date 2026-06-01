@@ -1,5 +1,6 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
+import { MapPinned } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import CatalogTable from '../../../components/catalogs/CatalogTable.vue';
@@ -48,6 +49,7 @@ const columns = [
       subtitle="Catalogo de estados del pais"
       back-href="/"
       :count="states.total"
+      :icon="MapPinned"
     />
 
     <CatalogTable
