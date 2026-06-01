@@ -8,6 +8,7 @@ use App\Http\Controllers\Ecclesiastes\DioceseController;
 use App\Http\Controllers\Regions\CommunityController;
 use App\Http\Controllers\Regions\MunicipalityController;
 use App\Http\Controllers\Regions\StateController;
+use App\Http\Controllers\Security\ModuleController;
 use App\Http\Controllers\Security\RoleController;
 use App\Http\Controllers\Security\UserController;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +61,10 @@ Route::middleware('auth')->group(function () {
         ->parameters(['capillas' => 'capilla']);
 
     // Seguridad
+    Route::resource('modulos', ModuleController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['modulos' => 'modulo']);
+
     Route::resource('roles', RoleController::class)
         ->only(['index', 'create', 'store', 'edit', 'update']);
 

@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { BookOpen, Building2, Home, Landmark, MapPinned, ShieldCheck, Users } from 'lucide-vue-next';
+import { BookOpen, Building2, Home, Landmark, LayoutGrid, MapPinned, ShieldCheck, Users } from 'lucide-vue-next';
 import AppShell from '../components/layouts/AppShell.vue';
 
 const page = usePage();
@@ -37,6 +37,7 @@ const modules = computed(() => [
     accent: 'from-blue-200 via-sky-100 to-slate-100',
     titleClass: 'text-sky-700',
     items: [
+      { label: 'Modulos',   icon: LayoutGrid,  href: '/modulos',   moduleKey: 'modulos' },
       { label: 'Roles',     icon: ShieldCheck, href: '/roles',     moduleKey: 'roles' },
       { label: 'Usuarios',  icon: Users,       href: '/usuarios',  moduleKey: 'usuarios' },
     ],
