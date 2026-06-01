@@ -28,12 +28,13 @@ class RoleRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
+    public function attributes(): array
     {
         return [
-            'name.required' => 'El nombre del rol es obligatorio.',
-            'name.unique'   => 'Ya existe un rol con ese nombre.',
-            'name.max'      => 'El nombre no puede exceder 255 caracteres.',
+            'name'          => 'Nombre del rol',
+            'description'   => 'Descripcion',
+            'permissions'   => 'Permisos',
+            'permissions.*' => 'Permiso',
         ];
     }
 }

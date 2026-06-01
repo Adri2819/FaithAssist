@@ -16,9 +16,9 @@ const modules = computed(() => [
     accent: 'from-slate-400 via-slate-300 to-slate-200',
     titleClass: 'text-sky-700',
     items: [
-      { label: 'Estados', icon: MapPinned, href: '/estados', moduleKey: 'estados' },
-      { label: 'Municipios', icon: Building2, href: '/municipios', moduleKey: 'municipios' },
-      { label: 'Comunidades', icon: Users, href: '/comunidades', moduleKey: 'comunidades' },
+      { label: 'Estados',      icon: MapPinned,  href: '/estados',    moduleKey: 'estados' },
+      { label: 'Municipios',   icon: Building2,  href: '/municipios', moduleKey: 'municipios' },
+      { label: 'Comunidades',  icon: Users,      href: '/comunidades', moduleKey: 'comunidades' },
     ],
   },
   {
@@ -26,10 +26,10 @@ const modules = computed(() => [
     accent: 'from-blue-200 via-sky-100 to-slate-100',
     titleClass: 'text-sky-700',
     items: [
-      { label: 'Diocesis', icon: Landmark, href: '/diocesis', moduleKey: 'diocesis' },
-      { label: 'Decanatos', icon: BookOpen, href: '/decanatos', moduleKey: 'decanato' },
-      { label: 'Parroquias', icon: Home, href: '/parroquias', moduleKey: 'parroquias' },
-      { label: 'Iglesias', icon: Landmark, href: '/capillas', moduleKey: 'capillas' },
+      { label: 'Diocesis',  icon: Landmark,  href: '/diocesis',  moduleKey: 'diocesis' },
+      { label: 'Decanatos', icon: BookOpen,   href: '/decanatos', moduleKey: 'decanato' },
+      { label: 'Parroquias', icon: Home,      href: '/parroquias', moduleKey: 'parroquias' },
+      { label: 'Iglesias',  icon: Landmark,  href: '/capillas',  moduleKey: 'capillas' },
     ],
   },
   {
@@ -37,7 +37,8 @@ const modules = computed(() => [
     accent: 'from-blue-200 via-sky-100 to-slate-100',
     titleClass: 'text-sky-700',
     items: [
-      { label: 'Roles', icon: ShieldCheck, href: '/roles', moduleKey: 'roles' },
+      { label: 'Roles',     icon: ShieldCheck, href: '/roles',     moduleKey: 'roles' },
+      { label: 'Usuarios',  icon: Users,       href: '/usuarios',  moduleKey: 'usuarios' },
     ],
   },
 ].map((module) => ({

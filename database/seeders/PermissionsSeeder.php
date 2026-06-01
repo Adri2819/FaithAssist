@@ -22,6 +22,7 @@ class PermissionsSeeder extends Seeder
             'parroquias' => 'ecclesiastes',
             'capillas'   => 'ecclesiastes',
             'roles'      => 'security',
+            'usuarios'   => 'security',
         ];
 
         $actions = ['create', 'read', 'update', 'delete', 'show'];

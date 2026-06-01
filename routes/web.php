@@ -9,6 +9,7 @@ use App\Http\Controllers\Regions\CommunityController;
 use App\Http\Controllers\Regions\MunicipalityController;
 use App\Http\Controllers\Regions\StateController;
 use App\Http\Controllers\Security\RoleController;
+use App\Http\Controllers\Security\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -61,4 +62,8 @@ Route::middleware('auth')->group(function () {
     // Seguridad
     Route::resource('roles', RoleController::class)
         ->only(['index', 'create', 'store', 'edit', 'update']);
+
+    Route::resource('usuarios', UserController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update'])
+        ->parameters(['usuarios' => 'usuario']);
 });
