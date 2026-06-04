@@ -11,6 +11,11 @@ const props = defineProps({
   search: { type: String, default: '' },
 });
 
+const formatScopeList = (items) => {
+  if (!items?.length) return 'Sin asignaciones';
+  return items.join(', ');
+};
+
 const searchTerm = ref(props.search);
 let debounce = null;
 
@@ -70,6 +75,8 @@ watch(searchTerm, (val) => {
             <th class="px-4 py-3 font-semibold">Usuario</th>
             <th class="px-4 py-3 font-semibold">Correo</th>
             <th class="px-4 py-3 font-semibold">Rol</th>
+            <th class="px-4 py-3 font-semibold">Municipios</th>
+            <th class="px-4 py-3 font-semibold">Parroquias</th>
             <th class="px-4 py-3 text-right font-semibold">Acciones</th>
           </tr>
         </thead>
@@ -116,6 +123,14 @@ watch(searchTerm, (val) => {
               <span v-else class="text-xs text-slate-400">Sin rol</span>
             </td>
 
+            <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+              {{ formatScopeList(user.municipalities) }}
+            </td>
+
+            <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+              {{ formatScopeList(user.churches) }}
+            </td>
+
             <!-- Actions -->
             <td class="px-4 py-3 text-right">
               <Link
@@ -129,7 +144,7 @@ watch(searchTerm, (val) => {
           </tr>
 
           <tr v-if="users.data.length === 0">
-            <td colspan="4" class="px-4 py-12 text-center text-sm text-slate-400 dark:text-slate-500">
+            <td colspan="6" class="px-4 py-12 text-center text-sm text-slate-400 dark:text-slate-500">
               <span v-if="searchTerm">
                 No se encontraron usuarios para
                 <strong class="text-slate-600 dark:text-slate-300">"{{ searchTerm }}"</strong>.

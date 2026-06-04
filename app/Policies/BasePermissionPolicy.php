@@ -8,6 +8,11 @@ abstract class BasePermissionPolicy
 {
     abstract protected function permissionModule(): string;
 
+    protected function hasFullScope(User $user): bool
+    {
+        return $user->hasModuleFullScope($this->permissionModule());
+    }
+
     protected function can(User $user, string $action): bool
     {
         return $user->can($this->permissionModule().'.'.$action);

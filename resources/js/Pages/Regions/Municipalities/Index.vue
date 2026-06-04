@@ -81,6 +81,7 @@ const columns = computed(() => [
       :columns="columns"
       :pagination="municipalities"
       :search="search"
+      :create-requires-full-scope="true"
       store-url="/municipios"
       base-url="/municipios"
       permission-module="municipios"

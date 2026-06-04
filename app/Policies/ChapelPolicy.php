@@ -19,21 +19,24 @@ class ChapelPolicy extends BasePermissionPolicy
 
     public function view(User $user, Chapel $chapel): bool
     {
-        return $this->can($user, 'show');
+        return $this->can($user, 'show') && $user->canAccessChapel($chapel);
     }
 
     public function create(User $user): bool
     {
-        return $this->can($user, 'create');
+        return $this->can($user, 'create')
+            && ($this->hasFullScope($user)
+                || $user->allowedCommunityIds()->isNotEmpty()
+                || $user->allowedChurchIds()->isNotEmpty());
     }
 
     public function update(User $user, Chapel $chapel): bool
     {
-        return $this->can($user, 'update');
+        return $this->can($user, 'update') && $user->canAccessChapel($chapel);
     }
 
     public function delete(User $user, Chapel $chapel): bool
     {
-        return $this->can($user, 'delete');
+        return $this->can($user, 'delete') && $user->canAccessChapel($chapel);
     }
 }

@@ -19,31 +19,57 @@ class ChurchController extends Controller
         $this->authorizeResource(Church::class, 'parroquia');
     }
 
-        public function index(Request $request): Response
+    public function index(Request $request): Response
     {
         $search = $request->input('search', '');
+        $user = $request->user();
+        $hasFullScope = $user->hasModuleFullScope('parroquias');
+        $allowedChurchIds = $user->allowedChurchIds();
 
-        $churches = Church::query()
+        $churchQuery = Church::query()
+            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $allowedChurchIds))
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
-            ->orderBy('name')
+            ->orderBy('name');
+
+        $churches = $churchQuery
             ->paginate(15, ['id', 'municipality_id', 'deanery_id', 'name', 'alias', 'email', 'phone', 'address', 'status'])
             ->withQueryString();
 
+        $municipalityIds = $hasFullScope
+            ? null
+            : $churches->getCollection()
+                ->pluck('municipality_id')
+                ->filter()
+                ->map(fn (mixed $id): int => (int) $id)
+                ->unique()
+                ->values();
+
+        $deaneryIds = $hasFullScope
+            ? null
+            : $churches->getCollection()
+                ->pluck('deanery_id')
+                ->filter()
+                ->map(fn (mixed $id): int => (int) $id)
+                ->unique()
+                ->values();
+
         $municipalities = Municipality::query()
             ->where('status', 'active')
+            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $municipalityIds ?? []))
             ->orderBy('name')
             ->get(['id', 'name']);
 
         $deaneries = Deanery::query()
             ->where('status', 'active')
+            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $deaneryIds ?? []))
             ->orderBy('name')
             ->get(['id', 'name']);
 
         return Inertia::render('Ecclesiastes/Churches/Index', [
-            'churches'       => $churches,
+            'churches' => $churches,
             'municipalities' => $municipalities,
-            'deaneries'      => $deaneries,
-            'search'         => $search,
+            'deaneries' => $deaneries,
+            'search' => $search,
         ]);
     }
 
@@ -53,7 +79,7 @@ class ChurchController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $church->only(['id', 'municipality_id', 'deanery_id', 'name', 'alias', 'email', 'phone', 'address', 'status']),
+            'data' => $church->only(['id', 'municipality_id', 'deanery_id', 'name', 'alias', 'email', 'phone', 'address', 'status']),
             'message' => 'Parroquia creada correctamente.',
         ], 201);
     }
@@ -64,7 +90,7 @@ class ChurchController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $parroquia->fresh()->only(['id', 'municipality_id', 'deanery_id', 'name', 'alias', 'email', 'phone', 'address', 'status']),
+            'data' => $parroquia->fresh()->only(['id', 'municipality_id', 'deanery_id', 'name', 'alias', 'email', 'phone', 'address', 'status']),
             'message' => 'Parroquia actualizada correctamente.',
         ]);
     }

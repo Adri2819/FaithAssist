@@ -13,17 +13,17 @@ class PermissionsSeeder extends Seeder
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $modules = [
-            'modulos'    => 'core',
-            'permisos'   => 'core',
-            'estados'    => 'regions',
+            'modulos' => 'core',
+            'permisos' => 'core',
+            'estados' => 'regions',
             'municipios' => 'regions',
             'comunidades' => 'regions',
-            'diocesis'   => 'ecclesiastes',
-            'decanato'   => 'ecclesiastes',
+            'diocesis' => 'ecclesiastes',
+            'decanato' => 'ecclesiastes',
             'parroquias' => 'ecclesiastes',
-            'capillas'   => 'ecclesiastes',
-            'roles'      => 'security',
-            'usuarios'   => 'security',
+            'capillas' => 'ecclesiastes',
+            'roles' => 'security',
+            'usuarios' => 'security',
         ];
 
         $actions = ['create', 'read', 'update', 'delete', 'show'];
@@ -32,16 +32,35 @@ class PermissionsSeeder extends Seeder
             foreach ($actions as $action) {
                 Permission::query()->updateOrCreate(
                     [
-                        'name'       => "{$module}.{$action}",
+                        'name' => "{$module}.{$action}",
                         'guard_name' => 'web',
                     ],
                     [
                         'description' => "Permite {$action} en {$module}",
-                        'module_key'  => $moduleKey,
-                        'arg'         => null,
+                        'module_key' => $moduleKey,
+                        'arg' => null,
                     ]
                 );
             }
+        }
+
+        foreach ([
+            ['name' => 'municipios.scope.all', 'module_key' => 'regions', 'description' => 'Permite ver todos los municipios'],
+            ['name' => 'comunidades.scope.all', 'module_key' => 'regions', 'description' => 'Permite ver todas las comunidades'],
+            ['name' => 'parroquias.scope.all', 'module_key' => 'ecclesiastes', 'description' => 'Permite ver todas las parroquias'],
+            ['name' => 'capillas.scope.all', 'module_key' => 'ecclesiastes', 'description' => 'Permite ver todas las capillas'],
+        ] as $permission) {
+            Permission::query()->updateOrCreate(
+                [
+                    'name' => $permission['name'],
+                    'guard_name' => 'web',
+                ],
+                [
+                    'description' => $permission['description'],
+                    'module_key' => $permission['module_key'],
+                    'arg' => null,
+                ]
+            );
         }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();

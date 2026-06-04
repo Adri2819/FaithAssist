@@ -99,6 +99,7 @@ const columns = computed(() => [
       :columns="columns"
       :pagination="churches"
       :search="search"
+      :create-requires-full-scope="true"
       store-url="/parroquias"
       base-url="/parroquias"
       permission-module="parroquias"

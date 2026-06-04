@@ -33,9 +33,10 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => fn (): array => [
-                'user'        => $this->buildAuthUserPayload($request->user()),
+                'user' => $this->buildAuthUserPayload($request->user()),
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name') ?? [],
-                'roles'       => $request->user()?->getRoleNames() ?? [],
+                'roles' => $request->user()?->getRoleNames() ?? [],
+                'scope' => $this->buildScopePayload($request->user()),
             ],
         ];
     }
@@ -46,7 +47,11 @@ class HandleInertiaRequests extends Middleware
             return null;
         }
 
-        $user->loadMissing('profile');
+        $user->loadMissing([
+            'profile',
+            'assignedMunicipalities:id,name',
+            'assignedChurches:id,name',
+        ]);
 
         $profileName = trim(collect([
             $user->profile?->name,
@@ -67,6 +72,42 @@ class HandleInertiaRequests extends Middleware
                 'paterno' => $user->profile->paterno,
                 'materno' => $user->profile->materno,
             ] : null,
+            'municipalities' => $user->assignedMunicipalities
+                ->map(fn ($municipality): array => [
+                    'id' => $municipality->id,
+                    'name' => $municipality->name,
+                ])
+                ->values()
+                ->all(),
+            'churches' => $user->assignedChurches
+                ->map(fn ($church): array => [
+                    'id' => $church->id,
+                    'name' => $church->name,
+                ])
+                ->values()
+                ->all(),
+        ];
+    }
+
+    private function buildScopePayload(?User $user): array
+    {
+        if (! $user) {
+            return [
+                'municipality_ids' => [],
+                'church_ids' => [],
+                'full_access' => [],
+            ];
+        }
+
+        return [
+            'municipality_ids' => $user->allowedMunicipalityIds()->all(),
+            'church_ids' => $user->allowedChurchIds()->all(),
+            'full_access' => [
+                'municipios' => $user->hasModuleFullScope('municipios'),
+                'comunidades' => $user->hasModuleFullScope('comunidades'),
+                'parroquias' => $user->hasModuleFullScope('parroquias'),
+                'capillas' => $user->hasModuleFullScope('capillas'),
+            ],
         ];
     }
 

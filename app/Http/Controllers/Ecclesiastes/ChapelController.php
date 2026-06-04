@@ -19,31 +19,73 @@ class ChapelController extends Controller
         $this->authorizeResource(Chapel::class, 'capilla');
     }
 
-        public function index(Request $request): Response
+    public function index(Request $request): Response
     {
         $search = $request->input('search', '');
+        $user = $request->user();
+        $hasFullScope = $user->hasModuleFullScope('capillas');
+        $allowedCommunityIds = $user->allowedCommunityIds();
+        $allowedChurchIds = $user->allowedChurchIds();
 
-        $chapels = Chapel::query()
+        $chapelQuery = Chapel::query()
+            ->when(! $hasFullScope, function ($query) use ($allowedCommunityIds, $allowedChurchIds) {
+                $query->where(function ($scope) use ($allowedCommunityIds, $allowedChurchIds) {
+                    if ($allowedCommunityIds->isNotEmpty()) {
+                        $scope->whereIn('community_id', $allowedCommunityIds);
+                    }
+
+                    if ($allowedChurchIds->isNotEmpty()) {
+                        $method = $allowedCommunityIds->isNotEmpty() ? 'orWhereIn' : 'whereIn';
+                        $scope->{$method}('church_id', $allowedChurchIds);
+                    }
+
+                    if ($allowedCommunityIds->isEmpty() && $allowedChurchIds->isEmpty()) {
+                        $scope->whereRaw('1 = 0');
+                    }
+                });
+            })
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
-            ->orderBy('name')
+            ->orderBy('name');
+
+        $chapels = $chapelQuery
             ->paginate(15, ['id', 'community_id', 'church_id', 'name', 'address', 'status'])
             ->withQueryString();
 
+        $communityOptionIds = $hasFullScope
+            ? null
+            : $allowedCommunityIds
+                ->merge($chapels->getCollection()->pluck('community_id'))
+                ->filter()
+                ->map(fn (mixed $id): int => (int) $id)
+                ->unique()
+                ->values();
+
+        $churchOptionIds = $hasFullScope
+            ? null
+            : $allowedChurchIds
+                ->merge($chapels->getCollection()->pluck('church_id'))
+                ->filter()
+                ->map(fn (mixed $id): int => (int) $id)
+                ->unique()
+                ->values();
+
         $communities = Community::query()
             ->where('status', 'active')
+            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $communityOptionIds ?? []))
             ->orderBy('name')
             ->get(['id', 'name']);
 
         $churches = Church::query()
             ->where('status', 'active')
+            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $churchOptionIds ?? []))
             ->orderBy('name')
             ->get(['id', 'name']);
 
         return Inertia::render('Ecclesiastes/Chapels/Index', [
-            'chapels'     => $chapels,
+            'chapels' => $chapels,
             'communities' => $communities,
-            'churches'    => $churches,
-            'search'      => $search,
+            'churches' => $churches,
+            'search' => $search,
         ]);
     }
 
@@ -53,7 +95,7 @@ class ChapelController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $chapel->only(['id', 'community_id', 'church_id', 'name', 'address', 'status']),
+            'data' => $chapel->only(['id', 'community_id', 'church_id', 'name', 'address', 'status']),
             'message' => 'Capilla creada correctamente.',
         ], 201);
     }
@@ -64,7 +106,7 @@ class ChapelController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $capilla->fresh()->only(['id', 'community_id', 'church_id', 'name', 'address', 'status']),
+            'data' => $capilla->fresh()->only(['id', 'community_id', 'church_id', 'name', 'address', 'status']),
             'message' => 'Capilla actualizada correctamente.',
         ]);
     }

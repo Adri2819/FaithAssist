@@ -19,21 +19,24 @@ class CommunityPolicy extends BasePermissionPolicy
 
     public function view(User $user, Community $community): bool
     {
-        return $this->can($user, 'show');
+        return $this->can($user, 'show')
+            && ($this->hasFullScope($user) || $user->canAccessMunicipalityId($community->municipality_id));
     }
 
     public function create(User $user): bool
     {
-        return $this->can($user, 'create');
+        return $this->can($user, 'create') && $this->hasFullScope($user);
     }
 
     public function update(User $user, Community $community): bool
     {
-        return $this->can($user, 'update');
+        return $this->can($user, 'update')
+            && ($this->hasFullScope($user) || $user->canAccessMunicipalityId($community->municipality_id));
     }
 
     public function delete(User $user, Community $community): bool
     {
-        return $this->can($user, 'delete');
+        return $this->can($user, 'delete')
+            && ($this->hasFullScope($user) || $user->canAccessMunicipalityId($community->municipality_id));
     }
 }

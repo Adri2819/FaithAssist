@@ -18,25 +18,32 @@ class CommunityController extends Controller
         $this->authorizeResource(Community::class, 'comunidad');
     }
 
-        public function index(Request $request): Response
+    public function index(Request $request): Response
     {
         $search = $request->input('search', '');
+        $user = $request->user();
+        $hasFullScope = $user->hasModuleFullScope('comunidades');
+        $allowedMunicipalityIds = $user->allowedMunicipalityIds();
 
-        $communities = Community::query()
+        $communityQuery = Community::query()
+            ->when(! $hasFullScope, fn ($query) => $query->whereIn('municipality_id', $allowedMunicipalityIds))
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
-            ->orderBy('name')
+            ->orderBy('name');
+
+        $communities = $communityQuery
             ->paginate(15, ['id', 'municipality_id', 'name', 'status'])
             ->withQueryString();
 
         $municipalities = Municipality::query()
             ->where('status', 'active')
+            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $allowedMunicipalityIds))
             ->orderBy('name')
             ->get(['id', 'name']);
 
         return Inertia::render('Regions/Communities/Index', [
-            'communities'    => $communities,
+            'communities' => $communities,
             'municipalities' => $municipalities,
-            'search'         => $search,
+            'search' => $search,
         ]);
     }
 
@@ -46,7 +53,7 @@ class CommunityController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $community->only(['id', 'municipality_id', 'name', 'status']),
+            'data' => $community->only(['id', 'municipality_id', 'name', 'status']),
             'message' => 'Comunidad creada correctamente.',
         ], 201);
     }
@@ -57,7 +64,7 @@ class CommunityController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $comunidad->fresh()->only(['id', 'municipality_id', 'name', 'status']),
+            'data' => $comunidad->fresh()->only(['id', 'municipality_id', 'name', 'status']),
             'message' => 'Comunidad actualizada correctamente.',
         ]);
     }

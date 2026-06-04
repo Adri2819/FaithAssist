@@ -3,15 +3,15 @@
 namespace App\Models\Regions;
 
 use App\Models\Concerns\LogsActivityTrail;
-use App\Models\Regions\Municipality;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 #[Fillable([
     'municipality_id',
@@ -33,7 +33,9 @@ class Community extends Model
     protected $table = 'communities';
 
     protected $primaryKey = 'id';
+
     protected $keyType = 'int';
+
     public $incrementing = true;
 
     public $timestamps = true;
@@ -48,6 +50,11 @@ class Community extends Model
     public function municipality(): BelongsTo
     {
         return $this->belongsTo(Municipality::class, 'municipality_id');
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'community_user')->withTimestamps();
     }
 
     public function creator(): BelongsTo

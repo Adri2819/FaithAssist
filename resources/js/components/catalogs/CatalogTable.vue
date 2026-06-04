@@ -12,6 +12,7 @@ const props = defineProps({
   storeUrl: { type: String, required: true },
   baseUrl: { type: String, required: true },
   permissionModule: { type: String, default: null },
+  createRequiresFullScope: { type: Boolean, default: false },
   searchPlaceholder: { type: String, default: 'Buscar...' },
 });
 
@@ -52,13 +53,21 @@ watch(
 );
 
 const permissions = computed(() => page.props.auth?.permissions ?? []);
+const fullScopeAccess = computed(() => page.props.auth?.scope?.full_access ?? {});
 
 const hasPermission = (action) => {
   if (!props.permissionModule) return true;
   return permissions.value.includes(`${props.permissionModule}.${action}`);
 };
 
-const canCreate = computed(() => hasPermission('create'));
+const hasModuleFullScope = computed(() => {
+  if (!props.permissionModule) return true;
+  return fullScopeAccess.value?.[props.permissionModule] === true;
+});
+
+const canCreate = computed(() =>
+  hasPermission('create') && (!props.createRequiresFullScope || hasModuleFullScope.value)
+);
 const canUpdate = computed(() => hasPermission('update'));
 const canDelete = computed(() => hasPermission('delete'));
 const showActions = computed(() => canCreate.value || canUpdate.value || canDelete.value);

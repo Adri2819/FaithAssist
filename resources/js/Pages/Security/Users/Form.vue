@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { CalendarDays, KeyRound, ShieldCheck, User, Users } from 'lucide-vue-next';
+import { CalendarDays, Church, KeyRound, MapPinned, ShieldCheck, User, Users } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import PermissionSelector from '../../../components/security/PermissionSelector.vue';
@@ -10,8 +10,12 @@ const props = defineProps({
   user:                { type: Object, default: null },
   roles:               { type: Array,  required: true },
   permissionGroups:    { type: Array,  required: true },
+  municipalities:      { type: Array,  default: () => [] },
+  churches:            { type: Array,  default: () => [] },
   selectedRole:        { type: Number, default: null },
   selectedPermissions: { type: Array,  default: () => [] },
+  selectedMunicipalities: { type: Array,  default: () => [] },
+  selectedChurches:    { type: Array,  default: () => [] },
 });
 
 const isEditing = computed(() => !!props.user);
@@ -21,6 +25,7 @@ const activeSection = ref('general');
 
 const sections = [
   { key: 'general',    label: 'Datos Generales', icon: User },
+  { key: 'alcance',    label: 'Alcance',         icon: MapPinned },
   { key: 'roles',      label: 'Roles',           icon: ShieldCheck },
   { key: 'permisos',   label: 'Permisos',        icon: KeyRound },
   { key: 'seguridad',  label: 'Seguridad',       icon: Users },
@@ -32,6 +37,8 @@ const form = useForm({
   materno:               props.user?.materno ?? '',
   email:                 props.user?.email   ?? '',
   role_id:               props.selectedRole,
+  municipality_ids:      [...props.selectedMunicipalities],
+  church_ids:            [...props.selectedChurches],
   permissions:           [...props.selectedPermissions],
   password:              '',
   password_confirmation: '',
@@ -40,6 +47,8 @@ const form = useForm({
 const selectedRoleObj = computed(() => props.roles.find((r) => r.id === form.role_id));
 
 const totalPermissions = computed(() => form.permissions.length);
+const totalMunicipalities = computed(() => form.municipality_ids.length);
+const totalChurches = computed(() => form.church_ids.length);
 
 const submit = () => {
   if (isEditing.value) {
@@ -117,6 +126,12 @@ const submit = () => {
                     {{ s.label }}
                   </span>
                   <span
+                    v-if="s.key === 'alcance' && (totalMunicipalities > 0 || totalChurches > 0)"
+                    class="rounded-full bg-rose-700 px-1.5 py-0.5 text-xs font-bold text-white"
+                  >
+                    {{ totalMunicipalities + totalChurches }}
+                  </span>
+                  <span
                     v-if="s.key === 'roles' && selectedRoleObj"
                     class="rounded-full bg-rose-700 px-1.5 py-0.5 text-xs font-bold text-white"
                   >
@@ -173,6 +188,60 @@ const submit = () => {
                 </label>
                 <input v-model="form.email" type="email" placeholder="correo@ejemplo.com" class="input input-bordered w-full" :class="{ 'input-error': form.errors.email }" />
                 <p v-if="form.errors.email" class="mt-1 text-xs text-red-500">{{ form.errors.email }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alcance -->
+          <div v-show="activeSection === 'alcance'" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+            <h2 class="mb-1 text-sm font-semibold uppercase tracking-wider text-rose-700 dark:text-rose-400">
+              Alcance de datos
+            </h2>
+            <p class="mb-5 text-xs text-slate-400 dark:text-slate-500">
+              Define los municipios y parroquias visibles para el usuario. Las comunidades se mostraran segun el municipio asignado.
+            </p>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="mb-1.5 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <MapPinned class="h-4 w-4 text-rose-700 dark:text-rose-400" />
+                  Municipios asignados
+                </label>
+                <select
+                  v-model="form.municipality_ids"
+                  multiple
+                  class="select select-bordered h-48 w-full"
+                  :class="{ 'select-error': form.errors.municipality_ids }"
+                >
+                  <option v-for="municipality in municipalities" :key="municipality.id" :value="municipality.id">
+                    {{ municipality.name }}
+                  </option>
+                </select>
+                <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                  Usa Ctrl/Cmd + clic para seleccionar varios municipios.
+                </p>
+                <p v-if="form.errors.municipality_ids" class="mt-1 text-xs text-red-500">{{ form.errors.municipality_ids }}</p>
+              </div>
+
+              <div>
+                <label class="mb-1.5 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <Church class="h-4 w-4 text-rose-700 dark:text-rose-400" />
+                  Parroquias asignadas
+                </label>
+                <select
+                  v-model="form.church_ids"
+                  multiple
+                  class="select select-bordered h-48 w-full"
+                  :class="{ 'select-error': form.errors.church_ids }"
+                >
+                  <option v-for="church in churches" :key="church.id" :value="church.id">
+                    {{ church.name }}
+                  </option>
+                </select>
+                <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                  Asigna una o varias parroquias para restringir la informacion visible.
+                </p>
+                <p v-if="form.errors.church_ids" class="mt-1 text-xs text-red-500">{{ form.errors.church_ids }}</p>
               </div>
             </div>
           </div>

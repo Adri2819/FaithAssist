@@ -63,6 +63,7 @@ const columns = computed(() => [
       :columns="columns"
       :pagination="communities"
       :search="search"
+      :create-requires-full-scope="true"
       store-url="/comunidades"
       base-url="/comunidades"
       permission-module="comunidades"
