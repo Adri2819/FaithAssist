@@ -118,7 +118,7 @@ class UserController extends Controller
             ],
             ...$this->formOptions(),
             'selectedRole' => $usuario->roles->first()?->id,
-            'selectedPermissions' => $usuario->permissions()->pluck('permissions.id')->toArray(),
+            'selectedPermissions' => $usuario->getAllPermissions()->pluck('id')->toArray(),
             'selectedMunicipalities' => $usuario->assignedMunicipalities->pluck('id')->toArray(),
             'selectedChurches' => $usuario->assignedChurches->pluck('id')->toArray(),
         ]);
