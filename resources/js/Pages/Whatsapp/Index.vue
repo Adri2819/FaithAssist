@@ -1,351 +1,389 @@
-<template>
-    <AppShell>
-        <div class="max-w-7xl mx-auto w-full px-4 py-8">
-            <div class="mb-8 flex flex-col gap-2">
-                <h1 class="text-3xl font-black text-[#0066a6]">
-                    Envío por WhatsApp
-                </h1>
+<script setup>
+import { computed, ref, onMounted } from 'vue';
+import { Head } from '@inertiajs/vue3';
+import { MessageCircle, FileText, Send, History, RefreshCcw, X } from 'lucide-vue-next';
+import AppShell from '../../components/layouts/AppShell.vue';
+import CatalogHeader from '../../components/catalogs/CatalogHeader.vue';
 
-                <p class="text-slate-500">
-                    Envía gafetes PDF directamente al WhatsApp del padre o tutor.
-                </p>
-            </div>
+const form = ref({
+  to_phone: '',
+  caption: 'Te compartimos el gafete en PDF.',
+  pdf: null,
+});
 
-            <div class="grid grid-cols-1 xl:grid-cols-[1.4fr_0.8fr] gap-8">
-                <section class="bg-white rounded-[28px] border border-slate-200 shadow-xl shadow-slate-200/70 overflow-hidden">
-                    <div class="px-8 py-7 border-b border-slate-200 flex items-center justify-between gap-4">
-                        <div>
-                            <h2 class="text-2xl font-black text-[#0066a6]">
-                                Enviar gafete PDF
-                            </h2>
+const loading = ref(false);
+const successMessage = ref('');
+const errorMessage = ref('');
+const fileName = ref('');
+const history = ref([]);
+const showHistory = ref(false);
 
-                            <p class="text-slate-500 mt-1">
-                                Selecciona el archivo PDF y escribe el número autorizado.
-                            </p>
-                        </div>
+const historyCount = computed(() => history.value.length);
 
-                        <div class="w-14 h-14 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center shadow-sm border border-green-100">
-                            <i class="pi pi-whatsapp text-3xl"></i>
-                        </div>
-                    </div>
-
-                    <form class="p-8 space-y-6" @submit.prevent="sendWhatsapp">
-                        <div>
-                            <label class="block text-sm font-extrabold text-slate-700 mb-2">
-                                Teléfono del destinatario
-                            </label>
-
-                            <input
-                                v-model="form.to_phone"
-                                type="text"
-                                class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 outline-none transition focus:bg-white focus:border-[#0066a6] focus:ring-4 focus:ring-blue-100"
-                                placeholder="Ejemplo: 527224978399"
-                                required
-                            >
-
-                            <p class="text-xs text-slate-500 mt-2">
-                                Usa formato internacional sin +, espacios ni guiones.
-                            </p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-extrabold text-slate-700 mb-2">
-                                Mensaje
-                            </label>
-
-                            <textarea
-                                v-model="form.caption"
-                                rows="4"
-                                class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 outline-none transition resize-none focus:bg-white focus:border-[#0066a6] focus:ring-4 focus:ring-blue-100"
-                                placeholder="Te compartimos el gafete en PDF."
-                            ></textarea>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-extrabold text-slate-700 mb-2">
-                                Archivo PDF
-                            </label>
-
-                            <label class="flex items-center gap-4 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-5 cursor-pointer transition hover:border-[#0066a6] hover:bg-blue-50/40">
-                                <div class="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm">
-                                    <i class="pi pi-file-pdf text-xl"></i>
-                                </div>
-
-                                <div>
-                                    <p class="font-extrabold text-slate-700">
-                                        {{ fileName || 'Seleccionar archivo PDF' }}
-                                    </p>
-
-                                    <p class="text-xs text-slate-500 mt-1">
-                                        Tamaño máximo configurado: 20 MB
-                                    </p>
-                                </div>
-
-                                <input
-                                    type="file"
-                                    accept="application/pdf"
-                                    class="hidden"
-                                    required
-                                    @change="handleFile"
-                                >
-                            </label>
-                        </div>
-
-                        <button
-                            type="submit"
-                            :disabled="loading"
-                            class="w-full rounded-2xl bg-[#0066a6] px-5 py-4 text-white font-black transition hover:bg-[#00558b] disabled:opacity-60 disabled:cursor-not-allowed"
-                        >
-                            {{ loading ? 'Enviando PDF...' : 'Enviar PDF por WhatsApp' }}
-                        </button>
-
-                        <div
-                            v-if="successMessage"
-                            class="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-green-700 font-bold"
-                        >
-                            {{ successMessage }}
-                        </div>
-
-                        <div
-                            v-if="errorMessage"
-                            class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700 font-bold"
-                        >
-                            {{ errorMessage }}
-                        </div>
-                    </form>
-                </section>
-
-                <aside class="space-y-8">
-                    <section class="bg-white rounded-[28px] border border-slate-200 shadow-xl shadow-slate-200/70 overflow-hidden">
-                        <div class="px-7 py-6 border-b border-slate-200">
-                            <h3 class="text-xl font-black text-[#0066a6]">
-                                Estado de conexión
-                            </h3>
-                        </div>
-
-                        <div class="p-7">
-                            <div class="flex items-center gap-3 rounded-2xl bg-green-50 border border-green-100 px-4 py-4">
-                                <span class="w-3 h-3 rounded-full bg-green-500"></span>
-
-                                <div>
-                                    <p class="font-black text-green-700">
-                                        API conectada
-                                    </p>
-
-                                    <p class="text-sm text-green-700/80">
-                                        Meta WhatsApp Cloud API disponible.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <ul class="mt-6 space-y-3 text-sm text-slate-600">
-                                <li class="flex gap-2">
-                                    <span class="font-black text-[#0066a6]">•</span>
-                                    El número debe estar autorizado en Meta si usas número de prueba.
-                                </li>
-
-                                <li class="flex gap-2">
-                                    <span class="font-black text-[#0066a6]">•</span>
-                                    El PDF debe ser válido y menor al límite configurado.
-                                </li>
-
-                                <li class="flex gap-2">
-                                    <span class="font-black text-[#0066a6]">•</span>
-                                    Si no llega, responde “Hola” al chat de prueba y vuelve a enviar.
-                                </li>
-                            </ul>
-                        </div>
-                    </section>
-
-                    <section class="bg-white rounded-[28px] border border-slate-200 shadow-xl shadow-slate-200/70 overflow-hidden">
-                        <div class="px-7 py-6 border-b border-slate-200 flex items-center justify-between gap-4">
-                            <h3 class="text-xl font-black text-[#0066a6]">
-                                Últimos envíos
-                            </h3>
-
-                            <button
-                                type="button"
-                                class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-black text-[#0066a6] hover:bg-blue-50"
-                                @click="loadHistory"
-                            >
-                                Actualizar
-                            </button>
-                        </div>
-
-                        <div class="p-7">
-                            <div
-                                v-if="history.length === 0"
-                                class="rounded-2xl bg-slate-50 border border-slate-200 px-4 py-5 text-center text-slate-500"
-                            >
-                                No hay envíos registrados.
-                            </div>
-
-                            <div v-else class="space-y-3">
-                                <div
-                                    v-for="item in history"
-                                    :key="item.id"
-                                    class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 flex items-center justify-between gap-4"
-                                >
-                                    <div>
-                                        <p class="font-black text-slate-700">
-                                            {{ item.to_phone }}
-                                        </p>
-
-                                        <p class="text-xs text-slate-500 mt-1">
-                                            {{ formatDate(item.created_at) }}
-                                        </p>
-                                    </div>
-
-                                    <span
-                                        class="rounded-full px-3 py-1 text-xs font-black uppercase"
-                                        :class="statusClass(item.status)"
-                                    >
-                                        {{ item.status }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </aside>
-            </div>
-        </div>
-    </AppShell>
-</template>
-
-<script>
-import AppShell from '@/components/layouts/AppShell.vue';
-
-export default {
-    name: 'WhatsappIndex',
-
-    components: {
-        AppShell,
-    },
-
-    data() {
-        return {
-            loading: false,
-            successMessage: '',
-            errorMessage: '',
-            fileName: '',
-            history: [],
-            form: {
-                to_phone: '',
-                caption: 'Te compartimos el gafete en PDF.',
-                pdf: null,
-            },
-        };
-    },
-
-    mounted() {
-        this.loadHistory();
-    },
-
-    methods: {
-        handleFile(event) {
-            const file = event.target.files[0];
-
-            this.form.pdf = file;
-            this.fileName = file ? file.name : '';
-        },
-
-        async sendWhatsapp() {
-            this.loading = true;
-            this.successMessage = '';
-            this.errorMessage = '';
-
-            if (!this.form.pdf) {
-                this.errorMessage = 'Selecciona un archivo PDF antes de enviar.';
-                this.loading = false;
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('to_phone', this.form.to_phone);
-            formData.append('caption', this.form.caption);
-            formData.append('pdf', this.form.pdf);
-
-            try {
-                const response = await fetch('/whatsapp/send', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document
-                            .querySelector('meta[name="csrf-token"]')
-                            ?.getAttribute('content'),
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                    body: formData,
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw data;
-                }
-
-                this.successMessage = data.message || 'PDF enviado correctamente por WhatsApp.';
-
-                this.form.pdf = null;
-                this.fileName = '';
-
-                await this.loadHistory();
-            } catch (error) {
-                console.error('Error al enviar WhatsApp:', error);
-
-                this.errorMessage =
-                    error.error ||
-                    error.message ||
-                    'No se pudo enviar el PDF por WhatsApp.';
-            } finally {
-                this.loading = false;
-            }
-        },
-
-        async loadHistory() {
-            try {
-                const response = await fetch('/whatsapp/history-json', {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error('No se pudo cargar el historial.');
-                }
-
-                this.history = await response.json();
-            } catch (error) {
-                console.error('Error al cargar historial:', error);
-
-                this.history = [];
-            }
-        },
-
-        formatDate(date) {
-            if (!date) {
-                return '';
-            }
-
-            return new Date(date).toLocaleString('es-MX', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            });
-        },
-
-        statusClass(status) {
-            if (status === 'sent') {
-                return 'bg-green-100 text-green-700';
-            }
-
-            if (status === 'failed') {
-                return 'bg-red-100 text-red-700';
-            }
-
-            return 'bg-yellow-100 text-yellow-700';
-        },
-    },
+const onlyNumbers = () => {
+  form.value.to_phone = form.value.to_phone.replace(/\D/g, '').slice(0, 10);
 };
+
+const handleFile = (event) => {
+  const file = event.target.files[0];
+
+  form.value.pdf = file;
+  fileName.value = file ? file.name : '';
+};
+
+const toggleHistory = async () => {
+  showHistory.value = !showHistory.value;
+
+  if (showHistory.value) {
+    await loadHistory();
+  }
+};
+
+const sendWhatsapp = async () => {
+  loading.value = true;
+  successMessage.value = '';
+  errorMessage.value = '';
+
+  if (form.value.to_phone.length !== 10) {
+    errorMessage.value = 'El teléfono debe tener 10 dígitos.';
+    loading.value = false;
+    return;
+  }
+
+  if (!form.value.pdf) {
+    errorMessage.value = 'Selecciona un archivo PDF antes de enviar.';
+    loading.value = false;
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('to_phone', form.value.to_phone);
+  formData.append('caption', form.value.caption);
+  formData.append('pdf', form.value.pdf);
+
+  try {
+    const response = await fetch('/whatsapp/send', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': document
+          .querySelector('meta[name="csrf-token"]')
+          ?.getAttribute('content'),
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw data;
+    }
+
+    successMessage.value = data.message || 'PDF enviado correctamente por WhatsApp.';
+
+    form.value.pdf = null;
+    fileName.value = '';
+
+    await loadHistory();
+  } catch (error) {
+    console.error('Error al enviar WhatsApp:', error);
+
+    errorMessage.value =
+      error.error ||
+      error.message ||
+      'No se pudo enviar el PDF por WhatsApp.';
+  } finally {
+    loading.value = false;
+  }
+};
+
+const loadHistory = async () => {
+  try {
+    const response = await fetch('/whatsapp/history-json', {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('No se pudo cargar el historial.');
+    }
+
+    history.value = await response.json();
+  } catch (error) {
+    console.error('Error al cargar historial:', error);
+    history.value = [];
+  }
+};
+
+const formatDate = (date) => {
+  if (!date) {
+    return '';
+  }
+
+  return new Date(date).toLocaleString('es-MX', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const statusClass = (status) => {
+  if (status === 'sent') {
+    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200';
+  }
+
+  if (status === 'failed') {
+    return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-200';
+  }
+
+  return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200';
+};
+
+onMounted(() => {
+  loadHistory();
+});
 </script>
+
+<template>
+  <Head title="WhatsApp" />
+
+  <AppShell>
+    <CatalogHeader
+      title="WhatsApp"
+      subtitle="Envio de gafetes PDF por WhatsApp"
+      back-href="/"
+      :count="historyCount"
+      :icon="MessageCircle"
+    />
+
+    <section
+      class="mx-auto mt-6 w-full max-w-7xl overflow-hidden rounded-4xl border border-slate-200 bg-white shadow-[0_16px_50px_-30px_rgba(15,23,42,0.35)] transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_16px_50px_-30px_rgba(0,0,0,0.6)]"
+    >
+      <header class="border-b border-slate-200 px-6 py-5 sm:px-7 dark:border-slate-800">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 class="text-xl font-black tracking-tight text-sky-700 dark:text-slate-50">
+              Enviar gafete PDF
+            </h2>
+
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Captura el teléfono del padre o tutor, selecciona el archivo PDF y envíalo por WhatsApp.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-600 transition hover:border-slate-300 hover:bg-white hover:text-sky-700 hover:shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-800"
+            @click="toggleHistory"
+          >
+            <History class="h-4 w-4" />
+            Historial
+            <span
+              class="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-black text-sky-700 dark:bg-sky-900/40 dark:text-sky-200"
+            >
+              {{ historyCount }}
+            </span>
+          </button>
+        </div>
+      </header>
+
+      <form class="grid gap-6 p-6 sm:p-7 lg:grid-cols-[1fr_0.9fr]" @submit.prevent="sendWhatsapp">
+        <div class="space-y-6">
+          <div>
+            <label class="mb-2 block text-sm font-extrabold text-slate-700 dark:text-slate-200">
+              Teléfono del destinatario
+            </label>
+
+            <div
+              class="flex overflow-hidden rounded-2xl border border-slate-300 bg-slate-50 transition focus-within:border-sky-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-sky-100 dark:border-slate-700 dark:bg-slate-950 dark:focus-within:bg-slate-900"
+            >
+              <span
+                class="flex items-center border-r border-slate-200 px-4 text-sm font-black text-slate-500 dark:border-slate-700 dark:text-slate-400"
+              >
+                +52
+              </span>
+
+              <input
+                v-model="form.to_phone"
+                type="text"
+                maxlength="10"
+                inputmode="numeric"
+                class="w-full bg-transparent px-4 py-3 text-slate-800 outline-none dark:text-slate-50"
+                placeholder="7224978399"
+                required
+                @input="onlyNumbers"
+              />
+            </div>
+
+            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              Escribe solo los 10 digitos. El sistema agregara automaticamente +52.
+            </p>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-extrabold text-slate-700 dark:text-slate-200">
+              Mensaje
+            </label>
+
+            <textarea
+              v-model="form.caption"
+              rows="5"
+              class="w-full resize-none rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-sky-600 focus:bg-white focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:bg-slate-900"
+              placeholder="Te compartimos el gafete en PDF."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="flex flex-col justify-between gap-6">
+          <div>
+            <label class="mb-2 block text-sm font-extrabold text-slate-700 dark:text-slate-200">
+              Archivo PDF
+            </label>
+
+            <label
+              class="group flex min-h-42.5 cursor-pointer flex-col items-center justify-center gap-4 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-6 text-center transition hover:border-sky-600 hover:bg-sky-50/60 dark:border-slate-700 dark:bg-slate-950 dark:hover:bg-slate-800"
+            >
+              <div
+                class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200 transition group-hover:bg-sky-100 group-hover:text-sky-700 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700"
+              >
+                <FileText class="h-6 w-6" />
+              </div>
+
+              <div class="max-w-full">
+                <p class="truncate font-black text-slate-700 dark:text-slate-100">
+                  {{ fileName || 'Seleccionar archivo PDF' }}
+                </p>
+
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Tamaño maximo configurado: 20 MB
+                </p>
+              </div>
+
+              <input
+                type="file"
+                accept="application/pdf"
+                class="hidden"
+                required
+                @change="handleFile"
+              />
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            :disabled="loading"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-700 px-5 py-4 text-sm font-black text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Send class="h-4 w-4" />
+            {{ loading ? 'Enviando PDF...' : 'Enviar PDF por WhatsApp' }}
+          </button>
+        </div>
+      </form>
+
+      <div class="px-6 pb-6 sm:px-7">
+        <div
+          v-if="successMessage"
+          class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-200"
+        >
+          {{ successMessage }}
+        </div>
+
+        <div
+          v-if="errorMessage"
+          class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-bold text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-200"
+        >
+          {{ errorMessage }}
+        </div>
+      </div>
+
+      <div
+        v-if="showHistory"
+        class="border-t border-slate-200 px-6 py-5 sm:px-7 dark:border-slate-800"
+      >
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 class="text-lg font-black text-sky-700 dark:text-sky-200">
+              Historial de envios
+            </h3>
+
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Ultimos registros generados por el modulo.
+            </p>
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-sky-700 transition hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-800 dark:text-sky-200"
+              @click="loadHistory"
+            >
+              <RefreshCcw class="h-3.5 w-3.5" />
+              Actualizar
+            </button>
+
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-500 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              @click="showHistory = false"
+            >
+              <X class="h-3.5 w-3.5" />
+              Cerrar
+            </button>
+          </div>
+        </div>
+
+        <div
+          v-if="history.length === 0"
+          class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400"
+        >
+          No hay envios registrados.
+        </div>
+
+        <div
+          v-else
+          class="max-h-90 overflow-auto rounded-2xl border border-slate-200 dark:border-slate-700"
+        >
+          <table class="w-full text-left text-sm">
+            <thead
+              class="sticky top-0 bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500 dark:bg-slate-800 dark:text-slate-300"
+            >
+              <tr>
+                <th class="px-4 py-3">Telefono</th>
+                <th class="px-4 py-3">Estado</th>
+                <th class="px-4 py-3">Fecha</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+              <tr
+                v-for="item in history"
+                :key="item.id"
+                class="bg-white dark:bg-slate-900"
+              >
+                <td class="px-4 py-3 font-bold text-slate-700 dark:text-slate-100">
+                  {{ item.to_phone }}
+                </td>
+
+                <td class="px-4 py-3">
+                  <span
+                    class="rounded-full px-3 py-1 text-[11px] font-black uppercase"
+                    :class="statusClass(item.status)"
+                  >
+                    {{ item.status }}
+                  </span>
+                </td>
+
+                <td class="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+                  {{ formatDate(item.created_at) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </AppShell>
+</template>
