@@ -3,11 +3,9 @@
 namespace App\Models\Ecclesiastes;
 
 use App\Models\Concerns\LogsActivityTrail;
-use App\Models\Regions\State;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,9 +13,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'state_id',
+    'diocese_id',
     'name',
-    'bishop',
+    'start_date',
+    'end_date',
+    'years',
     'status',
     'created_by',
     'updated_by',
@@ -28,11 +28,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'created_at',
     'updated_at',
 ])]
-class Diocese extends Model
+class Period extends Model
 {
     use HasFactory, LogsActivityTrail, SoftDeletes;
 
-    protected $table = 'dioceses';
+    protected $table = 'periods';
 
     protected $primaryKey = 'id';
 
@@ -45,18 +45,20 @@ class Diocese extends Model
     protected function casts(): array
     {
         return [
+            'start_date' => 'date:Y-m-d',
+            'end_date' => 'date:Y-m-d',
             'status' => 'string',
         ];
     }
 
-    public function state(): BelongsTo
+    public function diocese(): BelongsTo
     {
-        return $this->belongsTo(State::class, 'state_id');
+        return $this->belongsTo(Diocese::class, 'diocese_id');
     }
 
-    public function periods(): HasMany
+    public function movements(): HasMany
     {
-        return $this->hasMany(Period::class, 'diocese_id');
+        return $this->hasMany(Movement::class, 'period_id');
     }
 
     public function creator(): BelongsTo
@@ -72,10 +74,5 @@ class Diocese extends Model
     public function deleter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
-    }
-
-    public function scopeActivos(Builder $query): Builder
-    {
-        return $query->where('status', 'ACTIVE');
     }
 }

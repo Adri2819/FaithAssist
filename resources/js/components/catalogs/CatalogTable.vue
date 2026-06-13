@@ -305,6 +305,12 @@ const confirmDelete = async (row) => {
                 :placeholder="col.label"
                 @input="newRowData[col.key] = col.uppercase !== false ? $event.target.value.toUpperCase() : $event.target.value"
               />
+              <input
+                v-else-if="col.type === 'date'"
+                v-model="newRowData[col.key]"
+                type="date"
+                class="input input-bordered input-sm w-full"
+              />
               <select
                 v-else-if="col.type === 'select'"
                 v-model="newRowData[col.key]"
@@ -356,6 +362,12 @@ const confirmDelete = async (row) => {
                   :class="['input input-bordered input-sm w-full', col.uppercase !== false ? 'uppercase' : '']"
                   :placeholder="col.label"
                   @input="editData[col.key] = col.uppercase !== false ? $event.target.value.toUpperCase() : $event.target.value"
+                />
+                <input
+                  v-else-if="col.type === 'date'"
+                  v-model="editData[col.key]"
+                  type="date"
+                  class="input input-bordered input-sm w-full"
                 />
                 <select
                   v-else-if="col.type === 'select'"

@@ -6,6 +6,8 @@ use App\Models\Ecclesiastes\Chapel;
 use App\Models\Ecclesiastes\Church;
 use App\Models\Ecclesiastes\Deanery;
 use App\Models\Ecclesiastes\Diocese;
+use App\Models\Ecclesiastes\Movement;
+use App\Models\Ecclesiastes\Period;
 use App\Models\Module;
 use App\Models\Regions\Community;
 use App\Models\Regions\Municipality;
@@ -16,7 +18,9 @@ use App\Policies\CommunityPolicy;
 use App\Policies\DeaneryPolicy;
 use App\Policies\DiocesePolicy;
 use App\Policies\ModulePolicy;
+use App\Policies\MovementPolicy;
 use App\Policies\MunicipalityPolicy;
+use App\Policies\PeriodPolicy;
 use App\Policies\PermissionPolicy;
 use App\Policies\StatePolicy;
 use Illuminate\Support\Facades\Gate;
@@ -47,5 +51,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Deanery::class, DeaneryPolicy::class);
         Gate::policy(Church::class, ChurchPolicy::class);
         Gate::policy(Chapel::class, ChapelPolicy::class);
+        Gate::policy(Period::class, PeriodPolicy::class);
+        Gate::policy(Movement::class, MovementPolicy::class);
     }
 }
