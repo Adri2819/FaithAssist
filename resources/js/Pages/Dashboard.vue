@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { BookOpen, Building2, Home, KeyRound, Landmark, LayoutGrid, MapPinned, ShieldCheck, Users } from 'lucide-vue-next';
+import { ArrowLeftRight, BookOpen, Building2, CalendarDays, Home, KeyRound, Landmark, LayoutGrid, MapPinned, ShieldCheck, Users } from 'lucide-vue-next';
 import AppShell from '../components/layouts/AppShell.vue';
 
 const page = usePage();
@@ -30,6 +30,8 @@ const modules = computed(() => [
       { label: 'Decanatos', icon: BookOpen,   href: '/decanatos', moduleKey: 'decanato' },
       { label: 'Parroquias', icon: Home,      href: '/parroquias', moduleKey: 'parroquias' },
       { label: 'Iglesias',  icon: Landmark,  href: '/capillas',  moduleKey: 'capillas' },
+      { label: 'Periodos',  icon: CalendarDays, href: '/periodos', moduleKey: 'periodos' },
+      { label: 'Movimientos',  icon: ArrowLeftRight, href: '/movimientos', moduleKey: 'movimientos' },
     ],
   },
   {

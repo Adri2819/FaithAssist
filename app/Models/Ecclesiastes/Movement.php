@@ -3,22 +3,20 @@
 namespace App\Models\Ecclesiastes;
 
 use App\Models\Concerns\LogsActivityTrail;
-use App\Models\Regions\State;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'state_id',
-    'name',
-    'bishop',
+    'period_id',
+    'type',
     'status',
+    'effective_date',
+    'notes',
     'created_by',
     'updated_by',
     'deleted_by',
@@ -28,11 +26,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'created_at',
     'updated_at',
 ])]
-class Diocese extends Model
+class Movement extends Model
 {
     use HasFactory, LogsActivityTrail, SoftDeletes;
 
-    protected $table = 'dioceses';
+    protected $table = 'movements';
 
     protected $primaryKey = 'id';
 
@@ -45,18 +43,15 @@ class Diocese extends Model
     protected function casts(): array
     {
         return [
+            'effective_date' => 'date:Y-m-d',
             'status' => 'string',
+            'type' => 'string',
         ];
     }
 
-    public function state(): BelongsTo
+    public function period(): BelongsTo
     {
-        return $this->belongsTo(State::class, 'state_id');
-    }
-
-    public function periods(): HasMany
-    {
-        return $this->hasMany(Period::class, 'diocese_id');
+        return $this->belongsTo(Period::class, 'period_id');
     }
 
     public function creator(): BelongsTo
@@ -72,10 +67,5 @@ class Diocese extends Model
     public function deleter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
-    }
-
-    public function scopeActivos(Builder $query): Builder
-    {
-        return $query->where('status', 'ACTIVE');
     }
 }

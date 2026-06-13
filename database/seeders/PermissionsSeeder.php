@@ -22,6 +22,8 @@ class PermissionsSeeder extends Seeder
             'decanato' => 'ecclesiastes',
             'parroquias' => 'ecclesiastes',
             'capillas' => 'ecclesiastes',
+            'periodos' => 'ecclesiastes',
+            'movimientos' => 'ecclesiastes',
             'roles' => 'security',
             'usuarios' => 'security',
         ];
