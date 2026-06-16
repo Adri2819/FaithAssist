@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Ecclesiastes;
+namespace App\Models\Operation;
 
 use App\Models\Concerns\LogsActivityTrail;
 use App\Models\User;
@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'created_at',
     'updated_at',
 ])]
-class Movement extends Model
+class PeriodMovement extends Model
 {
     use HasFactory, LogsActivityTrail, SoftDeletes;
 

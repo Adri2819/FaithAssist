@@ -54,12 +54,18 @@ const columns = computed(() => [
       completed: 'badge-success',
     },
   },
-  {
-    key: 'effective_date',
-    label: 'Fecha efectiva',
-    type: 'date',
-    required: true,
-  },
+    {
+      key: 'starde_date',
+      label: 'Fecha de inicio',
+      type: 'date',
+      required: true,
+    },
+    {
+      key: 'end_date',
+      label: 'Fecha de fin',
+      type: 'date',
+      required: true,
+    },
   {
     key: 'notes',
     label: 'Notas',

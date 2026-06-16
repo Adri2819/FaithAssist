@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Ecclesiastes;
+namespace App\Http\Requests\Operation;
 
 use App\Globals\Status;
 use App\Http\Requests\Concerns\UppercasesFields;
-use App\Models\Ecclesiastes\Period;
+use App\Models\Operation\Period;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;

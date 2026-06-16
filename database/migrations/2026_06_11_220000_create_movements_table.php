@@ -21,15 +21,15 @@ return new class extends Migration
                 Status::IN_PROGRESS,
                 Status::COMPLETED,
             ])->default(Status::PENDING);
-            $table->date('effective_date');
+            $table->date('start_date');
+            $table->date('end_date');
             $table->string('notes', 255)->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             $table->index('type');
             $table->index('status');
-            $table->index('effective_date');
-            $table->index(['period_id', 'effective_date']);
+            $table->index('period_id');
         });
     }
 

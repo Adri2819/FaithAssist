@@ -1,26 +1,21 @@
 <?php
 
-namespace App\Models\Ecclesiastes;
+namespace App\Models\Operation;
 
 use App\Models\Concerns\LogsActivityTrail;
-use App\Models\Regions\State;
-use App\Models\Operation\Level;
-use App\Models\Operation\Period;
+use App\Models\Eclesisastes\Diocese;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'state_id',
     'name',
-    'bishop',
-    'status',
+    'description',
+    'diocese_id',
     'created_by',
     'updated_by',
     'deleted_by',
@@ -30,11 +25,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'created_at',
     'updated_at',
 ])]
-class Diocese extends Model
+class Level extends Model
 {
     use HasFactory, LogsActivityTrail, SoftDeletes;
 
-    protected $table = 'dioceses';
+    protected $table = 'levels';
 
     protected $primaryKey = 'id';
 
@@ -47,23 +42,14 @@ class Diocese extends Model
     protected function casts(): array
     {
         return [
-            'status' => 'string',
+            'name' => 'string',
+            'description' => 'string',
         ];
     }
 
-    public function state(): BelongsTo
+    public function diocese(): BelongsTo
     {
-        return $this->belongsTo(State::class, 'state_id');
-    }
-
-    public function periods(): HasMany
-    {
-        return $this->hasMany(Period::class, 'diocese_id');
-    }
-
-    public function levels(): HasMany
-    {
-        return $this->hasMany(Level::class, 'diocese_id');
+        return $this->belongsTo(Diocese::class, 'diocese_id');
     }
 
     public function creator(): BelongsTo
@@ -79,10 +65,5 @@ class Diocese extends Model
     public function deleter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
-    }
-
-    public function scopeActivos(Builder $query): Builder
-    {
-        return $query->where('status', 'ACTIVE');
     }
 }

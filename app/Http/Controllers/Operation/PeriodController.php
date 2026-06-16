@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Ecclesiastes;
+namespace App\Http\Controllers\Operation;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Ecclesiastes\PeriodRequest;
+use App\Http\Requests\Operation\PeriodRequest;
 use App\Models\Ecclesiastes\Diocese;
-use App\Models\Ecclesiastes\Period;
+use App\Models\Operation\Period;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -41,7 +41,7 @@ class PeriodController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        return Inertia::render('Ecclesiastes/Periods/Index', [
+        return Inertia::render('Operation/Periods/Index', [
             'periods' => $periods,
             'dioceses' => $dioceses,
             'search' => $search,

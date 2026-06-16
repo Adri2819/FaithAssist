@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Ecclesiastes;
+namespace App\Http\Controllers\Operation;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Ecclesiastes\MovementRequest;
-use App\Models\Ecclesiastes\Movement;
-use App\Models\Ecclesiastes\Period;
+use App\Http\Requests\Operation\MovementRequest;
+use App\Models\Operation\Movement;
+use App\Models\Operation\Period;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,15 +30,14 @@ class MovementController extends Controller
                         ->where('type', 'like', "%{$search}%")
                         ->orWhere('status', 'like', "%{$search}%")
                         ->orWhere('notes', 'like', "%{$search}%")
-                        ->orWhere('effective_date', 'like', "%{$search}%")
                         ->orWhereHas('period', fn ($periodQuery) => $periodQuery
                             ->where('name', 'like', "%{$search}%")
                             ->orWhere('years', 'like', "%{$search}%")
                             ->orWhereHas('diocese', fn ($dioceseQuery) => $dioceseQuery->where('name', 'like', "%{$search}%")));
                 });
             })
-            ->orderByDesc('effective_date')
-            ->paginate(15, ['id', 'period_id', 'type', 'status', 'effective_date', 'notes'])
+            ->orderByDesc('starde_date')
+            ->paginate(15, ['id', 'period_id', 'type', 'status', 'starde_date', 'end_date', 'notes'])
             ->withQueryString();
 
         $periods = Period::query()
@@ -46,7 +45,7 @@ class MovementController extends Controller
             ->orderByDesc('start_date')
             ->get(['id', 'diocese_id', 'name', 'years']);
 
-        return Inertia::render('Ecclesiastes/Movements/Index', [
+        return Inertia::render('Operation/Movements/Index', [
             'movements' => $movements,
             'periods' => $periods->map(fn (Period $period): array => [
                 'id' => $period->id,
@@ -64,7 +63,7 @@ class MovementController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $movement->only(['id', 'period_id', 'type', 'status', 'effective_date', 'notes']),
+            'data' => $movement->only(['id', 'period_id', 'type', 'status', 'starde_date', 'end_date', 'notes']),
             'message' => 'Movimiento creado correctamente.',
         ], 201);
     }
@@ -75,7 +74,7 @@ class MovementController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $movimiento->fresh()->only(['id', 'period_id', 'type', 'status', 'effective_date', 'notes']),
+            'data' => $movimiento->fresh()->only(['id', 'period_id', 'type', 'status', 'starde_date', 'end_date', 'notes']),
             'message' => 'Movimiento actualizado correctamente.',
         ]);
     }
