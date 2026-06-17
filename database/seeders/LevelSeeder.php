@@ -5,8 +5,6 @@ namespace Database\Seeders;
 use App\Models\Operation\Level;
 use App\Models\Ecclesiastes\Diocese;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-
 class LevelSeeder extends Seeder
 {
     /**
