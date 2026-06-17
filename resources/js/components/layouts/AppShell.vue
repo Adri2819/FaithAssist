@@ -9,7 +9,7 @@ defineProps({
     type: String,
     required: true,
   },
-})
+});
 
 const page = usePage();
 const form = useForm({});
