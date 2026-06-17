@@ -78,7 +78,7 @@ class LevelSeeder extends Seeder
             ]
         ];
 
-        // Usar insert para múltiples registros :cite[1]:cite[3]
+        // Usar insert para múltiples registros
         Level::insert($levels);
     }
 }
