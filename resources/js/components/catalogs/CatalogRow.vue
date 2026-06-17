@@ -123,6 +123,8 @@ const save = () => {
         class="btn btn-success btn-xs mr-1"
         :disabled="loading"
         @click="save"
+        aria-label="Guardar"
+        title="Guardar"
       >
         <Check class="h-3.5 w-3.5" />
       </button>
