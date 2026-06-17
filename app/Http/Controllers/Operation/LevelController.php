@@ -25,7 +25,10 @@ class LevelController extends Controller
         $levels = Level::query()
             ->with('diocese:id,name')
             ->when($search, function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%");
+                $query->where(function ($builder) use ($search) {
+                    $builder->where('name', 'like', "%{$search}%")
+                        ->orWhereHas('diocese', fn ($dioceseQuery) => $dioceseQuery->where('name', 'like', "%{$search}%"));
+                });
             })
             ->orderBy('name')
             ->paginate(15, ['id', 'diocese_id', 'name', 'description', 'status'])
