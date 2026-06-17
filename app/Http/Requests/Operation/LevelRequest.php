@@ -23,7 +23,7 @@ class LevelRequest extends FormRequest
 
     public function rules(): array
     {
-        $periodId = $this->route('periodo')?->id;
+        $levelId = $this->route('nivel')?->id;
         $dioceseId = (int) $this->input('diocese_id');
 
         return [
@@ -33,7 +33,7 @@ class LevelRequest extends FormRequest
                 'string',
                 'max:150',
                 Rule::unique('levels', 'name')
-                    ->ignore($periodId)
+                    ->ignore($levelId)
                     ->where(fn ($query) => $query
                         ->where('diocese_id', $dioceseId)
                         ->whereNull('deleted_at')),
