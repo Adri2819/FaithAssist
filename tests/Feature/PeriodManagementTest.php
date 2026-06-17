@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Globals\Status;
 use App\Models\Ecclesiastes\Diocese;
-use App\Models\Operation\Period;;
+use App\Models\Operation\Period;
 use App\Models\Regions\State;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
