@@ -132,6 +132,8 @@ const save = () => {
       <button
         class="btn btn-ghost btn-xs"
         @click="emit('cancel')"
+        aria-label="Cancelar"
+        title="Cancelar"
       >
         <X class="h-3.5 w-3.5" />
       </button>
