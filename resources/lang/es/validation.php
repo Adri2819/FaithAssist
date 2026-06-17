@@ -176,7 +176,6 @@ return [
 		'remember'           => 'Recordarme',
 		'role_id'            => 'Rol',
 		'short_name'         => 'Abreviatura',
-		'starde_date'        => 'Fecha de inicio',
 		'start_date'         => 'Fecha de inicio',
 		'state_id'           => 'Estado',
 		'status'             => 'Estatus',
