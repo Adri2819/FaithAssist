@@ -161,7 +161,7 @@ return [
     'deanery_id' => 'Deanery',
     'description' => 'Description',
     'diocese_id' => 'Diocese',
-    'effective_date' => 'Effective date',
+    'period_id' => 'Period',
     'email' => 'Email',
     'end_date' => 'End date',
     'key' => 'Module key',
