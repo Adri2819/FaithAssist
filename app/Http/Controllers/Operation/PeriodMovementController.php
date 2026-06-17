@@ -11,11 +11,11 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class MovementController extends Controller
+class PeriodMovementController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(PeriodMovement::class, 'movimiento');
+        $this->authorizeResource(PeriodMovement::class, 'periodo_movimiento');
     }
 
     public function index(Request $request): Response

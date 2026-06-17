@@ -5,11 +5,11 @@ namespace App\Policies;
 use App\Models\Operation\PeriodMovement;
 use App\Models\User;
 
-class MovementPolicy extends BasePermissionPolicy
+class PeriodMovementPolicy extends BasePermissionPolicy
 {
     protected function permissionModule(): string
     {
-        return 'movimientos';
+        return 'periodo_movimientos';
     }
 
     public function viewAny(User $user): bool

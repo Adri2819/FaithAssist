@@ -20,7 +20,7 @@ use App\Policies\DeaneryPolicy;
 use App\Policies\DiocesePolicy;
 use App\Policies\LevelPolicy;
 use App\Policies\ModulePolicy;
-use App\Policies\MovementPolicy;
+use App\Policies\PeriodMovementPolicy;
 use App\Policies\MunicipalityPolicy;
 use App\Policies\PeriodPolicy;
 use App\Policies\PermissionPolicy;
@@ -55,6 +55,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Chapel::class, ChapelPolicy::class);
         Gate::policy(Level::class, LevelPolicy::class);
         Gate::policy(Period::class, PeriodPolicy::class);
-        Gate::policy(PeriodMovement::class, MovementPolicy::class);
+        Gate::policy(PeriodMovement::class, PeriodMovementPolicy::class);
     }
 }

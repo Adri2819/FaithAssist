@@ -30,7 +30,7 @@ class PeriodMovement extends Model
 {
     use HasFactory, LogsActivityTrail, SoftDeletes;
 
-    protected $table = 'movements';
+    protected $table = 'period_movements';
 
     protected $primaryKey = 'id';
 
