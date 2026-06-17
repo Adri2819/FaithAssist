@@ -123,8 +123,6 @@ const save = () => {
         class="btn btn-success btn-xs mr-1"
         :disabled="loading"
         @click="save"
-        aria-label="Guardar"
-        title="Guardar"
       >
         <Check class="h-3.5 w-3.5" />
       </button>
@@ -132,8 +130,6 @@ const save = () => {
       <button
         class="btn btn-ghost btn-xs"
         @click="emit('cancel')"
-        aria-label="Cancelar"
-        title="Cancelar"
       >
         <X class="h-3.5 w-3.5" />
       </button>
@@ -178,8 +174,6 @@ const save = () => {
         class="btn btn-ghost btn-xs mr-1 text-sky-600 hover:bg-sky-50 hover:text-sky-700 dark:text-sky-400 dark:hover:bg-sky-950/40"
         :disabled="loading"
         @click="emit('edit')"
-        aria-label="Editar registro"
-        title="Editar"
       >
         <Pencil class="h-3.5 w-3.5" />
       </button>
@@ -189,8 +183,6 @@ const save = () => {
         class="btn btn-ghost btn-xs text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-950/40"
         :disabled="loading"
         @click="emit('delete')"
-        aria-label="Eliminar registro"
-        title="Eliminar"
       >
         <Trash2 class="h-3.5 w-3.5" />
       </button>
