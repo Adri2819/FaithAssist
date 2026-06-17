@@ -29,6 +29,8 @@ return new class extends Migration
 
             $table->index('type');
             $table->index('status');
+            $table->index('start_date');
+            $table->index('end_date');
             $table->index('period_id');
         });
     }
