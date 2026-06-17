@@ -8,7 +8,7 @@ const props = defineProps({
   },
 
   modelValue: {
-    type: [String, Number, Boolean, null],
+    type: [String, Number, Boolean],
     default: '',
   },
 
