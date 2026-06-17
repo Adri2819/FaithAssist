@@ -71,7 +71,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('periodo-movimientos', PeriodMovementController::class)
         ->only(['index', 'store', 'update', 'destroy'])
-        ->parameters(['movimientos' => 'movimiento']);
+        ->parameters(['periodo-movimientos' => 'periodo_movimiento']);
 
     Route::resource('niveles', LevelController::class)
         ->only(['index', 'store', 'update', 'destroy'])
