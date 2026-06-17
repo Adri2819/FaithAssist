@@ -30,6 +30,13 @@ const modules = computed(() => [
       { label: 'Decanatos', icon: BookOpen,   href: '/decanatos', moduleKey: 'decanato' },
       { label: 'Parroquias', icon: Home,      href: '/parroquias', moduleKey: 'parroquias' },
       { label: 'Iglesias',  icon: Landmark,  href: '/capillas',  moduleKey: 'capillas' },
+    ],
+  },
+  {
+    name: 'Operación',
+    accent: 'from-blue-200 via-sky-100 to-slate-100',
+    titleClass: 'text-sky-700',
+    items: [
       { label: 'Periodos',  icon: CalendarDays, href: '/periodos', moduleKey: 'periodos' },
       { label: 'Movimientos',  icon: ArrowLeftRight, href: '/movimientos', moduleKey: 'movimientos' },
     ],

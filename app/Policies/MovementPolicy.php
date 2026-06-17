@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Ecclesiastes\Movement;
+use App\Models\Operation\PeriodMovement;
 use App\Models\User;
 
 class MovementPolicy extends BasePermissionPolicy

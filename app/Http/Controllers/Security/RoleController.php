@@ -99,10 +99,10 @@ class RoleController extends Controller
     private function getModuleLabel(string $key): string
     {
         return match ($key) {
-            'core'         => 'Core',
             'regions'      => 'Regiones',
             'ecclesiastes' => 'Eclesiasticos',
             'security'     => 'Seguridad',
+            'operation'    => 'Operación',
             default        => ucfirst($key),
         };
     }

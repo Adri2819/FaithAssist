@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Operation;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Operation\MovementRequest;
-use App\Models\Operation\Movement;
+use App\Models\Operation\PeriodMovement;
 use App\Models\Operation\Period;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,14 +15,14 @@ class MovementController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(Movement::class, 'movimiento');
+        $this->authorizeResource(PeriodMovement::class, 'movimiento');
     }
 
     public function index(Request $request): Response
     {
         $search = $request->input('search', '');
 
-        $movements = Movement::query()
+        $movements = PeriodMovement::query()
             ->with(['period:id,diocese_id,name,years', 'period.diocese:id,name'])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($builder) use ($search) {
@@ -36,8 +36,8 @@ class MovementController extends Controller
                             ->orWhereHas('diocese', fn ($dioceseQuery) => $dioceseQuery->where('name', 'like', "%{$search}%")));
                 });
             })
-            ->orderByDesc('starde_date')
-            ->paginate(15, ['id', 'period_id', 'type', 'status', 'starde_date', 'end_date', 'notes'])
+            ->orderByDesc('start_date')
+            ->paginate(15, ['id', 'period_id', 'type', 'status', 'start_date', 'end_date', 'notes'])
             ->withQueryString();
 
         $periods = Period::query()
@@ -59,7 +59,7 @@ class MovementController extends Controller
 
     public function store(MovementRequest $request): JsonResponse
     {
-        $movement = Movement::create($request->validated());
+        $movement = PeriodMovement::create($request->validated());
 
         return response()->json([
             'success' => true,
@@ -68,7 +68,7 @@ class MovementController extends Controller
         ], 201);
     }
 
-    public function update(MovementRequest $request, Movement $movimiento): JsonResponse
+    public function update(MovementRequest $request, PeriodMovement $movimiento): JsonResponse
     {
         $movimiento->update($request->validated());
 
@@ -79,7 +79,7 @@ class MovementController extends Controller
         ]);
     }
 
-    public function destroy(Movement $movimiento): JsonResponse
+    public function destroy(PeriodMovement $movimiento): JsonResponse
     {
         $movimiento->delete();
 

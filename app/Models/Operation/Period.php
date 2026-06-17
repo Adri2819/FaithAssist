@@ -3,7 +3,7 @@
 namespace App\Models\Operation;
 
 use App\Models\Concerns\LogsActivityTrail;
-use App\Models\Eclesisastes\Diocese;
+use App\Models\Ecclesiastes\Diocese;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;

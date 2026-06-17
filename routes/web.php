@@ -63,6 +63,7 @@ Route::middleware('auth')->group(function () {
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['capillas' => 'capilla']);
 
+    // Operacion
     Route::resource('periodos', PeriodController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['periodos' => 'periodo']);
