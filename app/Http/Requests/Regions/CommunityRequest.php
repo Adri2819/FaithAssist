@@ -32,12 +32,4 @@ class CommunityRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'municipality_id' => 'Municipio',
-            'name'            => 'Nombre de la comunidad',
-            'status'          => 'Estatus',
-        ];
-    }
 }

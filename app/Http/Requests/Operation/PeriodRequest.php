@@ -50,17 +50,6 @@ class PeriodRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'diocese_id' => 'Diocesis',
-            'name' => 'Nombre del periodo',
-            'start_date' => 'Fecha de inicio',
-            'end_date' => 'Fecha de fin',
-            'status' => 'Estatus',
-        ];
-    }
-
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {

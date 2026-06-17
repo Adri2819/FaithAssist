@@ -32,17 +32,6 @@ class MovementRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'period_id' => 'Periodo',
-            'type' => 'Movimiento',
-            'status' => 'Estatus',
-            'effective_date' => 'Fecha efectiva',
-            'notes' => 'Notas',
-        ];
-    }
-
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
