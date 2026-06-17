@@ -157,7 +157,7 @@ return [
 		'deanery_id'         => 'Decanato',
 		'description'        => 'Descripcion',
 		'diocese_id'         => 'Diocesis',
-		'effective_date'     => 'Fecha efectiva',
+		'period_id'          => 'Periodo',
 		'email'              => 'Correo electronico',
 		'end_date'           => 'Fecha de fin',
 		'key'                => 'Clave del modulo',
