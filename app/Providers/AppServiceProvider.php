@@ -7,7 +7,7 @@ use App\Models\Ecclesiastes\Church;
 use App\Models\Ecclesiastes\Deanery;
 use App\Models\Ecclesiastes\Diocese;
 use App\Models\Operation\PeriodMovement;
-use App\Models\Operation\Period;;
+use App\Models\Operation\Period;
 use App\Models\Module;
 use App\Models\Regions\Community;
 use App\Models\Regions\Municipality;
