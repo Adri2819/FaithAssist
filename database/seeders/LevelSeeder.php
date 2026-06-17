@@ -19,7 +19,6 @@ class LevelSeeder extends Seeder
             // Si no hay diócesis, crear una temporal o lanzar error
             $diocese = Diocese::create([
                 'name' => 'Diócesis Temporal',
-                'description' => 'Diócesis temporal para seeding'
             ]);
         }
 
