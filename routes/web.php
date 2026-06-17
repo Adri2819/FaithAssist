@@ -7,6 +7,7 @@ use App\Http\Controllers\Ecclesiastes\DeaneryController;
 use App\Http\Controllers\Ecclesiastes\DioceseController;
 use App\Http\Controllers\Operation\MovementController;
 use App\Http\Controllers\Operation\PeriodController;
+use App\Http\Controllers\Operation\LevelController;
 use App\Http\Controllers\Regions\CommunityController;
 use App\Http\Controllers\Regions\MunicipalityController;
 use App\Http\Controllers\Regions\StateController;
@@ -71,6 +72,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('movimientos', MovementController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['movimientos' => 'movimiento']);
+
+    Route::resource('niveles', LevelController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['niveles' => 'nivel']);
 
     // Seguridad
     Route::resource('modulos', ModuleController::class)

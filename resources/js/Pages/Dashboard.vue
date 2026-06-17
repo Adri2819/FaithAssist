@@ -38,6 +38,7 @@ const modules = computed(() => [
     items: [
       { label: 'Periodos',  icon: CalendarDays, href: '/periodos', moduleKey: 'periodos' },
       { label: 'Movimientos',  icon: ArrowLeftRight, href: '/movimientos', moduleKey: 'movimientos' },
+      { label: 'Niveles',  icon: LayoutGrid, href: '/niveles', moduleKey: 'niveles' },
     ],
   },
   {

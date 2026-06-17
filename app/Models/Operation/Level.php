@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable([
     'name',
     'description',
+    'status',
     'diocese_id',
     'created_by',
     'updated_by',
@@ -44,6 +45,7 @@ class Level extends Model
         return [
             'name' => 'string',
             'description' => 'string',
+            'status' => 'string',
         ];
     }
 
