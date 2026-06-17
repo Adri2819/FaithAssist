@@ -178,6 +178,8 @@ const save = () => {
         class="btn btn-ghost btn-xs mr-1 text-sky-600 hover:bg-sky-50 hover:text-sky-700 dark:text-sky-400 dark:hover:bg-sky-950/40"
         :disabled="loading"
         @click="emit('edit')"
+        aria-label="Editar registro"
+        title="Editar"
       >
         <Pencil class="h-3.5 w-3.5" />
       </button>
