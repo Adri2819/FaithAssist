@@ -189,6 +189,8 @@ const save = () => {
         class="btn btn-ghost btn-xs text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-950/40"
         :disabled="loading"
         @click="emit('delete')"
+        aria-label="Eliminar registro"
+        title="Eliminar"
       >
         <Trash2 class="h-3.5 w-3.5" />
       </button>
