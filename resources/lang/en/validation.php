@@ -180,7 +180,6 @@ return [
     'remember' => 'Remember me',
     'role_id' => 'Role',
     'short_name' => 'Abbreviation',
-    'starde_date' => 'Start date',
     'start_date' => 'Start date',
     'state_id' => 'State',
     'status' => 'Status',
