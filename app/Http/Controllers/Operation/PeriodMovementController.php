@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Operation;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Operation\MovementRequest;
+use App\Http\Requests\Operation\PeriodMovementRequest;
 use App\Models\Operation\PeriodMovement;
 use App\Models\Operation\Period;
 use Illuminate\Http\JsonResponse;
@@ -45,7 +45,7 @@ class PeriodMovementController extends Controller
             ->orderByDesc('start_date')
             ->get(['id', 'diocese_id', 'name', 'years']);
 
-        return Inertia::render('Operation/Movements/Index', [
+        return Inertia::render('Operation/PeriodMovements/Index', [
             'movements' => $movements,
             'periods' => $periods->map(fn (Period $period): array => [
                 'id' => $period->id,
@@ -57,24 +57,24 @@ class PeriodMovementController extends Controller
         ]);
     }
 
-    public function store(MovementRequest $request): JsonResponse
+    public function store(PeriodMovementRequest $request): JsonResponse
     {
         $movement = PeriodMovement::create($request->validated());
 
         return response()->json([
             'success' => true,
-            'data' => $movement->only(['id', 'period_id', 'type', 'status', 'starde_date', 'end_date', 'notes']),
+            'data' => $movement->only(['id', 'period_id', 'type', 'status', 'start_date', 'end_date', 'notes']),
             'message' => 'Movimiento creado correctamente.',
         ], 201);
     }
 
-    public function update(MovementRequest $request, PeriodMovement $movimiento): JsonResponse
+    public function update(PeriodMovementRequest $request, PeriodMovement $movimiento): JsonResponse
     {
         $movimiento->update($request->validated());
 
         return response()->json([
             'success' => true,
-            'data' => $movimiento->fresh()->only(['id', 'period_id', 'type', 'status', 'starde_date', 'end_date', 'notes']),
+            'data' => $movimiento->fresh()->only(['id', 'period_id', 'type', 'status', 'start_date', 'end_date', 'notes']),
             'message' => 'Movimiento actualizado correctamente.',
         ]);
     }

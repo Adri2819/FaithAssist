@@ -54,7 +54,7 @@ const columns = computed(() => [
     },
   },
     {
-      key: 'starde_date',
+      key: 'start_date',
       label: 'Fecha de inicio',
       type: 'date',
       required: true,
@@ -76,9 +76,9 @@ const columns = computed(() => [
 </script>
 
 <template>
-  <AppShell :page-title="'Movimientos'">
+  <AppShell :page-title="'Movimientos del Periodo'">
     <CatalogHeader
-      title="Movimientos"
+      title="Movimientos del Periodo"
       subtitle="Historial administrativo de movimientos por periodo"
       back-href="/"
       :count="movements.total"
@@ -89,9 +89,9 @@ const columns = computed(() => [
       :columns="columns"
       :pagination="movements"
       :search="search"
-      store-url="/movimientos"
-      base-url="/movimientos"
-      permission-module="movimientos"
+      store-url="/periodo-movimientos"
+      base-url="/periodo-movimientos"
+      permission-module="periodo_movimientos"
       search-placeholder="Buscar por periodo, diocesis o movimiento..."
     />
   </AppShell>

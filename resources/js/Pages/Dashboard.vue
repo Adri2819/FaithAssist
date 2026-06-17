@@ -37,7 +37,7 @@ const modules = computed(() => [
     titleClass: 'text-sky-700',
     items: [
       { label: 'Periodos',  icon: CalendarDays, href: '/periodos', moduleKey: 'periodos' },
-      { label: 'Movimientos - Perido',  icon: ArrowLeftRight, href: '/periodo-movimientos', moduleKey: 'periodo_movimientos' },
+      { label: 'Movimientos del Periodo',  icon: ArrowLeftRight, href: '/periodo-movimientos', moduleKey: 'periodo_movimientos' },
       { label: 'Niveles',  icon: LayoutGrid, href: '/niveles', moduleKey: 'niveles' },
     ],
   },

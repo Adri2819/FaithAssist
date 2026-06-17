@@ -9,7 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class MovementRequest extends FormRequest
+class PeriodMovementRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -26,8 +26,8 @@ class MovementRequest extends FormRequest
                 Status::IN_PROGRESS,
                 Status::COMPLETED,
             ])],
-            'starde_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:starde_date'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'notes' => ['nullable', 'string', 'max:255'],
         ];
     }
@@ -45,13 +45,13 @@ class MovementRequest extends FormRequest
                 return;
             }
 
-            $startDate = (string) $this->input('starde_date');
+            $startDate = (string) $this->input('start_date');
             $endDate = (string) $this->input('end_date');
             $periodStartDate = $period->start_date?->format('Y-m-d');
             $periodEndDate = $period->end_date?->format('Y-m-d');
 
             if ($periodStartDate !== null && $startDate < $periodStartDate) {
-                $validator->errors()->add('starde_date', 'La fecha de inicio debe estar dentro del rango del periodo.');
+                $validator->errors()->add('start_date', 'La fecha de inicio debe estar dentro del rango del periodo.');
             }
 
             if ($periodEndDate !== null && $endDate > $periodEndDate) {
