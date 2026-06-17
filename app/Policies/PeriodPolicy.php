@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Operation\Period;;
+use App\Models\Operation\Period;
 use App\Models\User;
 
 class PeriodPolicy extends BasePermissionPolicy
