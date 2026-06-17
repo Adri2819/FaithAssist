@@ -52,6 +52,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Church::class, ChurchPolicy::class);
         Gate::policy(Chapel::class, ChapelPolicy::class);
         Gate::policy(Period::class, PeriodPolicy::class);
-        Gate::policy(Movement::class, MovementPolicy::class);
+        Gate::policy(PeriodMovement::class, MovementPolicy::class);
     }
 }
