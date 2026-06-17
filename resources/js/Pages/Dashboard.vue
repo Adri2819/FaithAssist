@@ -1,5 +1,4 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
@@ -59,9 +58,7 @@ const modules = computed(() => [
 </script>
 
 <template>
-  <Head title="Inicio" />
-
-  <AppShell>
+  <AppShell :page-title="'Inicio'">
     <div class="mx-auto grid w-full max-w-7xl gap-6 xl:grid-cols-2">
       <article
         v-for="module in modules"

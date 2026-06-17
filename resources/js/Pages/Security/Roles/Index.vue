@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { Pencil, Plus, Search, ShieldCheck, X } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
@@ -24,9 +24,7 @@ watch(searchTerm, (val) => {
 </script>
 
 <template>
-  <Head title="Roles" />
-
-  <AppShell>
+  <AppShell :page-title="'Roles'">
     <CatalogHeader
       title="Roles"
       subtitle="Catalogo de roles del sistema"

@@ -1,5 +1,5 @@
 <script setup>
-import { Head, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppShell from '../../components/layouts/AppShell.vue';
 
@@ -10,9 +10,7 @@ const user = computed(() => page.props.auth?.user ?? null);
 </script>
 
 <template>
-  <Head title="Perfil" />
-
-  <AppShell>
+  <AppShell :page-title="'Perfil'">
     <section
       class="mx-auto w-full max-w-3xl rounded-3xl border border-slate-200 bg-white p-6 shadow-lg transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 sm:p-8"
     >

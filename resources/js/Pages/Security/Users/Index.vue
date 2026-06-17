@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { Pencil, Plus, Search, Users, X } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
@@ -28,9 +28,7 @@ watch(searchTerm, (val) => {
 </script>
 
 <template>
-  <Head title="Usuarios" />
-
-  <AppShell>
+  <AppShell :page-title="'Usuarios'">
     <CatalogHeader
       title="Usuarios"
       subtitle="Gestion de usuarios del sistema"

@@ -1,8 +1,15 @@
 <script setup>
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { MoonStar, SunMedium } from 'lucide-vue-next';
 import { useTheme } from '../../composables/useTheme';
+
+defineProps({
+  pageTitle: {
+    type: String,
+    required: true,
+  },
+})
 
 const page = usePage();
 const form = useForm({});
@@ -62,6 +69,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <Head :title="pageTitle" />
   <div class="min-h-screen bg-slate-100 transition-colors duration-300 dark:bg-slate-950">
     <header
       class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/90"
