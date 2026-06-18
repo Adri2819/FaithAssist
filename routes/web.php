@@ -45,6 +45,8 @@ Route::middleware('auth')->group(function () {
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['comunidades' => 'comunidad']);
 
+    Route::get('/comunidades/export', [CommunityController::class, 'export'])->name('comunidades.export');
+
     // Catalogos - Eclesiasticos
     Route::resource('diocesis', DioceseController::class)
         ->only(['index', 'store', 'update', 'destroy'])

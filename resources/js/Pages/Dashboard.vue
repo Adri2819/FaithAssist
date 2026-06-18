@@ -19,7 +19,13 @@ const page = usePage();
 
 const permissions = computed(() => page.props.auth?.permissions ?? []);
 
-const hasReadPermission = (moduleKey) => {
+const hasPermission = (item) => {
+  if (item.permission) {
+    return permissions.value.includes(item.permission);
+  }
+
+  const moduleKey = item.moduleKey;
+
   if (!moduleKey) {
     return true;
   }
@@ -124,14 +130,15 @@ const modules = computed(() => [
         label: 'WhatsApp',
         icon: MessageCircle,
         href: '/whatsapp',
-        moduleKey: null,
+        moduleKey: 'whatsapp',
+        permission: 'whatsapp.send',
       },
     ],
   },
 ]
   .map((module) => ({
     ...module,
-    items: module.items.filter((item) => hasReadPermission(item.moduleKey)),
+    items: module.items.filter((item) => hasPermission(item)),
   }))
   .filter((module) => module.items.length > 0));
 </script>

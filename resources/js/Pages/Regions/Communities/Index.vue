@@ -64,6 +64,8 @@ const columns = computed(() => [
       :pagination="communities"
       :search="search"
       :create-requires-full-scope="true"
+      export-url="/comunidades/export"
+      export-permission="comunidades.export"
       store-url="/comunidades"
       base-url="/comunidades"
       permission-module="comunidades"

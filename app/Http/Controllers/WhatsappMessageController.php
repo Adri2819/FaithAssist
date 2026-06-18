@@ -12,11 +12,14 @@ class WhatsappMessageController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', WhatsappMessage::class);
+
         return Inertia::render('Whatsapp/Index');
     }
 
     public function send(Request $request, WhatsappService $whatsappService)
     {
+        $this->authorize('create', WhatsappMessage::class);
         $validated = $request->validate([
             'to_phone' => ['required', 'string', 'max:25'],
             'caption' => ['nullable', 'string', 'max:1000'],
@@ -71,6 +74,8 @@ class WhatsappMessageController extends Controller
 
     public function history()
     {
+        $this->authorize('viewAny', WhatsappMessage::class);
+
         $messages = WhatsappMessage::latest()
             ->limit(50)
             ->get();
@@ -80,6 +85,8 @@ class WhatsappMessageController extends Controller
 
     public function historyJson()
     {
+        $this->authorize('viewAny', WhatsappMessage::class);
+
         return WhatsappMessage::latest()
             ->limit(10)
             ->get();

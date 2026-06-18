@@ -10,6 +10,7 @@ use App\Models\Module;
 use App\Models\Regions\Community;
 use App\Models\Regions\Municipality;
 use App\Models\Regions\State;
+use App\Models\WhatsappMessage;
 use App\Policies\ChapelPolicy;
 use App\Policies\ChurchPolicy;
 use App\Policies\CommunityPolicy;
@@ -19,6 +20,7 @@ use App\Policies\ModulePolicy;
 use App\Policies\MunicipalityPolicy;
 use App\Policies\PermissionPolicy;
 use App\Policies\StatePolicy;
+use App\Policies\WhatsappMessagePolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Permission\Models\Permission;
@@ -47,5 +49,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Deanery::class, DeaneryPolicy::class);
         Gate::policy(Church::class, ChurchPolicy::class);
         Gate::policy(Chapel::class, ChapelPolicy::class);
+        Gate::policy(WhatsappMessage::class, WhatsappMessagePolicy::class);
     }
 }
