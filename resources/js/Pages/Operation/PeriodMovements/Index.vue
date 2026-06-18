@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
 import { ArrowLeftRight } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
@@ -54,12 +53,18 @@ const columns = computed(() => [
       completed: 'badge-success',
     },
   },
-  {
-    key: 'effective_date',
-    label: 'Fecha efectiva',
-    type: 'date',
-    required: true,
-  },
+    {
+      key: 'start_date',
+      label: 'Fecha de inicio',
+      type: 'date',
+      required: true,
+    },
+    {
+      key: 'end_date',
+      label: 'Fecha de fin',
+      type: 'date',
+      required: true,
+    },
   {
     key: 'notes',
     label: 'Notas',
@@ -71,11 +76,9 @@ const columns = computed(() => [
 </script>
 
 <template>
-  <Head title="Movimientos" />
-
-  <AppShell>
+  <AppShell :page-title="'Movimientos del Periodo'">
     <CatalogHeader
-      title="Movimientos"
+      title="Movimientos del Periodo"
       subtitle="Historial administrativo de movimientos por periodo"
       back-href="/"
       :count="movements.total"
@@ -86,9 +89,9 @@ const columns = computed(() => [
       :columns="columns"
       :pagination="movements"
       :search="search"
-      store-url="/movimientos"
-      base-url="/movimientos"
-      permission-module="movimientos"
+      store-url="/periodo-movimientos"
+      base-url="/periodo-movimientos"
+      permission-module="periodo_movimientos"
       search-placeholder="Buscar por periodo, diocesis o movimiento..."
     />
   </AppShell>

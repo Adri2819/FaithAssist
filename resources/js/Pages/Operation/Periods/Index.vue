@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
 import { CalendarDays } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
@@ -65,9 +64,7 @@ const columns = computed(() => [
 </script>
 
 <template>
-  <Head title="Periodos" />
-
-  <AppShell>
+  <AppShell :page-title="'Periodos'">
     <CatalogHeader
       title="Periodos"
       subtitle="Gestion de periodos escolares por diocesis"

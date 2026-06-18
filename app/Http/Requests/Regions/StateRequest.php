@@ -32,12 +32,4 @@ class StateRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'name'       => 'Nombre del estado',
-            'short_name' => 'Abreviatura',
-            'status'     => 'Estatus',
-        ];
-    }
 }

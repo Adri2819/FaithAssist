@@ -1,5 +1,4 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
@@ -30,8 +29,16 @@ const modules = computed(() => [
       { label: 'Decanatos', icon: BookOpen,   href: '/decanatos', moduleKey: 'decanato' },
       { label: 'Parroquias', icon: Home,      href: '/parroquias', moduleKey: 'parroquias' },
       { label: 'Iglesias',  icon: Landmark,  href: '/capillas',  moduleKey: 'capillas' },
+    ],
+  },
+  {
+    name: 'Operación',
+    accent: 'from-blue-200 via-sky-100 to-slate-100',
+    titleClass: 'text-sky-700',
+    items: [
       { label: 'Periodos',  icon: CalendarDays, href: '/periodos', moduleKey: 'periodos' },
-      { label: 'Movimientos',  icon: ArrowLeftRight, href: '/movimientos', moduleKey: 'movimientos' },
+      { label: 'Movimientos del Periodo',  icon: ArrowLeftRight, href: '/periodo-movimientos', moduleKey: 'periodo_movimientos' },
+      { label: 'Niveles',  icon: LayoutGrid, href: '/niveles', moduleKey: 'niveles' },
     ],
   },
   {
@@ -52,9 +59,7 @@ const modules = computed(() => [
 </script>
 
 <template>
-  <Head title="Inicio" />
-
-  <AppShell>
+  <AppShell :page-title="'Inicio'">
     <div class="mx-auto grid w-full max-w-7xl gap-6 xl:grid-cols-2">
       <article
         v-for="module in modules"

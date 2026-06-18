@@ -36,12 +36,4 @@ class LoginRequest extends FormRequest
         }
     }
 
-    public function attributes(): array
-    {
-        return [
-            'email' => 'Correo electrónico',
-            'password' => 'Contraseña',
-            'remember' => 'Recordarme',
-        ];
-    }
 }

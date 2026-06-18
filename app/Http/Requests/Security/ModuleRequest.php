@@ -31,12 +31,4 @@ class ModuleRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'name'        => 'Nombre del modulo',
-            'description' => 'Descripcion',
-            'key'         => 'Clave del modulo',
-        ];
-    }
 }

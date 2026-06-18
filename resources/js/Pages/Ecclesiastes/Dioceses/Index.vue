@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
 import { Landmark } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
@@ -57,9 +56,7 @@ const columns = computed(() => [
 </script>
 
 <template>
-  <Head title="Diocesis" />
-
-  <AppShell>
+  <AppShell :page-title="'Diocesis'">
     <CatalogHeader
       title="Diocesis"
       subtitle="Catalogo de diocesis"

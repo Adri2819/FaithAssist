@@ -13,8 +13,8 @@ class PermissionsSeeder extends Seeder
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $modules = [
-            'modulos' => 'core',
-            'permisos' => 'core',
+            'modulos' => 'security',
+            'permisos' => 'security',
             'estados' => 'regions',
             'municipios' => 'regions',
             'comunidades' => 'regions',
@@ -22,8 +22,9 @@ class PermissionsSeeder extends Seeder
             'decanato' => 'ecclesiastes',
             'parroquias' => 'ecclesiastes',
             'capillas' => 'ecclesiastes',
-            'periodos' => 'ecclesiastes',
-            'movimientos' => 'ecclesiastes',
+            'periodos' => 'operation',
+            'periodo_movimientos' => 'operation',
+            'niveles' => 'operation',
             'roles' => 'security',
             'usuarios' => 'security',
         ];

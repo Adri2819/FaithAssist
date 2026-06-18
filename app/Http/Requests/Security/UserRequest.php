@@ -36,21 +36,4 @@ class UserRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'name' => 'Nombre',
-            'paterno' => 'Apellido paterno',
-            'materno' => 'Apellido materno',
-            'email' => 'Correo electronico',
-            'role_id' => 'Rol',
-            'municipality_ids' => 'Municipios',
-            'municipality_ids.*' => 'Municipio',
-            'church_ids' => 'Parroquias',
-            'church_ids.*' => 'Parroquia',
-            'permissions' => 'Permisos',
-            'permissions.*' => 'Permiso',
-            'password' => 'Contrasena',
-        ];
-    }
 }

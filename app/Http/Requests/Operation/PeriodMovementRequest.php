@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Requests\Ecclesiastes;
+namespace App\Http\Requests\Operation;
 
 use App\Globals\MovStatus;
 use App\Globals\Status;
-use App\Models\Ecclesiastes\Period;
+use App\Models\Operation\Period;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class MovementRequest extends FormRequest
+class PeriodMovementRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -26,19 +26,9 @@ class MovementRequest extends FormRequest
                 Status::IN_PROGRESS,
                 Status::COMPLETED,
             ])],
-            'effective_date' => ['required', 'date'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'notes' => ['nullable', 'string', 'max:255'],
-        ];
-    }
-
-    public function attributes(): array
-    {
-        return [
-            'period_id' => 'Periodo',
-            'type' => 'Movimiento',
-            'status' => 'Estatus',
-            'effective_date' => 'Fecha efectiva',
-            'notes' => 'Notas',
         ];
     }
 
@@ -55,16 +45,17 @@ class MovementRequest extends FormRequest
                 return;
             }
 
-            $effectiveDate = (string) $this->input('effective_date');
-            $startDate = $period->start_date?->format('Y-m-d');
-            $endDate = $period->end_date?->format('Y-m-d');
+            $startDate = (string) $this->input('start_date');
+            $endDate = (string) $this->input('end_date');
+            $periodStartDate = $period->start_date?->format('Y-m-d');
+            $periodEndDate = $period->end_date?->format('Y-m-d');
 
-            if ($startDate !== null && $effectiveDate < $startDate) {
-                $validator->errors()->add('effective_date', 'La fecha efectiva debe estar dentro del rango del periodo.');
+            if ($periodStartDate !== null && $startDate < $periodStartDate) {
+                $validator->errors()->add('start_date', 'La fecha de inicio debe estar dentro del rango del periodo.');
             }
 
-            if ($endDate !== null && $effectiveDate > $endDate) {
-                $validator->errors()->add('effective_date', 'La fecha efectiva debe estar dentro del rango del periodo.');
+            if ($periodEndDate !== null && $endDate > $periodEndDate) {
+                $validator->errors()->add('end_date', 'La fecha de fin debe estar dentro del rango del periodo.');
             }
         });
     }

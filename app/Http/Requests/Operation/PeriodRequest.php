@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Ecclesiastes;
+namespace App\Http\Requests\Operation;
 
 use App\Globals\Status;
 use App\Http\Requests\Concerns\UppercasesFields;
-use App\Models\Ecclesiastes\Period;
+use App\Models\Operation\Period;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -47,17 +47,6 @@ class PeriodRequest extends FormRequest
                 Status::IN_PROGRESS,
                 Status::COMPLETED,
             ])],
-        ];
-    }
-
-    public function attributes(): array
-    {
-        return [
-            'diocese_id' => 'Diocesis',
-            'name' => 'Nombre del periodo',
-            'start_date' => 'Fecha de inicio',
-            'end_date' => 'Fecha de fin',
-            'status' => 'Estatus',
         ];
     }
 

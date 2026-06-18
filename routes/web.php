@@ -5,8 +5,9 @@ use App\Http\Controllers\Ecclesiastes\ChapelController;
 use App\Http\Controllers\Ecclesiastes\ChurchController;
 use App\Http\Controllers\Ecclesiastes\DeaneryController;
 use App\Http\Controllers\Ecclesiastes\DioceseController;
-use App\Http\Controllers\Ecclesiastes\MovementController;
-use App\Http\Controllers\Ecclesiastes\PeriodController;
+use App\Http\Controllers\Operation\PeriodMovementController;
+use App\Http\Controllers\Operation\PeriodController;
+use App\Http\Controllers\Operation\LevelController;
 use App\Http\Controllers\Regions\CommunityController;
 use App\Http\Controllers\Regions\MunicipalityController;
 use App\Http\Controllers\Regions\StateController;
@@ -63,13 +64,18 @@ Route::middleware('auth')->group(function () {
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['capillas' => 'capilla']);
 
+    // Operacion
     Route::resource('periodos', PeriodController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['periodos' => 'periodo']);
 
-    Route::resource('movimientos', MovementController::class)
+    Route::resource('periodo-movimientos', PeriodMovementController::class)
         ->only(['index', 'store', 'update', 'destroy'])
-        ->parameters(['movimientos' => 'movimiento']);
+        ->parameters(['periodo-movimientos' => 'periodo_movimiento']);
+
+    Route::resource('niveles', LevelController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['niveles' => 'nivel']);
 
     // Seguridad
     Route::resource('modulos', ModuleController::class)

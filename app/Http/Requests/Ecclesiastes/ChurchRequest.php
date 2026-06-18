@@ -37,17 +37,4 @@ class ChurchRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'municipality_id' => 'Municipio',
-            'deanery_id'      => 'Decanato',
-            'name'            => 'Nombre de la parroquia',
-            'alias'           => 'Alias',
-            'email'           => 'Correo electronico',
-            'phone'           => 'Telefono',
-            'address'         => 'Direccion',
-            'status'          => 'Estatus',
-        ];
-    }
 }
