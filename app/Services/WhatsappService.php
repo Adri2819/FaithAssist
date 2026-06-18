@@ -8,8 +8,8 @@ use RuntimeException;
 
 class WhatsappService
 {
-    private string $token;
-    private string $phoneNumberId;
+    private ?string $token;
+    private ?string $phoneNumberId;
     private string $apiVersion;
     private string $baseUrl;
 
@@ -17,12 +17,8 @@ class WhatsappService
     {
         $this->token = config('meta.whatsapp.token');
         $this->phoneNumberId = config('meta.whatsapp.phone_number_id');
-        $this->apiVersion = config('meta.whatsapp.api_version');
-        $this->baseUrl = config('meta.whatsapp.base_url');
-
-        if (!$this->token || !$this->phoneNumberId) {
-            throw new RuntimeException('Faltan credenciales de Meta WhatsApp en el archivo .env');
-        }
+        $this->apiVersion = (string) config('meta.whatsapp.api_version', 'v25.0');
+        $this->baseUrl = (string) config('meta.whatsapp.base_url', 'https://graph.facebook.com');
     }
 
     public function uploadPdf(string $storagePath): string
