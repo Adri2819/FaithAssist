@@ -47,7 +47,7 @@ class PermissionsSeeder extends Seeder
         foreach ([
             ['name' => 'municipios.scope.all', 'module_key' => 'regions', 'description' => 'Permite ver todos los municipios'],
             ['name' => 'comunidades.scope.all', 'module_key' => 'regions', 'description' => 'Permite ver todas las comunidades'],
-            ['name' => 'comunidades.export', 'module_key' => 'core', 'description' => 'Permite exportar comunidades a Excel'],
+            ['name' => 'comunidades.export', 'module_key' => 'regions', 'description' => 'Permite exportar comunidades a CSV'],
             ['name' => 'parroquias.scope.all', 'module_key' => 'ecclesiastes', 'description' => 'Permite ver todas las parroquias'],
             ['name' => 'capillas.scope.all', 'module_key' => 'ecclesiastes', 'description' => 'Permite ver todas las capillas'],
             ['name' => 'whatsapp.send', 'module_key' => 'whatsapp', 'description' => 'Permite enviar mensajes por WhatsApp'],
