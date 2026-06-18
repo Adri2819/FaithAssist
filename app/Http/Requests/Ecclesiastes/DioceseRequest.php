@@ -33,13 +33,4 @@ class DioceseRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'state_id' => 'Estado',
-            'name'     => 'Nombre de la diocesis',
-            'bishop'   => 'Obispo',
-            'status'   => 'Estatus',
-        ];
-    }
 }

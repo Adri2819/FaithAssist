@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import PermissionSelector from '../../../components/security/PermissionSelector.vue';
@@ -30,9 +30,7 @@ const submit = () => {
 </script>
 
 <template>
-  <Head :title="pageTitle" />
-
-  <AppShell>
+  <AppShell :page-title="pageTitle">
     <CatalogHeader
       :title="pageTitle"
       subtitle="Gestiona el nombre, descripcion y permisos del rol"

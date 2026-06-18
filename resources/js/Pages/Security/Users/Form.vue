@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { CalendarDays, Church, KeyRound, MapPinned, ShieldCheck, User, Users } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
@@ -60,9 +60,7 @@ const submit = () => {
 </script>
 
 <template>
-  <Head :title="pageTitle" />
-
-  <AppShell>
+  <AppShell :page-title="pageTitle">
     <CatalogHeader
       :title="pageTitle"
       subtitle="Configuracion de cuenta y permisos del usuario"

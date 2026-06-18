@@ -28,13 +28,4 @@ class RoleRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'name'          => 'Nombre del rol',
-            'description'   => 'Descripcion',
-            'permissions'   => 'Permisos',
-            'permissions.*' => 'Permiso',
-        ];
-    }
 }

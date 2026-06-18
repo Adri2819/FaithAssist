@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('movements', function (Blueprint $table) {
+        Schema::create('period_movements', function (Blueprint $table) {
             $table->id();
             $table->foreignId('period_id')->constrained('periods');
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
@@ -21,20 +21,22 @@ return new class extends Migration
                 Status::IN_PROGRESS,
                 Status::COMPLETED,
             ])->default(Status::PENDING);
-            $table->date('effective_date');
+            $table->date('start_date');
+            $table->date('end_date');
             $table->string('notes', 255)->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             $table->index('type');
             $table->index('status');
-            $table->index('effective_date');
-            $table->index(['period_id', 'effective_date']);
+            $table->index('start_date');
+            $table->index('end_date');
+            $table->index('period_id');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('movements');
+        Schema::dropIfExists('period_movements');
     }
 };

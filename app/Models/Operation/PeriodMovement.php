@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Ecclesiastes;
+namespace App\Models\Operation;
 
 use App\Models\Concerns\LogsActivityTrail;
 use App\Models\User;
@@ -15,7 +15,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'period_id',
     'type',
     'status',
-    'effective_date',
+    'start_date',
+    'end_date',
     'notes',
     'created_by',
     'updated_by',
@@ -26,11 +27,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'created_at',
     'updated_at',
 ])]
-class Movement extends Model
+class PeriodMovement extends Model
 {
     use HasFactory, LogsActivityTrail, SoftDeletes;
 
-    protected $table = 'movements';
+    protected $table = 'period_movements';
 
     protected $primaryKey = 'id';
 

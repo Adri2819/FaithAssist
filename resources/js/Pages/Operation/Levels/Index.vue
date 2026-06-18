@@ -1,20 +1,20 @@
 <script setup>
 import { computed } from 'vue';
-import { BookOpen } from 'lucide-vue-next';
+import { Layers } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import CatalogTable from '../../../components/catalogs/CatalogTable.vue';
 
 const props = defineProps({
-  deaneries: { type: Object, required: true },
+  levels: { type: Object, required: true },
   dioceses: { type: Array, default: () => [] },
   search: { type: String, default: '' },
 });
 
 const dioceseOptions = computed(() =>
-  props.dioceses.map((d) => ({
-    value: d.id,
-    label: d.name,
+  props.dioceses.map((diocese) => ({
+    value: diocese.id,
+    label: diocese.name,
   })),
 );
 
@@ -43,30 +43,30 @@ const columns = computed(() => [
     ],
     badges: {
       active: 'badge-success',
-      inactive: 'badge-error',
+      inactive: 'badge-secondary',
     },
   },
 ]);
 </script>
 
 <template>
-  <AppShell :page-title="'Decanatos'">
-    <CatalogHeader
-      title="Decanatos"
-      subtitle="Catalogo de decanatos"
-      back-href="/"
-      :count="deaneries.total"
-      :icon="BookOpen"
-    />
+    <AppShell :page-title="'Niveles'">
+        <CatalogHeader
+            title="Niveles"
+            subtitle="Gestiona los niveles de formación"
+            back-href="/"
+            :count="levels.total"
+            :icon="Layers"
+        />
 
-    <CatalogTable
-      :columns="columns"
-      :pagination="deaneries"
-      :search="search"
-      store-url="/decanatos"
-      base-url="/decanatos"
-      permission-module="decanato"
-      search-placeholder="Buscar por nombre de decanato..."
-    />
-  </AppShell>
+        <CatalogTable
+            :columns="columns"
+            :pagination="levels"
+            :search="search"
+            store-url="/niveles"
+            base-url="/niveles"
+            permission-module="niveles"
+            search-placeholder="Buscar por nombre o diocesis"
+        />
+    </AppShell>
 </template>

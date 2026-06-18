@@ -32,12 +32,4 @@ class DeaneryRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'diocese_id' => 'Diocesis',
-            'name'       => 'Nombre del decanato',
-            'status'     => 'Estatus',
-        ];
-    }
 }
