@@ -65,7 +65,10 @@ class Church extends Model
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'church_user')->withTimestamps();
+        return $this->belongsToMany(User::class, 'scopes', 'scope_id', 'user_id')
+            ->wherePivot('scope_type', \App\Models\Scope::TYPE_CHURCH)
+            ->withPivotValue('scope_type', \App\Models\Scope::TYPE_CHURCH)
+            ->withTimestamps();
     }
 
     public function creator(): BelongsTo

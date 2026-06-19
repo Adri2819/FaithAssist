@@ -39,27 +39,45 @@ class User extends Authenticatable
 
     public function assignedMunicipalities(): BelongsToMany
     {
-        return $this->belongsToMany(Municipality::class, 'municipality_user')->withTimestamps();
+        return $this->belongsToMany(Municipality::class, 'scopes', 'user_id', 'scope_id')
+            ->wherePivot('scope_type', Scope::TYPE_MUNICIPALITY)
+            ->withPivotValue('scope_type', Scope::TYPE_MUNICIPALITY)
+            ->withTimestamps();
     }
 
     public function assignedChurches(): BelongsToMany
     {
-        return $this->belongsToMany(Church::class, 'church_user')->withTimestamps();
+        return $this->belongsToMany(Church::class, 'scopes', 'user_id', 'scope_id')
+            ->wherePivot('scope_type', Scope::TYPE_CHURCH)
+            ->withPivotValue('scope_type', Scope::TYPE_CHURCH)
+            ->withTimestamps();
+    }
+
+    public function assignedCommunities(): BelongsToMany
+    {
+        return $this->belongsToMany(Community::class, 'scopes', 'user_id', 'scope_id')
+            ->wherePivot('scope_type', Scope::TYPE_COMMUNITY)
+            ->withPivotValue('scope_type', Scope::TYPE_COMMUNITY)
+            ->withTimestamps();
     }
 
     public function allowedCommunityIds(): Collection
     {
         $municipalityIds = $this->allowedMunicipalityIds();
 
-        if ($municipalityIds->isEmpty()) {
-            return collect();
+        $communityIds = $this->relationLoaded('assignedCommunities')
+            ? $this->assignedCommunities->pluck('id')
+            : $this->assignedCommunities()->pluck('communities.id');
+
+        if ($municipalityIds->isNotEmpty()) {
+            $communityIds = $communityIds->merge(
+                Community::query()
+                    ->whereIn('municipality_id', $municipalityIds)
+                    ->pluck('id')
+            );
         }
 
-        return $this->normalizeIdCollection(
-            Community::query()
-                ->whereIn('municipality_id', $municipalityIds)
-                ->pluck('id')
-        );
+        return $this->normalizeIdCollection($communityIds);
     }
 
     public function allowedChurchIds(): Collection
