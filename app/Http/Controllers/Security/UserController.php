@@ -195,6 +195,7 @@ class UserController extends Controller
             'regions' => 'Regiones',
             'ecclesiastes' => 'Eclesiasticos',
             'security' => 'Seguridad',
+            'whatsapp' => 'WhatsApp',
             'operation' => 'Operación',
             default => ucfirst($key),
         };

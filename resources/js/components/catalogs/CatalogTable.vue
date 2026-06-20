@@ -16,6 +16,9 @@ const props = defineProps({
   permissionModule: { type: String, default: null },
   createRequiresFullScope: { type: Boolean, default: false },
   searchPlaceholder: { type: String, default: 'Buscar...' },
+  exportUrl: { type: String, default: null },
+  exportPermission: { type: String, default: null },
+  exportLabel: { type: String, default: 'Exportar Excel' },
 });
 
 const emit = defineEmits([
@@ -243,15 +246,27 @@ const handleDelete = async (row) => {
         </button>
       </label>
 
-      <button
-        v-if="canCreate"
-        class="btn btn-primary btn-sm gap-1.5"
-        :disabled="isAdding || editingId !== null || loading"
-        @click="startAdd"
-      >
-        <Plus class="h-4 w-4" />
-        Agregar registro
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          v-if="canExport"
+          class="btn btn-outline btn-sm gap-1.5"
+          :disabled="loading"
+          @click="exportTable"
+        >
+          <Download class="h-4 w-4" />
+          {{ exportLabel }}
+        </button>
+
+        <button
+          v-if="canCreate"
+          class="btn btn-primary btn-sm gap-1.5"
+          :disabled="isAdding || editingId !== null || loading"
+          @click="startAdd"
+        >
+          <Plus class="h-4 w-4" />
+          Agregar registro
+        </button>
+      </div>
     </div>
 
     <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">

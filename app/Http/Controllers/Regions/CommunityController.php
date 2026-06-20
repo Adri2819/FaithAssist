@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CommunityController extends Controller
 {
@@ -76,6 +77,47 @@ class CommunityController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Comunidad eliminada correctamente.',
+        ]);
+    }
+
+    public function export(Request $request): StreamedResponse
+    {
+        $this->authorize('export', Community::class);
+
+        $search = $request->input('search', '');
+        $user = $request->user();
+        $hasFullScope = $user->hasModuleFullScope('comunidades');
+        $allowedMunicipalityIds = $user->allowedMunicipalityIds();
+
+        $communities = Community::query()
+            ->with(['municipality:id,name'])
+            ->when(! $hasFullScope, fn ($query) => $query->whereIn('municipality_id', $allowedMunicipalityIds))
+            ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
+            ->orderBy('name')
+            ->select(['id', 'municipality_id', 'name', 'status'])
+            ->lazy();
+
+        $fileName = 'comunidades_'.now()->format('Ymd_His').'.csv';
+
+        return response()->streamDownload(function () use ($communities) {
+            $output = fopen('php://output', 'w');
+
+            // UTF-8 BOM para que Excel respete acentos al abrir CSV.
+            fwrite($output, "\xEF\xBB\xBF");
+
+            fputcsv($output, ['Municipio', 'Nombre', 'Estatus']);
+
+            foreach ($communities as $community) {
+                fputcsv($output, [
+                    $community->municipality?->name ?? '',
+                    $community->name,
+                    $community->status === 'active' ? 'Activo' : 'Inactivo',
+                ]);
+            }
+
+            fclose($output);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
 }

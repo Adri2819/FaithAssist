@@ -16,6 +16,7 @@ use App\Http\Controllers\Security\PermissionController;
 use App\Http\Controllers\Security\RoleController;
 use App\Http\Controllers\Security\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\WhatsappMessageController;
 use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
@@ -46,6 +47,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('comunidades', CommunityController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['comunidades' => 'comunidad']);
+
+    Route::get('/comunidades/export', [CommunityController::class, 'export'])->name('comunidades.export');
 
     // Catalogos - Eclesiasticos
     Route::resource('diocesis', DioceseController::class)
@@ -86,10 +89,28 @@ Route::middleware('auth')->group(function () {
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['permisos' => 'permiso']);
 
-    Route::resource('roles', RoleController::class)
-        ->only(['index', 'create', 'store', 'edit', 'update']);
+    Route::resource('roles', RoleController::class)->only(['index', 'create', 'store', 'edit', 'update']);
 
     Route::resource('usuarios', UserController::class)
         ->only(['index', 'create', 'store', 'edit', 'update'])
         ->parameters(['usuarios' => 'usuario']);
+
+    if (app()->environment('local')) {
+        Route::get('/test-meta-config', function () {
+            return [
+                'token_exists' => config('meta.whatsapp.token') ? true : false,
+                'phone_number_id' => config('meta.whatsapp.phone_number_id'),
+                'api_version' => config('meta.whatsapp.api_version'),
+                'base_url' => config('meta.whatsapp.base_url'),
+            ];
+        });
+    }
+
+    Route::get('/whatsapp', [WhatsappMessageController::class, 'index'])->name('whatsapp.index');
+
+    Route::post('/whatsapp/send', [WhatsappMessageController::class, 'send'])->name('whatsapp.send');
+
+    Route::get('/whatsapp/history', [WhatsappMessageController::class, 'history'])->name('whatsapp.history');
+
+    Route::get('/whatsapp/history-json', [WhatsappMessageController::class, 'historyJson'])->name('whatsapp.history-json');
 });
