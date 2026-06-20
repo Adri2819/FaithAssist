@@ -4,6 +4,8 @@ namespace App\Models\Ecclesiastes;
 
 use App\Models\Concerns\LogsActivityTrail;
 use App\Models\Regions\State;
+use App\Models\Operation\Level;
+use App\Models\Operation\Period;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
@@ -34,7 +37,9 @@ class Diocese extends Model
     protected $table = 'dioceses';
 
     protected $primaryKey = 'id';
+
     protected $keyType = 'int';
+
     public $incrementing = true;
 
     public $timestamps = true;
@@ -49,6 +54,16 @@ class Diocese extends Model
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class, 'state_id');
+    }
+
+    public function periods(): HasMany
+    {
+        return $this->hasMany(Period::class, 'diocese_id');
+    }
+
+    public function levels(): HasMany
+    {
+        return $this->hasMany(Level::class, 'diocese_id');
     }
 
     public function creator(): BelongsTo

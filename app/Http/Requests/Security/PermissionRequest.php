@@ -38,12 +38,4 @@ class PermissionRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'name'        => 'Nombre del permiso',
-            'description' => 'Descripcion',
-            'module_key'  => 'Modulo',
-        ];
-    }
 }

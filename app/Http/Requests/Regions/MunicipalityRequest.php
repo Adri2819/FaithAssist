@@ -33,13 +33,4 @@ class MunicipalityRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'state_id'   => 'Estado',
-            'diocese_id' => 'Diocesis',
-            'name'       => 'Nombre del municipio',
-            'status'     => 'Estatus',
-        ];
-    }
 }

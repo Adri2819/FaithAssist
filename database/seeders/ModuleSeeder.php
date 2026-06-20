@@ -30,6 +30,16 @@ class ModuleSeeder extends Seeder
                 'name' => 'Regions',
                 'description' => 'Módulo para la gestión de regiones, estados y municipios.',
                 'key' => 'regions',
+            ],
+            [
+                'name' => 'Seguridad',
+                'description' => 'Módulo para la gestión de roles, permisos y usuarios.',
+                'key' => 'security',
+            ],
+            [
+                'name' => 'Operación',
+                'description' => 'Módulo para la gestión de operaciones y actividades.',
+                'key' => 'operation',
             ]
             // Agrega más módulos aquí si es necesario
         ];

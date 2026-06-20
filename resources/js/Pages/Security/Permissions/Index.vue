@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
 import { KeyRound } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
@@ -37,9 +36,7 @@ const columns = computed(() => [
 </script>
 
 <template>
-  <Head title="Permisos" />
-
-  <AppShell>
+  <AppShell :page-title="'Permisos'">
     <CatalogHeader
       title="Permisos"
       subtitle="Catalogo de permisos del sistema"

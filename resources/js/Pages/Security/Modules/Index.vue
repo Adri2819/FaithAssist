@@ -1,5 +1,4 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
 import { LayoutGrid } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
@@ -33,9 +32,7 @@ const columns = [
 </script>
 
 <template>
-  <Head title="Modulos" />
-
-  <AppShell>
+  <AppShell :page-title="'Modulos'">
     <CatalogHeader
       title="Modulos"
       subtitle="Catalogo de modulos del sistema"

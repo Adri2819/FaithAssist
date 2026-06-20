@@ -1,5 +1,4 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
 import { MapPinned } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
@@ -41,9 +40,7 @@ const columns = [
 </script>
 
 <template>
-  <Head title="Estados" />
-
-  <AppShell>
+  <AppShell :page-title="'Estados'">
     <CatalogHeader
       title="Estados"
       subtitle="Catalogo de estados del pais"

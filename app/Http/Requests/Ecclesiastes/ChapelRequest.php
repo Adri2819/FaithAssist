@@ -34,17 +34,6 @@ class ChapelRequest extends FormRequest
         ];
     }
 
-    public function attributes(): array
-    {
-        return [
-            'community_id' => 'Comunidad',
-            'church_id' => 'Parroquia',
-            'name' => 'Nombre de la capilla',
-            'address' => 'Direccion',
-            'status' => 'Estatus',
-        ];
-    }
-
     public function after(): array
     {
         return [

@@ -1,18 +1,8 @@
 <script setup>
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import {
-  BookOpen,
-  Building2,
-  Home,
-  KeyRound,
-  Landmark,
-  LayoutGrid,
-  MapPinned,
-  MessageCircle,
-  ShieldCheck,
-  Users,
-} from 'lucide-vue-next';
+import { usePage } from '@inertiajs/vue3';
+import { ArrowLeftRight, BookOpen, Building2, CalendarDays, Home, KeyRound, Landmark, LayoutGrid, MapPinned, ShieldCheck, Users } from 'lucide-vue-next';
 import AppShell from '../components/layouts/AppShell.vue';
 
 const page = usePage();
@@ -91,6 +81,16 @@ const modules = computed(() => [
     ],
   },
   {
+    name: 'Operación',
+    accent: 'from-blue-200 via-sky-100 to-slate-100',
+    titleClass: 'text-sky-700',
+    items: [
+      { label: 'Periodos',  icon: CalendarDays, href: '/periodos', moduleKey: 'periodos' },
+      { label: 'Movimientos del Periodo',  icon: ArrowLeftRight, href: '/periodo-movimientos', moduleKey: 'periodo_movimientos' },
+      { label: 'Niveles',  icon: LayoutGrid, href: '/niveles', moduleKey: 'niveles' },
+    ],
+  },
+  {
     name: 'Seguridad',
     accent: 'from-blue-200 via-sky-100 to-slate-100',
     titleClass: 'text-sky-700',
@@ -144,9 +144,7 @@ const modules = computed(() => [
 </script>
 
 <template>
-  <Head title="Inicio" />
-
-  <AppShell>
+  <AppShell :page-title="'Inicio'">
     <div class="mx-auto grid w-full max-w-7xl gap-6 xl:grid-cols-2">
       <article
         v-for="module in modules"
