@@ -16,6 +16,8 @@ const props = defineProps({
   selectedPermissions: { type: Array,  default: () => [] },
   selectedMunicipalities: { type: Array,  default: () => [] },
   selectedChurches:    { type: Array,  default: () => [] },
+  selectedCountryCode: { type: String, default: '521' },
+  countryCodes:        { type: Array,  default: () => [] },
 });
 
 const isEditing = computed(() => !!props.user);
@@ -36,6 +38,8 @@ const form = useForm({
   paterno:               props.user?.paterno ?? '',
   materno:               props.user?.materno ?? '',
   email:                 props.user?.email   ?? '',
+  whatsapp_country_code: props.user?.whatsapp_country_code ?? props.selectedCountryCode ?? '521',
+  whatsapp_phone:        props.user?.whatsapp_phone ?? '',
   role_id:               props.selectedRole,
   municipality_ids:      [...props.selectedMunicipalities],
   church_ids:            [...props.selectedChurches],
@@ -186,6 +190,27 @@ const submit = () => {
                 </label>
                 <input v-model="form.email" type="email" placeholder="correo@ejemplo.com" class="input input-bordered w-full" :class="{ 'input-error': form.errors.email }" />
                 <p v-if="form.errors.email" class="mt-1 text-xs text-red-500">{{ form.errors.email }}</p>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Numero de telefono
+                </label>
+                <div class="flex gap-2">
+                  <select
+                    v-model="form.whatsapp_country_code"
+                    class="select select-bordered w-28 shrink-0"
+                    :class="{ 'select-error': form.errors.whatsapp_country_code }"
+                  >
+                    <option v-for="code in countryCodes" :key="code.value" :value="code.value">
+                      {{ code.label }}
+                    </option>
+                  </select>
+                  <input v-model="form.whatsapp_phone" type="text" placeholder="5512345678" class="input input-bordered w-full" :class="{ 'input-error': form.errors.whatsapp_phone }" />
+                </div>
+                <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">Este numero se usa para recuperar tu contrasena.</p>
+                <p v-if="form.errors.whatsapp_country_code" class="mt-1 text-xs text-red-500">{{ form.errors.whatsapp_country_code }}</p>
+                <p v-if="form.errors.whatsapp_phone" class="mt-1 text-xs text-red-500">{{ form.errors.whatsapp_phone }}</p>
               </div>
             </div>
           </div>

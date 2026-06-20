@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Ecclesiastes\ChapelController;
 use App\Http\Controllers\Ecclesiastes\ChurchController;
 use App\Http\Controllers\Ecclesiastes\DeaneryController;
@@ -21,6 +22,9 @@ use Inertia\Inertia;
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'show'])->name('password.forgot.form');
+    Route::post('/forgot-password/send-code', [ForgotPasswordController::class, 'sendCode'])->name('password.forgot.send-code');
+    Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'reset'])->name('password.forgot.reset');
 });
 
 Route::middleware('auth')->group(function () {

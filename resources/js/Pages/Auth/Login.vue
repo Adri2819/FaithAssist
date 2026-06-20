@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import {
   CircleHelp,
@@ -16,6 +16,13 @@ import { useTheme } from '../../composables/useTheme';
 
 const showPassword = ref(false);
 const { isDark, toggleTheme } = useTheme();
+
+defineProps({
+  status: {
+    type: String,
+    default: null,
+  },
+});
 
 const form = useForm({
   email: '',
@@ -34,7 +41,7 @@ const submit = () => {
   <Head title="Iniciar sesion" />
 
   <main
-    class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-slate-200 to-blue-100 px-4 py-6 transition-colors duration-300 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 sm:px-6 sm:py-10 lg:px-8"
+    class="relative min-h-screen overflow-hidden bg-linear-to-br from-slate-100 via-slate-200 to-blue-100 px-4 py-6 transition-colors duration-300 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 sm:px-6 sm:py-10 lg:px-8"
   >
     <div class="pointer-events-none absolute inset-0">
       <div
@@ -47,7 +54,7 @@ const submit = () => {
         class="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-slate-300/30 blur-3xl dark:bg-slate-800/20"
       ></div>
       <div
-        class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.04),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.05),_transparent_55%)]"
+        class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.04),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_55%)]"
       ></div>
     </div>
 
@@ -72,7 +79,7 @@ const submit = () => {
         <div class="card-body p-6 sm:p-8">
           <div class="flex flex-col items-center text-center">
             <div
-              class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-700 to-blue-900 text-white shadow-lg shadow-slate-400/30 dark:from-slate-200 dark:to-sky-400 dark:text-slate-950 dark:shadow-slate-950/30"
+              class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-slate-700 to-blue-900 text-white shadow-lg shadow-slate-400/30 dark:from-slate-200 dark:to-sky-400 dark:text-slate-950 dark:shadow-slate-950/30"
             >
               <ShieldCheck class="h-7 w-7" />
             </div>
@@ -85,6 +92,13 @@ const submit = () => {
           </div>
 
           <form class="mt-6 space-y-5" @submit.prevent="submit">
+            <div
+              v-if="status"
+              class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+            >
+              {{ status }}
+            </div>
+
             <div class="space-y-2">
               <label for="email" class="text-sm font-medium text-slate-700 dark:text-slate-200"
                 >Correo institucional</label
@@ -155,17 +169,17 @@ const submit = () => {
                   >Recordar mi sesion</span
                 >
               </label>
-              <a
-                href="#"
+              <Link
+                href="/forgot-password"
                 class="text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 hover:text-blue-900 dark:text-slate-300 dark:decoration-slate-500 dark:hover:text-slate-100"
               >
                 Olvide mi contrasena
-              </a>
+              </Link>
             </div>
 
             <button
               type="submit"
-              class="btn h-12 w-full border-none bg-gradient-to-r from-slate-700 to-blue-900 text-white shadow-lg shadow-slate-400/40 transition hover:from-slate-800 hover:to-blue-950"
+              class="btn h-12 w-full border-none bg-linear-to-r from-slate-700 to-blue-900 text-white shadow-lg shadow-slate-400/40 transition hover:from-slate-800 hover:to-blue-950"
               :disabled="form.processing"
             >
               {{ form.processing ? 'Ingresando...' : 'Entrar al sistema' }}

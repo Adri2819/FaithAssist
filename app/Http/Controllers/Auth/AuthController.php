@@ -14,7 +14,9 @@ class AuthController extends Controller
 {
     public function showLoginForm(): Response
     {
-        return Inertia::render('Auth/Login');
+        return Inertia::render('Auth/Login', [
+            'status' => session('status'),
+        ]);
     }
 
     public function login(LoginRequest $request): RedirectResponse
