@@ -2,7 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { ArrowLeftRight, BookOpen, Building2, CalendarDays, Home, KeyRound, Landmark, LayoutGrid, MapPinned, ShieldCheck, Users } from 'lucide-vue-next';
+import { ArrowLeftRight, BookOpen, Building2, CalendarDays, Home, KeyRound, Landmark, LayoutGrid, MapPinned, MessageCircle, ShieldCheck, Users } from 'lucide-vue-next';
 import AppShell from '../components/layouts/AppShell.vue';
 
 const page = usePage();
