@@ -79,14 +79,16 @@ Route::middleware('auth')->group(function () {
         ->only(['index', 'create', 'store', 'edit', 'update'])
         ->parameters(['usuarios' => 'usuario']);
 
-    Route::get('/test-meta-config', function () {
-        return [
-            'token_exists' => config('meta.whatsapp.token') ? true : false,
-            'phone_number_id' => config('meta.whatsapp.phone_number_id'),
-            'api_version' => config('meta.whatsapp.api_version'),
-            'base_url' => config('meta.whatsapp.base_url'),
-        ];
-    });
+    if (app()->environment('local')) {
+        Route::get('/test-meta-config', function () {
+            return [
+                'token_exists' => config('meta.whatsapp.token') ? true : false,
+                'phone_number_id' => config('meta.whatsapp.phone_number_id'),
+                'api_version' => config('meta.whatsapp.api_version'),
+                'base_url' => config('meta.whatsapp.base_url'),
+            ];
+        });
+    }
 
     Route::get('/whatsapp', [WhatsappMessageController::class, 'index'])->name('whatsapp.index');
 
