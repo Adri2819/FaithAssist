@@ -148,9 +148,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <Head title="WhatsApp" />
-
-  <AppShell>
+  <AppShell :page-title="'WhatsApp'">
     <CatalogHeader
       title="WhatsApp"
       subtitle="Envio de gafetes PDF por WhatsApp"
