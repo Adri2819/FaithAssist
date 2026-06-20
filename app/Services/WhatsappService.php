@@ -23,6 +23,8 @@ class WhatsappService
 
     public function uploadPdf(string $storagePath): string
     {
+        $this->assertConfigured();
+
         if (!Storage::exists($storagePath)) {
             throw new RuntimeException("No existe el archivo PDF: {$storagePath}");
         }
