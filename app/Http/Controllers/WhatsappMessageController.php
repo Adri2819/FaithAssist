@@ -56,7 +56,7 @@ class WhatsappMessageController extends Controller
             return response()->json([
                 'ok' => true,
                 'message' => 'PDF enviado correctamente por WhatsApp.',
-                'data' => $message,
+                'data' => $message->only(['id', 'to_phone', 'status', 'created_at']),
             ]);
         } catch (Throwable $e) {
             $message->update([
