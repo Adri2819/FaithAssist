@@ -21,7 +21,7 @@ class WhatsappMessageController extends Controller
     {
         $this->authorize('create', WhatsappMessage::class);
         $validated = $request->validate([
-            'to_phone' => ['required', 'string', 'max:25'],
+            'to_phone' => ['required', 'string', 'regex:/^\d{10,15}$/'],
             'caption' => ['nullable', 'string', 'max:1000'],
             'pdf' => ['required', 'file', 'mimetypes:application/pdf', 'max:20480'],
         ]);
