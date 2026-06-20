@@ -106,6 +106,13 @@ class WhatsappService
         ];
     }
 
+    private function assertConfigured(): void
+    {
+        if (! $this->token || ! $this->phoneNumberId) {
+            throw new RuntimeException('Faltan credenciales de Meta WhatsApp en el archivo .env');
+        }
+    }
+
     private function endpoint(string $path): string
     {
         return "{$this->baseUrl}/{$this->apiVersion}{$path}";
