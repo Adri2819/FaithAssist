@@ -87,6 +87,6 @@ class WhatsappMessageController extends Controller
 
         return WhatsappMessage::latest()
             ->limit(10)
-            ->get();
+            ->get(['id', 'to_phone', 'status', 'error_message', 'created_at']);
     }
 }
