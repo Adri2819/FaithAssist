@@ -76,11 +76,7 @@ class WhatsappMessageController extends Controller
     {
         $this->authorize('viewAny', WhatsappMessage::class);
 
-        $messages = WhatsappMessage::latest()
-            ->limit(50)
-            ->get();
-
-        return view('whatsapp.history', compact('messages'));
+        return redirect()->route('whatsapp.index');
     }
 
     public function historyJson()
