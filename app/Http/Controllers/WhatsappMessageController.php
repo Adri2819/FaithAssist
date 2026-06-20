@@ -64,10 +64,12 @@ class WhatsappMessageController extends Controller
                 'error_message' => $e->getMessage(),
             ]);
 
+            report($e);
+
             return response()->json([
                 'ok' => false,
                 'message' => 'No se pudo enviar el PDF por WhatsApp.',
-                'error' => $e->getMessage(),
+                'error' => app()->environment('local') ? $e->getMessage() : null,
             ], 500);
         }
     }
