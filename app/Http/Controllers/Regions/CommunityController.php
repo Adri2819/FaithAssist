@@ -94,7 +94,8 @@ class CommunityController extends Controller
             ->when(! $hasFullScope, fn ($query) => $query->whereIn('municipality_id', $allowedMunicipalityIds))
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->get(['id', 'municipality_id', 'name', 'status']);
+            ->select(['id', 'municipality_id', 'name', 'status'])
+            ->lazy();
 
         $fileName = 'comunidades_'.now()->format('Ymd_His').'.csv';
 
