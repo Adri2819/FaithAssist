@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
-import { Check, Pencil, Plus, Search, Trash2, X } from 'lucide-vue-next';
+import { Check, Download, Pencil, Plus, Search, Trash2, X } from 'lucide-vue-next';
 import Swal from 'sweetalert2';
 import AppPagination from '../AppPagination.vue';
 
@@ -14,6 +14,9 @@ const props = defineProps({
   permissionModule: { type: String, default: null },
   createRequiresFullScope: { type: Boolean, default: false },
   searchPlaceholder: { type: String, default: 'Buscar...' },
+  exportUrl: { type: String, default: null },
+  exportPermission: { type: String, default: null },
+  exportLabel: { type: String, default: 'Exportar Excel' },
 });
 
 const emit = defineEmits(['row-added', 'row-updated', 'row-deleted']);
@@ -70,10 +73,29 @@ const canCreate = computed(() =>
 );
 const canUpdate = computed(() => hasPermission('update'));
 const canDelete = computed(() => hasPermission('delete'));
+const canExport = computed(() => {
+  if (!props.exportUrl) return false;
+  if (props.exportPermission) {
+    return permissions.value.includes(props.exportPermission);
+  }
+  if (!props.permissionModule) return false;
+  return permissions.value.includes(`${props.permissionModule}.export`);
+});
 const showActions = computed(() => canCreate.value || canUpdate.value || canDelete.value);
 
 const getCsrf = () =>
   document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+const exportTable = () => {
+  if (!canExport.value || !props.exportUrl) return;
+
+  const url = new URL(props.exportUrl, window.location.origin);
+  if (searchTerm.value?.trim()) {
+    url.searchParams.set('search', searchTerm.value.trim());
+  }
+
+  window.location.href = url.toString();
+};
 
 const apiFetch = async (url, method, data = null) => {
   const res = await fetch(url, {
@@ -270,15 +292,27 @@ const confirmDelete = async (row) => {
         </button>
       </label>
 
-      <button
-        v-if="canCreate"
-        class="btn btn-primary btn-sm gap-1.5"
-        :disabled="isAdding || editingId !== null || loading"
-        @click="startAdd"
-      >
-        <Plus class="h-4 w-4" />
-        Agregar registro
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          v-if="canExport"
+          class="btn btn-outline btn-sm gap-1.5"
+          :disabled="loading"
+          @click="exportTable"
+        >
+          <Download class="h-4 w-4" />
+          {{ exportLabel }}
+        </button>
+
+        <button
+          v-if="canCreate"
+          class="btn btn-primary btn-sm gap-1.5"
+          :disabled="isAdding || editingId !== null || loading"
+          @click="startAdd"
+        >
+          <Plus class="h-4 w-4" />
+          Agregar registro
+        </button>
+      </div>
     </div>
 
     <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
