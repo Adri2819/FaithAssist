@@ -55,8 +55,9 @@ class WhatsappService
         string $filename = 'gafete.pdf',
         ?string $caption = null
     ): array {
+        $this->assertConfigured();
+
         $payload = [
-            'messaging_product' => 'whatsapp',
             'to' => $this->normalizePhone($toPhone),
             'type' => 'document',
             'document' => [
