@@ -2,14 +2,14 @@
 
 namespace App\Policies;
 
-use App\Models\Operation\PeriodMovement;
+use App\Models\Operation\PeriodMovementType;
 use App\Models\User;
 
-class PeriodMovementPolicy extends BasePermissionPolicy
+class PeriodMovementTypePolicy extends BasePermissionPolicy
 {
     protected function permissionModule(): string
     {
-        return 'periodo_movimientos';
+        return 'tipos_movimientos_periodo';
     }
 
     public function viewAny(User $user): bool
@@ -17,7 +17,7 @@ class PeriodMovementPolicy extends BasePermissionPolicy
         return $this->can($user, 'read');
     }
 
-    public function view(User $user, PeriodMovement $periodMovement): bool
+    public function view(User $user, PeriodMovementType $periodMovementType): bool
     {
         return $this->can($user, 'show');
     }
@@ -27,12 +27,12 @@ class PeriodMovementPolicy extends BasePermissionPolicy
         return $this->can($user, 'create');
     }
 
-    public function update(User $user, PeriodMovement $periodMovement): bool
+    public function update(User $user, PeriodMovementType $periodMovementType): bool
     {
         return $this->can($user, 'update');
     }
 
-    public function delete(User $user, PeriodMovement $periodMovement): bool
+    public function delete(User $user, PeriodMovementType $periodMovementType): bool
     {
         return $this->can($user, 'delete');
     }

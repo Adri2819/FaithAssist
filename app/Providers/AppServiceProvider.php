@@ -6,10 +6,11 @@ use App\Models\Ecclesiastes\Chapel;
 use App\Models\Ecclesiastes\Church;
 use App\Models\Ecclesiastes\Deanery;
 use App\Models\Ecclesiastes\Diocese;
-use App\Models\Operation\PeriodMovement;
-use App\Models\Operation\Period;
-use App\Models\Operation\Level;
 use App\Models\Module;
+use App\Models\Operation\Level;
+use App\Models\Operation\Period;
+use App\Models\Operation\PeriodMovement;
+use App\Models\Operation\PeriodMovementType;
 use App\Models\Regions\Community;
 use App\Models\Regions\Municipality;
 use App\Models\Regions\State;
@@ -21,8 +22,9 @@ use App\Policies\DeaneryPolicy;
 use App\Policies\DiocesePolicy;
 use App\Policies\LevelPolicy;
 use App\Policies\ModulePolicy;
-use App\Policies\PeriodMovementPolicy;
 use App\Policies\MunicipalityPolicy;
+use App\Policies\PeriodMovementPolicy;
+use App\Policies\PeriodMovementTypePolicy;
 use App\Policies\PeriodPolicy;
 use App\Policies\PermissionPolicy;
 use App\Policies\StatePolicy;
@@ -59,5 +61,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Level::class, LevelPolicy::class);
         Gate::policy(Period::class, PeriodPolicy::class);
         Gate::policy(PeriodMovement::class, PeriodMovementPolicy::class);
+        Gate::policy(PeriodMovementType::class, PeriodMovementTypePolicy::class);
     }
 }

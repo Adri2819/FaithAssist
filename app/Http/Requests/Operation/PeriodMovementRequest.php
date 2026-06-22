@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Operation;
 
-use App\Globals\MovStatus;
 use App\Globals\Status;
 use App\Models\Operation\Period;
 use Illuminate\Foundation\Http\FormRequest;
@@ -20,7 +19,7 @@ class PeriodMovementRequest extends FormRequest
     {
         return [
             'period_id' => ['required', 'integer', Rule::exists('periods', 'id')->whereNull('deleted_at')],
-            'type' => ['required', Rule::in(MovStatus::values())],
+            'period_movement_type_id' => ['required', 'integer', Rule::exists('period_movement_types', 'id')->whereNull('deleted_at')],
             'status' => ['required', Rule::in([
                 Status::PENDING,
                 Status::IN_PROGRESS,

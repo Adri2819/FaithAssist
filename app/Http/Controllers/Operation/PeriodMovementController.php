@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Operation;
 
+use App\Globals\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Operation\PeriodMovementRequest;
-use App\Models\Operation\PeriodMovement;
 use App\Models\Operation\Period;
+use App\Models\Operation\PeriodMovement;
+use App\Models\Operation\PeriodMovementType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,13 +25,17 @@ class PeriodMovementController extends Controller
         $search = $request->input('search', '');
 
         $movements = PeriodMovement::query()
-            ->with(['period:id,diocese_id,name,years', 'period.diocese:id,name'])
+            ->with([
+                'period:id,diocese_id,name,years',
+                'period.diocese:id,name',
+                'periodMovementType:id,name,status',
+            ])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($builder) use ($search) {
                     $builder
-                        ->where('type', 'like', "%{$search}%")
-                        ->orWhere('status', 'like', "%{$search}%")
+                        ->where('status', 'like', "%{$search}%")
                         ->orWhere('notes', 'like', "%{$search}%")
+                        ->orWhereHas('periodMovementType', fn ($movementTypeQuery) => $movementTypeQuery->where('name', 'like', "%{$search}%"))
                         ->orWhereHas('period', fn ($periodQuery) => $periodQuery
                             ->where('name', 'like', "%{$search}%")
                             ->orWhere('years', 'like', "%{$search}%")
@@ -37,13 +43,17 @@ class PeriodMovementController extends Controller
                 });
             })
             ->orderByDesc('start_date')
-            ->paginate(15, ['id', 'period_id', 'type', 'status', 'start_date', 'end_date', 'notes'])
+            ->paginate(15, ['id', 'period_id', 'period_movement_type_id', 'status', 'start_date', 'end_date', 'notes'])
             ->withQueryString();
 
         $periods = Period::query()
             ->with('diocese:id,name')
             ->orderByDesc('start_date')
             ->get(['id', 'diocese_id', 'name', 'years']);
+
+        $movementTypes = PeriodMovementType::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'status', 'description']);
 
         return Inertia::render('Operation/PeriodMovements/Index', [
             'movements' => $movements,
@@ -53,7 +63,18 @@ class PeriodMovementController extends Controller
                 'years' => $period->years,
                 'diocese_name' => $period->diocese?->name,
             ])->values(),
+            'movementTypes' => $movementTypes->map(fn (PeriodMovementType $movementType): array => [
+                'id' => $movementType->id,
+                'name' => $movementType->name,
+                'status' => $movementType->status,
+                'description' => $movementType->description,
+            ])->values(),
             'search' => $search,
+            'statusOptions' => [
+                ['value' => Status::PENDING, 'label' => 'Pendiente'],
+                ['value' => Status::IN_PROGRESS, 'label' => 'En proceso'],
+                ['value' => Status::COMPLETED, 'label' => 'Completado'],
+            ],
         ]);
     }
 
@@ -63,7 +84,7 @@ class PeriodMovementController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $movement->only(['id', 'period_id', 'type', 'status', 'start_date', 'end_date', 'notes']),
+            'data' => $movement->only(['id', 'period_id', 'period_movement_type_id', 'status', 'start_date', 'end_date', 'notes']),
             'message' => 'Movimiento creado correctamente.',
         ], 201);
     }
@@ -74,7 +95,7 @@ class PeriodMovementController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $movimiento->fresh()->only(['id', 'period_id', 'type', 'status', 'start_date', 'end_date', 'notes']),
+            'data' => $movimiento->fresh()->only(['id', 'period_id', 'period_movement_type_id', 'status', 'start_date', 'end_date', 'notes']),
             'message' => 'Movimiento actualizado correctamente.',
         ]);
     }

@@ -2,7 +2,21 @@
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { ArrowLeftRight, BookOpen, Building2, CalendarDays, Home, KeyRound, Landmark, LayoutGrid, MapPinned, MessageCircle, ShieldCheck, Users } from 'lucide-vue-next';
+import {
+  ArrowLeftRight,
+  BookOpen,
+  Building2,
+  CalendarDays,
+  Home,
+  KeyRound,
+  Landmark,
+  LayoutGrid,
+  MapPinned,
+  MessageCircle,
+  ShieldCheck,
+  Tags,
+  Users,
+} from 'lucide-vue-next';
 import AppShell from '../components/layouts/AppShell.vue';
 
 const page = usePage();
@@ -23,124 +37,137 @@ const hasPermission = (item) => {
   return permissions.value.includes(`${moduleKey}.show`);
 };
 
-const modules = computed(() => [
-  {
-    name: 'Regiones',
-    accent: 'from-slate-400 via-slate-300 to-slate-200',
-    titleClass: 'text-sky-700',
-    items: [
-      {
-        label: 'Estados',
-        icon: MapPinned,
-        href: '/estados',
-        moduleKey: 'estados',
-      },
-      {
-        label: 'Municipios',
-        icon: Building2,
-        href: '/municipios',
-        moduleKey: 'municipios',
-      },
-      {
-        label: 'Comunidades',
-        icon: Users,
-        href: '/comunidades',
-        moduleKey: 'comunidades',
-      },
-    ],
-  },
-  {
-    name: 'Eclesiasticos',
-    accent: 'from-blue-200 via-sky-100 to-slate-100',
-    titleClass: 'text-sky-700',
-    items: [
-      {
-        label: 'Diocesis',
-        icon: Landmark,
-        href: '/diocesis',
-        moduleKey: 'diocesis',
-      },
-      {
-        label: 'Decanatos',
-        icon: BookOpen,
-        href: '/decanatos',
-        moduleKey: 'decanato',
-      },
-      {
-        label: 'Parroquias',
-        icon: Home,
-        href: '/parroquias',
-        moduleKey: 'parroquias',
-      },
-      {
-        label: 'Iglesias',
-        icon: Landmark,
-        href: '/capillas',
-        moduleKey: 'capillas',
-      },
-    ],
-  },
-  {
-    name: 'Operación',
-    accent: 'from-blue-200 via-sky-100 to-slate-100',
-    titleClass: 'text-sky-700',
-    items: [
-      { label: 'Periodos',  icon: CalendarDays, href: '/periodos', moduleKey: 'periodos' },
-      { label: 'Movimientos del Periodo',  icon: ArrowLeftRight, href: '/periodo-movimientos', moduleKey: 'periodo_movimientos' },
-      { label: 'Niveles',  icon: LayoutGrid, href: '/niveles', moduleKey: 'niveles' },
-    ],
-  },
-  {
-    name: 'Seguridad',
-    accent: 'from-blue-200 via-sky-100 to-slate-100',
-    titleClass: 'text-sky-700',
-    items: [
-      {
-        label: 'Modulos',
-        icon: LayoutGrid,
-        href: '/modulos',
-        moduleKey: 'modulos',
-      },
-      {
-        label: 'Permisos',
-        icon: KeyRound,
-        href: '/permisos',
-        moduleKey: 'permisos',
-      },
-      {
-        label: 'Roles',
-        icon: ShieldCheck,
-        href: '/roles',
-        moduleKey: 'roles',
-      },
-      {
-        label: 'Usuarios',
-        icon: Users,
-        href: '/usuarios',
-        moduleKey: 'usuarios',
-      },
-    ],
-  },
-  {
-    name: 'Comunicación',
-    accent: 'from-green-200 via-emerald-100 to-slate-100',
-    titleClass: 'text-sky-700',
-    items: [
-      {
-        label: 'WhatsApp',
-        icon: MessageCircle,
-        href: '/whatsapp',
-        moduleKey: 'whatsapp',
-        permission: 'whatsapp.send',
-      },
-    ],
-  },
-]
-  .map((module) => ({
-    ...module,
-    items: module.items.filter((item) => hasPermission(item)),
-  }))
-  .filter((module) => module.items.length > 0));
+const modules = computed(() =>
+  [
+    {
+      name: 'Regiones',
+      accent: 'from-slate-400 via-slate-300 to-slate-200',
+      titleClass: 'text-sky-700',
+      items: [
+        {
+          label: 'Estados',
+          icon: MapPinned,
+          href: '/estados',
+          moduleKey: 'estados',
+        },
+        {
+          label: 'Municipios',
+          icon: Building2,
+          href: '/municipios',
+          moduleKey: 'municipios',
+        },
+        {
+          label: 'Comunidades',
+          icon: Users,
+          href: '/comunidades',
+          moduleKey: 'comunidades',
+        },
+      ],
+    },
+    {
+      name: 'Eclesiasticos',
+      accent: 'from-blue-200 via-sky-100 to-slate-100',
+      titleClass: 'text-sky-700',
+      items: [
+        {
+          label: 'Diocesis',
+          icon: Landmark,
+          href: '/diocesis',
+          moduleKey: 'diocesis',
+        },
+        {
+          label: 'Decanatos',
+          icon: BookOpen,
+          href: '/decanatos',
+          moduleKey: 'decanato',
+        },
+        {
+          label: 'Parroquias',
+          icon: Home,
+          href: '/parroquias',
+          moduleKey: 'parroquias',
+        },
+        {
+          label: 'Iglesias',
+          icon: Landmark,
+          href: '/capillas',
+          moduleKey: 'capillas',
+        },
+      ],
+    },
+    {
+      name: 'Operación',
+      accent: 'from-blue-200 via-sky-100 to-slate-100',
+      titleClass: 'text-sky-700',
+      items: [
+        { label: 'Periodos', icon: CalendarDays, href: '/periodos', moduleKey: 'periodos' },
+        {
+          label: 'Tipos de Movimiento del Periodo',
+          icon: Tags,
+          href: '/tipos-movimientos-periodo',
+          moduleKey: 'tipos_movimientos_periodo',
+        },
+        {
+          label: 'Movimientos del Periodo',
+          icon: ArrowLeftRight,
+          href: '/periodo-movimientos',
+          moduleKey: 'periodo_movimientos',
+        },
+        { label: 'Niveles', icon: LayoutGrid, href: '/niveles', moduleKey: 'niveles' },
+      ],
+    },
+    {
+      name: 'Seguridad',
+      accent: 'from-blue-200 via-sky-100 to-slate-100',
+      titleClass: 'text-sky-700',
+      items: [
+        {
+          label: 'Modulos',
+          icon: LayoutGrid,
+          href: '/modulos',
+          moduleKey: 'modulos',
+        },
+        {
+          label: 'Permisos',
+          icon: KeyRound,
+          href: '/permisos',
+          moduleKey: 'permisos',
+        },
+        {
+          label: 'Roles',
+          icon: ShieldCheck,
+          href: '/roles',
+          moduleKey: 'roles',
+        },
+        {
+          label: 'Usuarios',
+          icon: Users,
+          href: '/usuarios',
+          moduleKey: 'usuarios',
+        },
+      ],
+    },
+    {
+      name: 'Comunicación',
+      accent: 'from-green-200 via-emerald-100 to-slate-100',
+      titleClass: 'text-sky-700',
+      items: [
+        {
+          label: 'WhatsApp',
+          icon: MessageCircle,
+          href: '/whatsapp',
+          moduleKey: 'whatsapp',
+          permission: 'whatsapp.send',
+        },
+      ],
+    },
+  ]
+    .map((module) => ({
+      ...module,
+      items: module.items.filter((item) => hasPermission(item)),
+    }))
+    .filter((module) => module.items.length > 0),
+);
 </script>
 
 <template>
@@ -151,10 +178,7 @@ const modules = computed(() => [
         :key="module.name"
         class="overflow-hidden rounded-4xl border border-slate-200 bg-white shadow-[0_16px_50px_-30px_rgba(15,23,42,0.35)] transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_16px_50px_-30px_rgba(0,0,0,0.6)]"
       >
-        <header
-          class="border-b border-slate-200 px-6 py-5 sm:px-7"
-          :class="module.accent"
-        >
+        <header class="border-b border-slate-200 px-6 py-5 sm:px-7" :class="module.accent">
           <h2
             class="text-2xl font-black tracking-tight dark:text-slate-50"
             :class="module.titleClass"

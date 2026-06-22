@@ -3,7 +3,6 @@
 namespace App\Models\Operation;
 
 use App\Models\Concerns\LogsActivityTrail;
-use App\Models\Ecclesiastes\Diocese;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -14,11 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'diocese_id',
     'name',
-    'start_date',
-    'end_date',
-    'years',
+    'description',
     'status',
     'created_by',
     'updated_by',
@@ -29,11 +25,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'created_at',
     'updated_at',
 ])]
-class Period extends Model
+class PeriodMovementType extends Model
 {
     use HasFactory, LogsActivityTrail, SoftDeletes;
 
-    protected $table = 'periods';
+    protected $table = 'period_movement_types';
 
     protected $primaryKey = 'id';
 
@@ -46,20 +42,15 @@ class Period extends Model
     protected function casts(): array
     {
         return [
-            'start_date' => 'date:Y-m-d',
-            'end_date' => 'date:Y-m-d',
+            'name' => 'string',
+            'description' => 'string',
             'status' => 'string',
         ];
     }
 
-    public function diocese(): BelongsTo
-    {
-        return $this->belongsTo(Diocese::class, 'diocese_id');
-    }
-
     public function movements(): HasMany
     {
-        return $this->hasMany(PeriodMovement::class, 'period_id');
+        return $this->hasMany(PeriodMovement::class, 'period_movement_type_id');
     }
 
     public function creator(): BelongsTo
