@@ -19,6 +19,8 @@ use Throwable;
 
 class ForgotPasswordController extends Controller
 {
+    private const SESSION_KEY = 'password_recovery';
+
     private const WHATSAPP_COUNTRY_CODES = [
         '521' => 'MX (+521)',
         '52' => 'MX (+52)',
@@ -37,47 +39,119 @@ class ForgotPasswordController extends Controller
         '58' => 'VE (+58)',
     ];
 
-    public function show(Request $request): Response
+    /**
+     * Paso 1: Mostrar formulario para ingresar correo
+     */
+    public function showEmailStep(Request $request): Response
     {
-        return Inertia::render('Auth/ForgotPassword', [
+        return Inertia::render('Auth/ForgotPasswordEmail', [
             'status' => $request->session()->get('status'),
-            'maskedPhone' => $request->session()->get('masked_phone'),
-            'recoveryPhone' => old('whatsapp_phone', (string) $request->session()->get('recovery_phone', '')),
-            'recoveryCountryCode' => old('whatsapp_country_code', (string) $request->session()->get('recovery_country_code', config('services.whatsapp.default_country_code', '521'))),
-            'countryCodes' => $this->getCountryCodes(),
+            'error' => $request->session()->get('error'),
         ]);
     }
 
-    public function sendCode(Request $request, MetaWhatsAppService $metaWhatsApp): RedirectResponse
+    /**
+     * Paso 1: Confirmar correo y detectar usuario + teléfono
+     */
+    public function confirmEmail(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $user = User::query()->where('email', $validated['email'])->first();
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'email' => 'No se encontró una cuenta con este correo electrónico.',
+            ]);
+        }
+
+        if (! filled($user->whatsapp_phone)) {
+            throw ValidationException::withMessages([
+                'email' => 'Esta cuenta no tiene un número de teléfono registrado.',
+            ]);
+        }
+
+        // Detectar el teléfono registrado en la cuenta
+        $registeredPhone = $user->whatsapp_phone;
+        $maskedPhone = $this->maskPhone($registeredPhone);
+
+        // Iniciar sesión de recuperación
+        $this->putState($request, [
+            'started_at' => now()->timestamp,
+            'email' => $validated['email'],
+            'user_id' => $user->id,
+            'phone_normalized' => $registeredPhone,
+            'masked_phone' => $maskedPhone,
+            'code_verified_at' => null,
+        ]);
+
+        return redirect()
+            ->route('password.recovery.phone.show');
+    }
+
+    /**
+     * Paso 2: Mostrar teléfono detectado para confirmación
+     */
+    public function showPhoneStep(Request $request): Response
+    {
+        $state = $this->state($request);
+        $registeredPhone = (string) $this->state($request, 'phone_normalized', '');
+        $maskedPhone = (string) $this->state($request, 'masked_phone', '');
+
+        return Inertia::render('Auth/ForgotPasswordPhone', [
+            'status' => $request->session()->get('status'),
+            'error' => $request->session()->get('error'),
+            'email' => (string) $this->state($request, 'email', ''),
+            'countryCodes' => $this->countryCodes(),
+            'countryCode' => old(
+                'whatsapp_country_code',
+                (string) config('services.whatsapp.default_country_code', '521')
+            ),
+            'phone' => old('whatsapp_phone', ''),
+            'registeredPhoneLast4' => $this->last4Digits($registeredPhone),
+        ]);
+    }
+
+    /**
+     * Paso 2: Confirmar teléfono y enviar código
+     */
+    public function confirmPhone(Request $request, MetaWhatsAppService $metaWhatsApp): RedirectResponse
     {
         $validated = $request->validate([
             'whatsapp_country_code' => ['required', 'string', 'max:5', 'regex:/^[0-9]{1,4}$/'],
             'whatsapp_phone' => ['required', 'string', 'max:30', 'regex:/^[0-9\s\-\(\)]{10,15}$/'],
         ]);
 
-        $normalizedPhone = $this->normalizePhone($validated['whatsapp_phone'], $validated['whatsapp_country_code']);
-        $user = User::query()->where('whatsapp_phone', $normalizedPhone)->first();
+        $userId = (int) $this->state($request, 'user_id', 0);
+
+        if ($userId === 0) {
+            throw ValidationException::withMessages([
+                'whatsapp_phone' => 'Sesión inválida. Por favor, intenta de nuevo.',
+            ]);
+        }
+
+        $user = User::query()->find($userId);
 
         if (! $user) {
             throw ValidationException::withMessages([
-                'whatsapp_phone' => 'No encontramos una cuenta con ese numero de WhatsApp.',
+                'whatsapp_phone' => 'Usuario no encontrado.',
             ]);
         }
 
-        if (! $user->whatsapp_phone) {
-            throw ValidationException::withMessages([
-                'whatsapp_phone' => 'Tu cuenta no tiene un numero de WhatsApp registrado. Contacta a mesa de ayuda.',
-            ]);
-        }
+        $countryCode = preg_replace('/\D/', '', $validated['whatsapp_country_code']) ?: (string) config('services.whatsapp.default_country_code', '521');
+        $phoneLocal = preg_replace('/\D/', '', $validated['whatsapp_phone']) ?: '';
+        $normalizedPhone = $this->normalizePhone($phoneLocal, $countryCode);
 
-        $rateLimitKey = sprintf('password-reset-whatsapp:%d|%s', $user->id, $request->ip());
+        $rateLimitKey = sprintf('password-reset:%d|%s', $user->id, $request->ip());
 
         if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
             $seconds = RateLimiter::availableIn($rateLimitKey);
             $minutes = max(1, (int) ceil($seconds / 60));
 
             throw ValidationException::withMessages([
-                'whatsapp_phone' => "Espera {$minutes} minuto(s) antes de solicitar otro codigo.",
+                'whatsapp_phone' => "Espera {$minutes} minuto(s) antes de solicitar otro código.",
             ]);
         }
 
@@ -94,14 +168,16 @@ class ForgotPasswordController extends Controller
             ]);
         });
 
-        $appName = (string) config('app.name', 'FaithAssist QR');
-
         try {
-            $metaWhatsApp->sendPasswordResetCode($user->whatsapp_phone, $appName, $code);
+            $metaWhatsApp->sendPasswordResetCode(
+                $normalizedPhone,
+                (string) config('app.name', 'FaithAssist QR'),
+                $code
+            );
         } catch (Throwable $exception) {
             $errorMessage = $exception->getMessage();
 
-            Log::error('No se pudo enviar codigo de recuperacion por WhatsApp', [
+            Log::error('No se pudo enviar código de recuperación', [
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'error' => $errorMessage,
@@ -109,54 +185,64 @@ class ForgotPasswordController extends Controller
 
             if (str_contains($errorMessage, 'Recipient phone number not in allowed list') || str_contains($errorMessage, '131030')) {
                 throw ValidationException::withMessages([
-                    'whatsapp_phone' => 'Este numero aun no esta autorizado en Meta WhatsApp para pruebas. Agregalo a la lista de destinatarios permitidos y vuelve a intentar.',
+                    'whatsapp_phone' => 'Este número de teléfono no está disponible para recibir el código en este momento. Verifica el número e intenta de nuevo.',
                 ]);
             }
 
             throw ValidationException::withMessages([
-                'whatsapp_phone' => 'No se pudo enviar el codigo por WhatsApp. Intenta de nuevo en unos minutos.',
+                'whatsapp_phone' => 'No se pudo enviar el código. Por favor, intenta de nuevo en unos minutos.',
             ]);
         }
 
         RateLimiter::hit($rateLimitKey, 600);
 
-        return redirect()->route('password.forgot.form')->with([
-            'status' => 'Te enviamos un codigo de 6 digitos por WhatsApp para restablecer tu contrasena.',
-            'masked_phone' => $this->maskPhone($user->whatsapp_phone),
-            'recovery_phone' => $user->whatsapp_phone,
-            'recovery_country_code' => $validated['whatsapp_country_code'],
+        // Actualizar el teléfono en la sesión con el que se envió el código
+        $this->putState($request, [
+            ...$this->state($request),
+            'country_code' => $countryCode,
+            'phone_local' => $phoneLocal,
+            'phone_normalized' => $normalizedPhone,
+            'masked_phone' => $this->maskPhone($normalizedPhone),
+        ]);
+
+        return redirect()
+            ->route('password.recovery.code.show')
+            ->with('status', 'Código enviado correctamente.');
+    }
+
+    /**
+     * Paso 3: Mostrar formulario para ingresar código
+     */
+    public function showCodeStep(Request $request): Response
+    {
+        return Inertia::render('Auth/ForgotPasswordCode', [
+            'status' => $request->session()->get('status'),
+            'error' => $request->session()->get('error'),
+            'maskedPhone' => (string) $this->state($request, 'masked_phone', ''),
         ]);
     }
 
-    public function reset(Request $request): RedirectResponse
+    /**
+     * Paso 3: Validar código ingresado
+     */
+    public function verifyCode(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'whatsapp_country_code' => ['required', 'string', 'max:5', 'regex:/^[0-9]{1,4}$/'],
-            'whatsapp_phone' => ['required', 'string', 'max:30', 'regex:/^[0-9\s\-\(\)]{10,15}$/'],
             'code' => ['required', 'digits:6'],
-            'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
-        $normalizedPhone = $this->normalizePhone($validated['whatsapp_phone'], $validated['whatsapp_country_code']);
-        $user = User::query()->where('whatsapp_phone', $normalizedPhone)->first();
-
-        if (! $user) {
-            throw ValidationException::withMessages([
-                'code' => 'El codigo es invalido o ha expirado.',
-            ]);
-        }
-
-        $resetCode = PasswordResetWhatsappCode::query()->where('user_id', $user->id)->first();
+        $userId = (int) $this->state($request, 'user_id', 0);
+        $resetCode = PasswordResetWhatsappCode::query()->where('user_id', $userId)->first();
 
         if (! $resetCode || $resetCode->expires_at->isPast()) {
             throw ValidationException::withMessages([
-                'code' => 'El codigo es invalido o ha expirado.',
+                'code' => 'El código es inválido o ha expirado.',
             ]);
         }
 
         if ($resetCode->attempts >= 5) {
             throw ValidationException::withMessages([
-                'code' => 'Superaste el numero de intentos permitidos. Solicita un nuevo codigo.',
+                'code' => 'Superaste el número de intentos permitidos. Solicita un nuevo código.',
             ]);
         }
 
@@ -164,19 +250,53 @@ class ForgotPasswordController extends Controller
             $resetCode->increment('attempts');
 
             throw ValidationException::withMessages([
-                'code' => 'El codigo es invalido o ha expirado.',
+                'code' => 'El código es inválido o ha expirado.',
             ]);
         }
 
+        $this->putState($request, [
+            ...$this->state($request),
+            'code_verified_at' => now()->timestamp,
+        ]);
+
+        return redirect()
+            ->route('password.recovery.reset.show')
+            ->with('status', 'Código validado correctamente.');
+    }
+
+    /**
+     * Paso 4: Mostrar formulario para nueva contraseña
+     */
+    public function showResetStep(Request $request): Response
+    {
+        return Inertia::render('Auth/ForgotPasswordReset', [
+            'status' => $request->session()->get('status'),
+            'error' => $request->session()->get('error'),
+            'maskedPhone' => (string) $this->state($request, 'masked_phone', ''),
+        ]);
+    }
+
+    /**
+     * Paso 4: Actualizar contraseña
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'password' => ['required', 'confirmed', 'min:8'],
+        ]);
+
+        $userId = (int) $this->state($request, 'user_id', 0);
+
         User::query()
-            ->whereKey($user->id)
+            ->whereKey($userId)
             ->update([
                 'password' => Hash::make($validated['password']),
             ]);
 
-        $resetCode->delete();
+        PasswordResetWhatsappCode::query()->where('user_id', $userId)->delete();
+        $request->session()->forget(self::SESSION_KEY);
 
-        return redirect()->route('login')->with('status', 'Contrasena actualizada correctamente. Ya puedes iniciar sesion.');
+        return redirect()->route('login')->with('status', 'Contraseña actualizada correctamente. Ya puedes iniciar sesión.');
     }
 
     private function maskPhone(string $phone): string
@@ -192,7 +312,27 @@ class ForgotPasswordController extends Controller
         return '*** *** '.$visible;
     }
 
-    private function getCountryCodes(): array
+    private function state(Request $request, ?string $key = null, mixed $default = null): mixed
+    {
+        $state = $request->session()->get(self::SESSION_KEY, []);
+
+        if (! is_array($state)) {
+            $state = [];
+        }
+
+        if ($key === null) {
+            return $state;
+        }
+
+        return $state[$key] ?? $default;
+    }
+
+    private function putState(Request $request, array $state): void
+    {
+        $request->session()->put(self::SESSION_KEY, $state);
+    }
+
+    private function countryCodes(): array
     {
         return collect(self::WHATSAPP_COUNTRY_CODES)
             ->map(fn (string $label, string $code): array => [
@@ -203,20 +343,20 @@ class ForgotPasswordController extends Controller
             ->all();
     }
 
-    private function normalizePhone(string $phone, string $countryCode): string
+    private function normalizePhone(string $phoneLocal, string $countryCode): string
     {
-        $clean = preg_replace('/\D/', '', trim($phone)) ?? '';
+        return '+'.$countryCode.$phoneLocal;
+    }
 
-        if ($clean === '') {
-            return '';
+    private function last4Digits(string $phone): ?string
+    {
+        $digits = preg_replace('/\D/', '', $phone) ?? '';
+
+        if (strlen($digits) < 4) {
+            return null;
         }
 
-        $countryCode = preg_replace('/\D/', '', trim($countryCode)) ?: (string) config('services.whatsapp.default_country_code', '521');
-
-        if (strlen($clean) === 10) {
-            return '+'.$countryCode.$clean;
-        }
-
-        return '+'.$clean;
+        return substr($digits, -4);
     }
 }
+

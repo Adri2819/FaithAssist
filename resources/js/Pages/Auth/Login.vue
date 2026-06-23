@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import {
   CircleHelp,
   Eye,
@@ -28,6 +28,16 @@ const form = useForm({
   email: '',
   password: '',
   remember: false,
+});
+
+const forgotPasswordHref = computed(() => {
+  const email = form.email.trim();
+
+  if (!email) {
+    return '/forgot-password/email';
+  }
+
+  return `/forgot-password/email?email=${encodeURIComponent(email)}`;
 });
 
 const submit = () => {
@@ -170,7 +180,7 @@ const submit = () => {
                 >
               </label>
               <Link
-                href="/forgot-password"
+                :href="forgotPasswordHref"
                 class="text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 hover:text-blue-900 dark:text-slate-300 dark:decoration-slate-500 dark:hover:text-slate-100"
               >
                 Olvide mi contrasena
