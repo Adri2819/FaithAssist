@@ -23,7 +23,6 @@ const columns = computed(() => [
     label: 'Descripcion',
     type: 'text',
     required: false,
-    uppercase: false,
   },
   {
     key: 'status',
