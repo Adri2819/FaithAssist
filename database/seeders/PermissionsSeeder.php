@@ -24,6 +24,7 @@ class PermissionsSeeder extends Seeder
             'capillas' => 'ecclesiastes',
             'periodos' => 'operation',
             'periodo_movimientos' => 'operation',
+            'tipos_movimientos_periodo' => 'operation',
             'niveles' => 'operation',
             'roles' => 'security',
             'usuarios' => 'security',

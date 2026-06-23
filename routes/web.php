@@ -5,9 +5,10 @@ use App\Http\Controllers\Ecclesiastes\ChapelController;
 use App\Http\Controllers\Ecclesiastes\ChurchController;
 use App\Http\Controllers\Ecclesiastes\DeaneryController;
 use App\Http\Controllers\Ecclesiastes\DioceseController;
-use App\Http\Controllers\Operation\PeriodMovementController;
-use App\Http\Controllers\Operation\PeriodController;
 use App\Http\Controllers\Operation\LevelController;
+use App\Http\Controllers\Operation\PeriodController;
+use App\Http\Controllers\Operation\PeriodMovementController;
+use App\Http\Controllers\Operation\PeriodMovementTypeController;
 use App\Http\Controllers\Regions\CommunityController;
 use App\Http\Controllers\Regions\MunicipalityController;
 use App\Http\Controllers\Regions\StateController;
@@ -15,8 +16,8 @@ use App\Http\Controllers\Security\ModuleController;
 use App\Http\Controllers\Security\PermissionController;
 use App\Http\Controllers\Security\RoleController;
 use App\Http\Controllers\Security\UserController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WhatsappMessageController;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
@@ -75,6 +76,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('periodo-movimientos', PeriodMovementController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['periodo-movimientos' => 'periodo_movimiento']);
+
+    Route::resource('tipos-movimientos-periodo', PeriodMovementTypeController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['tipos-movimientos-periodo' => 'tipo_movimiento_periodo']);
 
     Route::resource('niveles', LevelController::class)
         ->only(['index', 'store', 'update', 'destroy'])

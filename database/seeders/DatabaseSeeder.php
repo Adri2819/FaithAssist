@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             DeanerySeeder::class,
             ChurchSeeder::class,
             ChapelSeeder::class,
+            PeriodMovementTypeSeeder::class,
             LevelSeeder::class,
         ]);
     }
