@@ -23,9 +23,14 @@ class PeriodMovementTypeController extends Controller
         $search = $request->input('search', '');
 
         $movementTypes = PeriodMovementType::query()
-            ->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%")
-                ->orWhere('status', 'like', "%{$search}%"))
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($builder) use ($search) {
+                    $builder
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhere('status', 'like', "%{$search}%");
+                });
+            })
             ->orderBy('name')
             ->paginate(15, ['id', 'name', 'description', 'status'])
             ->withQueryString();
