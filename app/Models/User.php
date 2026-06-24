@@ -40,6 +40,7 @@ class User extends Authenticatable
     public function assignedMunicipalities(): BelongsToMany
     {
         return $this->belongsToMany(Municipality::class, 'scopes', 'user_id', 'scope_id')
+            ->using(Scope::class)
             ->wherePivot('scope_type', Scope::TYPE_MUNICIPALITY)
             ->withPivotValue('scope_type', Scope::TYPE_MUNICIPALITY)
             ->withTimestamps();
@@ -48,6 +49,7 @@ class User extends Authenticatable
     public function assignedChurches(): BelongsToMany
     {
         return $this->belongsToMany(Church::class, 'scopes', 'user_id', 'scope_id')
+            ->using(Scope::class)
             ->wherePivot('scope_type', Scope::TYPE_CHURCH)
             ->withPivotValue('scope_type', Scope::TYPE_CHURCH)
             ->withTimestamps();
@@ -56,6 +58,7 @@ class User extends Authenticatable
     public function assignedCommunities(): BelongsToMany
     {
         return $this->belongsToMany(Community::class, 'scopes', 'user_id', 'scope_id')
+            ->using(Scope::class)
             ->wherePivot('scope_type', Scope::TYPE_COMMUNITY)
             ->withPivotValue('scope_type', Scope::TYPE_COMMUNITY)
             ->withTimestamps();

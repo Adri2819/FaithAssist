@@ -6,14 +6,15 @@ use App\Models\Ecclesiastes\Church;
 use App\Models\Regions\Community;
 use App\Models\Regions\Municipality;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 #[Fillable(['user_id', 'scope_type', 'scope_id'])]
-class Scope extends Model
+class Scope extends Pivot
 {
-    use HasFactory;
+    protected $table = 'scopes';
+
+    public $incrementing = true;
 
     public const TYPE_MUNICIPALITY = 'municipality';
 

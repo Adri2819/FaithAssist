@@ -68,6 +68,7 @@ class Municipality extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'scopes', 'scope_id', 'user_id')
+            ->using(\App\Models\Scope::class)
             ->wherePivot('scope_type', \App\Models\Scope::TYPE_MUNICIPALITY)
             ->withPivotValue('scope_type', \App\Models\Scope::TYPE_MUNICIPALITY)
             ->withTimestamps();
