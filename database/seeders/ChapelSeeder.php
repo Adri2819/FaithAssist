@@ -6,7 +6,6 @@ use App\Globals\Status;
 use App\Models\Ecclesiastes\Chapel;
 use App\Models\Ecclesiastes\Church;
 use App\Models\Regions\Community;
-use App\Models\Regions\Municipality;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
