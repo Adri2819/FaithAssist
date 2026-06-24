@@ -22,9 +22,9 @@ class ChapelSeeder extends Seeder
             return;
         }
 
-        /**
-         * Format: [ church_name, chapel_name, municipality_name, community_name, address ]
-         */
+/**
+ * Format: ['church' => string, 'name' => string, 'municipality' => string, 'community' => string, 'address' => string]
+ */
         $chapels = [
             // ── Coatepec Harinas ──────────────────────────────────────────
             [
