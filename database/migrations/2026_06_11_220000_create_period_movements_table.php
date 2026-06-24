@@ -15,7 +15,7 @@ return new class extends Migration
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('type', 50);
+            $table->foreignId('period_movement_type_id')->nullable()->constrained('period_movement_types')->nullOnDelete();
             $table->enum('status', [
                 Status::PENDING,
                 Status::IN_PROGRESS,
@@ -27,7 +27,6 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index('type');
             $table->index('status');
             $table->index('start_date');
             $table->index('end_date');

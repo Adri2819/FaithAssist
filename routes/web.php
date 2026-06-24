@@ -5,9 +5,10 @@ use App\Http\Controllers\Ecclesiastes\ChapelController;
 use App\Http\Controllers\Ecclesiastes\ChurchController;
 use App\Http\Controllers\Ecclesiastes\DeaneryController;
 use App\Http\Controllers\Ecclesiastes\DioceseController;
-use App\Http\Controllers\Operation\PeriodMovementController;
-use App\Http\Controllers\Operation\PeriodController;
 use App\Http\Controllers\Operation\LevelController;
+use App\Http\Controllers\Operation\PeriodController;
+use App\Http\Controllers\Operation\PeriodMovementController;
+use App\Http\Controllers\Operation\PeriodMovementTypeController;
 use App\Http\Controllers\Regions\CommunityController;
 use App\Http\Controllers\Regions\MunicipalityController;
 use App\Http\Controllers\Regions\StateController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Security\ModuleController;
 use App\Http\Controllers\Security\PermissionController;
 use App\Http\Controllers\Security\RoleController;
 use App\Http\Controllers\Security\UserController;
+use App\Http\Controllers\WhatsappMessageController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -47,6 +49,8 @@ Route::middleware('auth')->group(function () {
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['comunidades' => 'comunidad']);
 
+    Route::get('/comunidades/export', [CommunityController::class, 'export'])->name('comunidades.export');
+
     // Catalogos - Eclesiasticos
     Route::resource('diocesis', DioceseController::class)
         ->only(['index', 'store', 'update', 'destroy'])
@@ -73,6 +77,10 @@ Route::middleware('auth')->group(function () {
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['periodo-movimientos' => 'periodo_movimiento']);
 
+    Route::resource('tipos-movimientos-periodo', PeriodMovementTypeController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['tipos-movimientos-periodo' => 'tipo_movimiento_periodo']);
+
     Route::resource('niveles', LevelController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['niveles' => 'nivel']);
@@ -86,10 +94,28 @@ Route::middleware('auth')->group(function () {
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['permisos' => 'permiso']);
 
-    Route::resource('roles', RoleController::class)
-        ->only(['index', 'create', 'store', 'edit', 'update']);
+    Route::resource('roles', RoleController::class)->only(['index', 'create', 'store', 'edit', 'update']);
 
     Route::resource('usuarios', UserController::class)
         ->only(['index', 'create', 'store', 'edit', 'update'])
         ->parameters(['usuarios' => 'usuario']);
+
+    if (app()->environment('local')) {
+        Route::get('/test-meta-config', function () {
+            return [
+                'token_exists' => config('meta.whatsapp.token') ? true : false,
+                'phone_number_id' => config('meta.whatsapp.phone_number_id'),
+                'api_version' => config('meta.whatsapp.api_version'),
+                'base_url' => config('meta.whatsapp.base_url'),
+            ];
+        });
+    }
+
+    Route::get('/whatsapp', [WhatsappMessageController::class, 'index'])->name('whatsapp.index');
+
+    Route::post('/whatsapp/send', [WhatsappMessageController::class, 'send'])->name('whatsapp.send');
+
+    Route::get('/whatsapp/history', [WhatsappMessageController::class, 'history'])->name('whatsapp.history');
+
+    Route::get('/whatsapp/history-json', [WhatsappMessageController::class, 'historyJson'])->name('whatsapp.history-json');
 });

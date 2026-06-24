@@ -39,4 +39,9 @@ class CommunityPolicy extends BasePermissionPolicy
         return $this->can($user, 'delete')
             && ($this->hasFullScope($user) || $user->canAccessMunicipalityId($community->municipality_id));
     }
+
+    public function export(User $user): bool
+    {
+        return $user->can('comunidades.export');
+    }
 }

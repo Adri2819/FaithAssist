@@ -8,6 +8,8 @@ import CatalogTable from '../../../components/catalogs/CatalogTable.vue';
 const props = defineProps({
   movements: { type: Object, required: true },
   periods: { type: Array, default: () => [] },
+  movementTypes: { type: Array, default: () => [] },
+  statusOptions: { type: Array, default: () => [] },
   search: { type: String, default: '' },
 });
 
@@ -15,6 +17,13 @@ const periodOptions = computed(() =>
   props.periods.map((period) => ({
     value: period.id,
     label: [period.diocese_name, period.name, period.years].filter(Boolean).join(' - '),
+  })),
+);
+
+const movementTypeOptions = computed(() =>
+  props.movementTypes.map((movementType) => ({
+    value: movementType.id,
+    label: movementType.name,
   })),
 );
 
@@ -27,44 +36,36 @@ const columns = computed(() => [
     options: periodOptions.value,
   },
   {
-    key: 'type',
-    label: 'Movimiento',
+    key: 'period_movement_type_id',
+    label: 'Tipo de movimiento',
     type: 'select',
     required: true,
-    options: [
-      { value: 'preinscripciones', label: 'Preinscripciones' },
-      { value: 'inscripciones', label: 'Inscripciones' },
-      { value: 'reinscripciones', label: 'Reinscripciones' },
-    ],
+    options: movementTypeOptions.value,
   },
   {
     key: 'status',
     label: 'Estatus',
     type: 'select',
     default: 'pending',
-    options: [
-      { value: 'pending', label: 'Pendiente' },
-      { value: 'in_progress', label: 'En proceso' },
-      { value: 'completed', label: 'Completado' },
-    ],
+    options: props.statusOptions,
     badges: {
       pending: 'badge-info',
       in_progress: 'badge-warning',
       completed: 'badge-success',
     },
   },
-    {
-      key: 'start_date',
-      label: 'Fecha de inicio',
-      type: 'date',
-      required: true,
-    },
-    {
-      key: 'end_date',
-      label: 'Fecha de fin',
-      type: 'date',
-      required: true,
-    },
+  {
+    key: 'start_date',
+    label: 'Fecha de inicio',
+    type: 'date',
+    required: true,
+  },
+  {
+    key: 'end_date',
+    label: 'Fecha de fin',
+    type: 'date',
+    required: true,
+  },
   {
     key: 'notes',
     label: 'Notas',
@@ -92,7 +93,7 @@ const columns = computed(() => [
       store-url="/periodo-movimientos"
       base-url="/periodo-movimientos"
       permission-module="periodo_movimientos"
-      search-placeholder="Buscar por periodo, diocesis o movimiento..."
+      search-placeholder="Buscar por periodo, diocesis, tipo o estatus..."
     />
   </AppShell>
 </template>

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'period_id',
-    'type',
+    'period_movement_type_id',
     'status',
     'start_date',
     'end_date',
@@ -44,15 +44,20 @@ class PeriodMovement extends Model
     protected function casts(): array
     {
         return [
-            'effective_date' => 'date:Y-m-d',
+            'start_date' => 'date:Y-m-d',
+            'end_date' => 'date:Y-m-d',
             'status' => 'string',
-            'type' => 'string',
         ];
     }
 
     public function period(): BelongsTo
     {
         return $this->belongsTo(Period::class, 'period_id');
+    }
+
+    public function periodMovementType(): BelongsTo
+    {
+        return $this->belongsTo(PeriodMovementType::class, 'period_movement_type_id');
     }
 
     public function creator(): BelongsTo
