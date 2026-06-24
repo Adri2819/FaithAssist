@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use App\Globals\Status;
 use App\Models\Ecclesiastes\Diocese;
 use App\Models\Regions\State;
 use App\Models\User;
-use App\Globals\Status;
+use Illuminate\Database\Seeder;
 
 class DioceseSeeder extends Seeder
 {
@@ -14,30 +14,50 @@ class DioceseSeeder extends Seeder
     {
         $superadmin = User::query()->where('email', 'superadmin@faithassistqr.test')->first();
 
-        if (!$superadmin) {
-            $this->command?->warn('No se encontro el usuario Superadmin. Ejecuta UsersPerRoleSeeder primero.');
+        if (! $superadmin) {
+            $this->command?->warn('No se encontró el usuario Superadmin. Ejecuta UsersPerRoleSeeder primero.');
+
             return;
         }
 
-        // Buscar el Estado de México
-        $state = State::where('name', 'Estado de México')->first();
-
-        if (!$state) {
-            $this->command->warn('No se encontró el Estado de México. Ejecuta StateSeeder primero.');
-            return;
-        }
-
-        Diocese::updateOrCreate(
-            ['name' => 'DIOCESIS DE TENANCINGO'],
+        $dioceses = [
             [
-                'state_id' => $state->id,
+                'state'  => 'Estado de México',
+                'name'   => 'DIOCESIS DE TENANCINGO',
                 'bishop' => 'MONS. VICTOR CARABES CHAVEZ',
-                'status' => Status::ACTIVE,
-                'created_by' => $superadmin->id,
-                'updated_by' => $superadmin->id,
-            ]
-        );
+            ],
+            [
+                'state'  => 'Morelos',
+                'name'   => 'DIOCESIS DE CUERNAVACA',
+                'bishop' => 'MONS. RAMON CASTRO CASTRO',
+            ],
+            [
+                'state'  => 'Guerrero',
+                'name'   => 'DIOCESIS DE CHILPANCINGO-CHILAPA',
+                'bishop' => 'MONS. JOSE DE JESUS GONZALEZ HERNANDEZ',
+            ],
+        ];
 
-        $this->command->info('Diócesis creada exitosamente.');
+        foreach ($dioceses as $data) {
+            $state = State::where('name', $data['state'])->first();
+
+            if (! $state) {
+                $this->command?->warn("No se encontró el estado: {$data['state']}.");
+                continue;
+            }
+
+            Diocese::updateOrCreate(
+                ['name' => $data['name']],
+                [
+                    'state_id'   => $state->id,
+                    'bishop'     => $data['bishop'],
+                    'status'     => Status::ACTIVE,
+                    'created_by' => $superadmin->id,
+                    'updated_by' => $superadmin->id,
+                ]
+            );
+        }
+
+        $this->command?->info('Diócesis creadas exitosamente.');
     }
 }

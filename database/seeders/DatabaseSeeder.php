@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             ChapelSeeder::class,
             PeriodMovementTypeSeeder::class,
             LevelSeeder::class,
+            PeriodSeeder::class,
         ]);
     }
 }

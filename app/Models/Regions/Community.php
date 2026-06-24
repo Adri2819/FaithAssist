@@ -54,7 +54,11 @@ class Community extends Model
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'community_user')->withTimestamps();
+        return $this->belongsToMany(User::class, 'scopes', 'scope_id', 'user_id')
+            ->using(\App\Models\Scope::class)
+            ->wherePivot('scope_type', \App\Models\Scope::TYPE_COMMUNITY)
+            ->withPivotValue('scope_type', \App\Models\Scope::TYPE_COMMUNITY)
+            ->withTimestamps();
     }
 
     public function creator(): BelongsTo

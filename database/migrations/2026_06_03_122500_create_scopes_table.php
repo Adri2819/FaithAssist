@@ -8,18 +8,21 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('church_user', function (Blueprint $table) {
+        Schema::create('scopes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('church_id')->constrained('churches')->cascadeOnDelete();
+            $table->string('scope_type', 50);
+            $table->unsignedBigInteger('scope_id');
             $table->timestamps();
 
-            $table->unique(['user_id', 'church_id']);
+            $table->unique(['user_id', 'scope_type', 'scope_id']);
+            $table->index(['user_id', 'scope_type']);
+            $table->index(['scope_type', 'scope_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('church_user');
+        Schema::dropIfExists('scopes');
     }
 };

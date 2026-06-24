@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -62,6 +63,15 @@ class Municipality extends Model
     public function communities(): HasMany
     {
         return $this->hasMany(Community::class, 'municipality_id');
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'scopes', 'scope_id', 'user_id')
+            ->using(\App\Models\Scope::class)
+            ->wherePivot('scope_type', \App\Models\Scope::TYPE_MUNICIPALITY)
+            ->withPivotValue('scope_type', \App\Models\Scope::TYPE_MUNICIPALITY)
+            ->withTimestamps();
     }
 
     public function creator(): BelongsTo
