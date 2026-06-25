@@ -30,13 +30,15 @@ class UserScopeService
     /** True when the user is a global admin (no scope restrictions). */
     public function isGlobal(): bool
     {
-        return $this->user->diocese_id === null;
+        return $this->user->diocese_id === null
+            && $this->user->deanery_id === null
+            && $this->user->church_id === null;
     }
 
     /** Returns 'global' | 'diocese' | 'deanery' | 'church'. */
     public function level(): string
     {
-        if ($this->user->diocese_id === null) {
+        if ($this->isGlobal()) {
             return 'global';
         }
 
