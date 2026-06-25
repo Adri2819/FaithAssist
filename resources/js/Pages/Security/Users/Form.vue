@@ -301,7 +301,7 @@ const submit = () => {
                   :class="{ 'select-error': form.errors.diocese_id }"
                   :disabled="scopeLocked"
                 >
-                  <option :value="null">— Global (sin restriccion) —</option>
+                  <option :value="null">— Global (sin restricción) —</option>
                   <option v-for="diocese in dioceses" :key="diocese.id" :value="diocese.id">
                     {{ diocese.name }}
                   </option>
