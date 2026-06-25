@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { CalendarDays, Church, KeyRound, MapPinned, ShieldCheck, User, Users } from 'lucide-vue-next';
 import AppShell from '../../../components/layouts/AppShell.vue';
@@ -14,8 +14,8 @@ const props = defineProps({
   churches:            { type: Array,  default: () => [] },
   selectedRole:        { type: Number, default: null },
   selectedPermissions: { type: Array,  default: () => [] },
-  selectedMunicipalities: { type: Array,  default: () => [] },
-  selectedChurches:    { type: Array,  default: () => [] },
+  selectedMunicipality: { type: Number, default: null },
+  selectedChurch:      { type: Number, default: null },
 });
 
 const isEditing = computed(() => !!props.user);
@@ -37,8 +37,8 @@ const form = useForm({
   materno:               props.user?.materno ?? '',
   email:                 props.user?.email   ?? '',
   role_id:               props.selectedRole,
-  municipality_ids:      [...props.selectedMunicipalities],
-  church_ids:            [...props.selectedChurches],
+  municipality_id:       props.selectedMunicipality ?? null,
+  church_id:             props.selectedChurch ?? null,
   permissions:           [...props.selectedPermissions],
   password:              '',
   password_confirmation: '',
@@ -47,8 +47,26 @@ const form = useForm({
 const selectedRoleObj = computed(() => props.roles.find((r) => r.id === form.role_id));
 
 const totalPermissions = computed(() => form.permissions.length);
-const totalMunicipalities = computed(() => form.municipality_ids.length);
-const totalChurches = computed(() => form.church_ids.length);
+const hasMunicipality = computed(() => form.municipality_id !== null);
+const hasChurch = computed(() => form.church_id !== null);
+
+/** Iglesias filtradas según el municipio seleccionado. Sin municipio → todas. */
+const filteredChurches = computed(() => {
+  if (form.municipality_id === null) return props.churches;
+  return props.churches.filter((c) => c.municipality_id === form.municipality_id);
+});
+
+/** Al cambiar municipio, limpiar iglesia si ya no pertenece al nuevo municipio. */
+watch(
+  () => form.municipality_id,
+  (newMunicipalityId) => {
+    if (form.church_id === null) return;
+    const stillValid = filteredChurches.value.some((c) => c.id === form.church_id);
+    if (!stillValid) {
+      form.church_id = null;
+    }
+  },
+);
 
 const submit = () => {
   if (isEditing.value) {
@@ -124,10 +142,10 @@ const submit = () => {
                     {{ s.label }}
                   </span>
                   <span
-                    v-if="s.key === 'alcance' && (totalMunicipalities > 0 || totalChurches > 0)"
+                    v-if="s.key === 'alcance' && (hasMunicipality || hasChurch)"
                     class="rounded-full bg-rose-700 px-1.5 py-0.5 text-xs font-bold text-white"
                   >
-                    {{ totalMunicipalities + totalChurches }}
+                    {{ (hasMunicipality ? 1 : 0) + (hasChurch ? 1 : 0) }}
                   </span>
                   <span
                     v-if="s.key === 'roles' && selectedRoleObj"
@@ -196,50 +214,61 @@ const submit = () => {
               Alcance de datos
             </h2>
             <p class="mb-5 text-xs text-slate-400 dark:text-slate-500">
-              Define los municipios y parroquias visibles para el usuario. Las comunidades se mostraran segun el municipio asignado.
+              Selecciona un municipio y/o una parroquia para restringir la informacion visible. Sin asignacion el usuario tiene acceso total.
             </p>
 
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
                 <label class="mb-1.5 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                   <MapPinned class="h-4 w-4 text-rose-700 dark:text-rose-400" />
-                  Municipios asignados
+                  Municipio asignado
                 </label>
                 <select
-                  v-model="form.municipality_ids"
-                  multiple
-                  class="select select-bordered h-48 w-full"
-                  :class="{ 'select-error': form.errors.municipality_ids }"
+                  v-model="form.municipality_id"
+                  class="select select-bordered w-full"
+                  :class="{ 'select-error': form.errors.municipality_id }"
                 >
+                  <option :value="null">— Sin restriccion (acceso total) —</option>
                   <option v-for="municipality in municipalities" :key="municipality.id" :value="municipality.id">
                     {{ municipality.name }}
                   </option>
                 </select>
-                <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                  Usa Ctrl/Cmd + clic para seleccionar varios municipios.
-                </p>
-                <p v-if="form.errors.municipality_ids" class="mt-1 text-xs text-red-500">{{ form.errors.municipality_ids }}</p>
+                <p v-if="form.errors.municipality_id" class="mt-1 text-xs text-red-500">{{ form.errors.municipality_id }}</p>
               </div>
 
               <div>
-                <label class="mb-1.5 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                  <Church class="h-4 w-4 text-rose-700 dark:text-rose-400" />
-                  Parroquias asignadas
-                </label>
-                <select
-                  v-model="form.church_ids"
-                  multiple
-                  class="select select-bordered h-48 w-full"
-                  :class="{ 'select-error': form.errors.church_ids }"
+                <label
+                  class="mb-1.5 flex items-center gap-2 text-sm font-medium"
+                  :class="hasMunicipality ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'"
                 >
-                  <option v-for="church in churches" :key="church.id" :value="church.id">
-                    {{ church.name }}
-                  </option>
-                </select>
-                <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                  Asigna una o varias parroquias para restringir la informacion visible.
-                </p>
-                <p v-if="form.errors.church_ids" class="mt-1 text-xs text-red-500">{{ form.errors.church_ids }}</p>
+                  <Church class="h-4 w-4" :class="hasMunicipality ? 'text-rose-700 dark:text-rose-400' : 'text-slate-400'" />
+                  Parroquia asignada
+                </label>
+
+                <div v-if="!hasMunicipality" class="flex h-10 items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 text-xs text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500">
+                  <MapPinned class="h-3.5 w-3.5 shrink-0" />
+                  Selecciona primero un municipio
+                </div>
+
+                <template v-else>
+                  <select
+                    v-model="form.church_id"
+                    class="select select-bordered w-full"
+                    :class="{ 'select-error': form.errors.church_id }"
+                  >
+                    <option :value="null">— Sin restriccion (acceso total) —</option>
+                    <option v-for="church in filteredChurches" :key="church.id" :value="church.id">
+                      {{ church.name }}
+                    </option>
+                  </select>
+                  <p v-if="filteredChurches.length === 0" class="mt-1 text-xs text-amber-500 dark:text-amber-400">
+                    No hay parroquias registradas para este municipio.
+                  </p>
+                  <p v-else class="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                    {{ filteredChurches.length }} parroquia{{ filteredChurches.length !== 1 ? 's' : '' }} disponible{{ filteredChurches.length !== 1 ? 's' : '' }}.
+                  </p>
+                  <p v-if="form.errors.church_id" class="mt-1 text-xs text-red-500">{{ form.errors.church_id }}</p>
+                </template>
               </div>
             </div>
           </div>

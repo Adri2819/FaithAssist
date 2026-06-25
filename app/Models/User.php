@@ -10,25 +10,19 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Collection;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password', 'profile_photo_path'])]
+#[Fillable(['name', 'email', 'password', 'profile_photo_path', 'municipality_id', 'church_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -37,99 +31,14 @@ class User extends Authenticatable
         ];
     }
 
-    public function assignedMunicipalities(): BelongsToMany
+    public function municipality(): BelongsTo
     {
-        return $this->belongsToMany(Municipality::class, 'scopes', 'user_id', 'scope_id')
-            ->using(Scope::class)
-            ->wherePivot('scope_type', Scope::TYPE_MUNICIPALITY)
-            ->withPivotValue('scope_type', Scope::TYPE_MUNICIPALITY)
-            ->withTimestamps();
+        return $this->belongsTo(Municipality::class);
     }
 
-    public function assignedChurches(): BelongsToMany
+    public function church(): BelongsTo
     {
-        return $this->belongsToMany(Church::class, 'scopes', 'user_id', 'scope_id')
-            ->using(Scope::class)
-            ->wherePivot('scope_type', Scope::TYPE_CHURCH)
-            ->withPivotValue('scope_type', Scope::TYPE_CHURCH)
-            ->withTimestamps();
-    }
-
-    public function assignedCommunities(): BelongsToMany
-    {
-        return $this->belongsToMany(Community::class, 'scopes', 'user_id', 'scope_id')
-            ->using(Scope::class)
-            ->wherePivot('scope_type', Scope::TYPE_COMMUNITY)
-            ->withPivotValue('scope_type', Scope::TYPE_COMMUNITY)
-            ->withTimestamps();
-    }
-
-    public function allowedCommunityIds(): Collection
-    {
-        $municipalityIds = $this->allowedMunicipalityIds();
-
-        $communityIds = $this->relationLoaded('assignedCommunities')
-            ? $this->assignedCommunities->pluck('id')
-            : $this->assignedCommunities()->pluck('communities.id');
-
-        if ($municipalityIds->isNotEmpty()) {
-            $communityIds = $communityIds->merge(
-                Community::query()
-                    ->whereIn('municipality_id', $municipalityIds)
-                    ->pluck('id')
-            );
-        }
-
-        return $this->normalizeIdCollection($communityIds);
-    }
-
-    public function allowedChurchIds(): Collection
-    {
-        if ($this->relationLoaded('assignedChurches')) {
-            return $this->normalizeIdCollection($this->assignedChurches->pluck('id'));
-        }
-
-        return $this->normalizeIdCollection(
-            $this->assignedChurches()->pluck('churches.id')
-        );
-    }
-
-    public function hasModuleFullScope(string $module): bool
-    {
-        return $this->can("{$module}.scope.all");
-    }
-
-    public function allowedMunicipalityIds(): Collection
-    {
-        if ($this->relationLoaded('assignedMunicipalities')) {
-            return $this->normalizeIdCollection($this->assignedMunicipalities->pluck('id'));
-        }
-
-        return $this->normalizeIdCollection(
-            $this->assignedMunicipalities()->pluck('municipalities.id')
-        );
-    }
-
-    public function canAccessMunicipalityId(?int $municipalityId): bool
-    {
-        return $municipalityId !== null && $this->allowedMunicipalityIds()->contains($municipalityId);
-    }
-
-    public function canAccessCommunityId(?int $communityId): bool
-    {
-        return $communityId !== null && $this->allowedCommunityIds()->contains($communityId);
-    }
-
-    public function canAccessChurchId(?int $churchId): bool
-    {
-        return $churchId !== null && $this->allowedChurchIds()->contains($churchId);
-    }
-
-    public function canAccessChapel(Chapel $chapel): bool
-    {
-        return $this->hasModuleFullScope('capillas')
-            || $this->canAccessCommunityId($chapel->community_id)
-            || $this->canAccessChurchId($chapel->church_id);
+        return $this->belongsTo(Church::class);
     }
 
     public function profile(): HasOne
@@ -137,12 +46,99 @@ class User extends Authenticatable
         return $this->hasOne(Profile::class);
     }
 
-    private function normalizeIdCollection(Collection $ids): Collection
+    /**
+     * null FK = acceso total al módulo; valor = restringido a ese único registro.
+     */
+    public function hasModuleFullScope(string $module): bool
     {
-        return $ids
-            ->filter(fn (mixed $id): bool => $id !== null)
-            ->map(fn (mixed $id): int => (int) $id)
-            ->unique()
-            ->values();
+        return match ($module) {
+            'municipios', 'comunidades' => $this->municipality_id === null,
+            'parroquias'                => $this->church_id === null,
+            'capillas'                  => $this->municipality_id === null && $this->church_id === null,
+            default                     => $this->can("{$module}.scope.all"),
+        };
+    }
+
+    public function canAccessMunicipalityId(?int $municipalityId): bool
+    {
+        if ($this->municipality_id === null) {
+            return true;
+        }
+
+        return $municipalityId !== null && $this->municipality_id === $municipalityId;
+    }
+
+    public function canAccessCommunityId(?int $communityId): bool
+    {
+        if ($this->municipality_id === null) {
+            return true;
+        }
+
+        if ($communityId === null) {
+            return false;
+        }
+
+        return Community::where('id', $communityId)
+            ->where('municipality_id', $this->municipality_id)
+            ->exists();
+    }
+
+    public function canAccessChurchId(?int $churchId): bool
+    {
+        if ($this->church_id === null) {
+            return true;
+        }
+
+        return $churchId !== null && $this->church_id === $churchId;
+    }
+
+    public function canAccessChapel(Chapel $chapel): bool
+    {
+        $communityOk = $this->municipality_id === null
+            || ($chapel->community_id !== null && Community::where('id', $chapel->community_id)
+                ->where('municipality_id', $this->municipality_id)
+                ->exists());
+
+        $churchOk = $this->church_id === null
+            || $chapel->church_id === $this->church_id;
+
+        return $communityOk || $churchOk;
+    }
+
+    /**
+     * Retorna la colección de IDs permitidos para usar en whereIn.
+     * Vacía cuando municipality_id es null (la capa superior omite el filtro vía hasModuleFullScope).
+     */
+    public function allowedMunicipalityIds(): \Illuminate\Support\Collection
+    {
+        if ($this->municipality_id === null) {
+            return collect();
+        }
+
+        return collect([$this->municipality_id]);
+    }
+
+    /**
+     * Vacía cuando church_id es null (la capa superior omite el filtro vía hasModuleFullScope).
+     */
+    public function allowedChurchIds(): \Illuminate\Support\Collection
+    {
+        if ($this->church_id === null) {
+            return collect();
+        }
+
+        return collect([$this->church_id]);
+    }
+
+    /**
+     * Comunidades del municipio asignado, o vacío si no hay restricción.
+     */
+    public function allowedCommunityIds(): \Illuminate\Support\Collection
+    {
+        if ($this->municipality_id === null) {
+            return collect();
+        }
+
+        return Community::where('municipality_id', $this->municipality_id)->pluck('id');
     }
 }
