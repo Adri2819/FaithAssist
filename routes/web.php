@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Ecclesiastes\ChapelController;
 use App\Http\Controllers\Ecclesiastes\ChurchController;
 use App\Http\Controllers\Ecclesiastes\DeaneryController;
@@ -23,6 +24,23 @@ use Inertia\Inertia;
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+
+    Route::prefix('forgot-password')
+        ->name('password.recovery.')
+        ->middleware('password.recovery.session')
+        ->group(function (): void {
+            Route::get('/email', [ForgotPasswordController::class, 'showEmailStep'])->name('email.show');
+            Route::post('/email', [ForgotPasswordController::class, 'confirmEmail'])->name('email.confirm');
+
+            Route::get('/', [ForgotPasswordController::class, 'showPhoneStep'])->name('phone.show');
+            Route::post('/', [ForgotPasswordController::class, 'confirmPhone'])->name('phone.confirm');
+
+            Route::get('/code', [ForgotPasswordController::class, 'showCodeStep'])->name('code.show');
+            Route::post('/code', [ForgotPasswordController::class, 'verifyCode'])->name('code.verify');
+
+            Route::get('/reset', [ForgotPasswordController::class, 'showResetStep'])->name('reset.show');
+            Route::post('/reset', [ForgotPasswordController::class, 'updatePassword'])->name('reset.update');
+        });
 });
 
 Route::middleware('auth')->group(function () {

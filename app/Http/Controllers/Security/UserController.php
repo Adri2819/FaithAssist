@@ -19,6 +19,24 @@ use Spatie\Permission\PermissionRegistrar;
 
 class UserController extends Controller
 {
+    private const WHATSAPP_COUNTRY_CODES = [
+        '521' => 'MX (+521)',
+        '52' => 'MX (+52)',
+        '1' => 'US/CA (+1)',
+        '57' => 'CO (+57)',
+        '51' => 'PE (+51)',
+        '54' => 'AR (+54)',
+        '56' => 'CL (+56)',
+        '593' => 'EC (+593)',
+        '503' => 'SV (+503)',
+        '502' => 'GT (+502)',
+        '504' => 'HN (+504)',
+        '505' => 'NI (+505)',
+        '506' => 'CR (+506)',
+        '507' => 'PA (+507)',
+        '58' => 'VE (+58)',
+    ];
+
     public function index(Request $request): Response
     {
         $search = $request->input('search', '');
@@ -60,6 +78,8 @@ class UserController extends Controller
             'selectedPermissions' => [],
             'selectedMunicipalities' => [],
             'selectedChurches' => [],
+            'selectedCountryCode' => config('services.whatsapp.default_country_code', '521'),
+            'countryCodes' => $this->getCountryCodes(),
         ]);
     }
 
@@ -68,6 +88,10 @@ class UserController extends Controller
         $user = User::create([
             'name' => trim("{$request->name} {$request->paterno} ".($request->materno ?? '')),
             'email' => $request->email,
+            'whatsapp_phone' => $this->normalizeWhatsAppPhone(
+                $request->input('whatsapp_phone'),
+                $request->input('whatsapp_country_code')
+            ),
             'password' => Hash::make($request->password),
         ]);
 
@@ -108,6 +132,8 @@ class UserController extends Controller
             'user' => [
                 'id' => $usuario->id,
                 'email' => $usuario->email,
+                'whatsapp_phone' => $this->localWhatsAppPhone($usuario->whatsapp_phone),
+                'whatsapp_country_code' => $this->whatsappCountryCode($usuario->whatsapp_phone),
                 'name' => $usuario->profile?->name ?? '',
                 'paterno' => $usuario->profile?->paterno ?? '',
                 'materno' => $usuario->profile?->materno ?? '',
@@ -121,6 +147,8 @@ class UserController extends Controller
             'selectedPermissions' => $usuario->getAllPermissions()->pluck('id')->toArray(),
             'selectedMunicipalities' => $usuario->assignedMunicipalities->pluck('id')->toArray(),
             'selectedChurches' => $usuario->assignedChurches->pluck('id')->toArray(),
+            'selectedCountryCode' => $this->whatsappCountryCode($usuario->whatsapp_phone),
+            'countryCodes' => $this->getCountryCodes(),
         ]);
     }
 
@@ -128,6 +156,10 @@ class UserController extends Controller
     {
         $usuario->update([
             'email' => $request->email,
+            'whatsapp_phone' => $this->normalizeWhatsAppPhone(
+                $request->input('whatsapp_phone'),
+                $request->input('whatsapp_country_code')
+            ),
             'name' => trim("{$request->name} {$request->paterno} ".($request->materno ?? '')),
         ]);
 
@@ -189,6 +221,17 @@ class UserController extends Controller
         ];
     }
 
+    private function getCountryCodes(): array
+    {
+        return collect(self::WHATSAPP_COUNTRY_CODES)
+            ->map(fn (string $label, string $code): array => [
+                'value' => $code,
+                'label' => $label,
+            ])
+            ->values()
+            ->all();
+    }
+
     private function getModuleLabel(string $key): string
     {
         return match ($key) {
@@ -223,5 +266,75 @@ class UserController extends Controller
         }
 
         return mb_strtoupper(mb_substr($chunks[0] ?? 'U', 0, 1));
+    }
+
+    private function normalizeWhatsAppPhone(?string $phone, ?string $countryCode = null): ?string
+    {
+        $phone = trim((string) $phone);
+
+        if ($phone === '') {
+            return null;
+        }
+
+        $clean = preg_replace('/\D/', '', $phone) ?? '';
+
+        if ($clean === '') {
+            return null;
+        }
+
+        $countryCode = preg_replace('/\D/', '', (string) ($countryCode ?: config('services.whatsapp.default_country_code', '521'))) ?: '521';
+
+        if (strlen($clean) === 10) {
+            return '+'.$countryCode.$clean;
+        }
+
+        if (str_starts_with($clean, $countryCode) && strlen($clean) > 10) {
+            return '+'.$clean;
+        }
+
+        return '+'.$clean;
+    }
+
+    private function localWhatsAppPhone(?string $phone): ?string
+    {
+        $phone = trim((string) $phone);
+
+        if ($phone === '') {
+            return null;
+        }
+
+        $countryCode = $this->whatsappCountryCode($phone);
+        $digits = preg_replace('/\D/', '', $phone) ?: '';
+
+        if ($digits === '') {
+            return null;
+        }
+
+        if (str_starts_with($digits, $countryCode) && strlen($digits) > strlen($countryCode)) {
+            return substr($digits, strlen($countryCode));
+        }
+
+        if (str_starts_with($digits, '52') && strlen($digits) > 10) {
+            return substr($digits, -10);
+        }
+
+        return strlen($digits) > 10 ? substr($digits, -10) : $digits;
+    }
+
+    private function whatsappCountryCode(?string $phone): string
+    {
+        $digits = preg_replace('/\D/', '', (string) $phone) ?: '';
+
+        if ($digits === '') {
+            return (string) config('services.whatsapp.default_country_code', '521');
+        }
+
+        foreach (array_keys(self::WHATSAPP_COUNTRY_CODES) as $code) {
+            if (str_starts_with($digits, $code)) {
+                return $code;
+            }
+        }
+
+        return (string) config('services.whatsapp.default_country_code', '521');
     }
 }
