@@ -130,7 +130,7 @@ class ForgotPasswordController extends Controller
 
         if (! $normalizedPhone) {
             throw ValidationException::withMessages([
-                'whatsapp_phone' => 'El número de teléfono no es válido.',
+                'whatsapp_phone' => ['El número de teléfono no es válido.'],
             ]);
         }
 
