@@ -64,11 +64,6 @@ class Municipality extends Model
         return $this->hasMany(Community::class, 'municipality_id');
     }
 
-    public function users(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(User::class, 'municipality_id');
-    }
-
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

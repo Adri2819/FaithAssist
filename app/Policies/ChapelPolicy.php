@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Ecclesiastes\Chapel;
 use App\Models\User;
+use App\Services\UserScopeService;
 
 class ChapelPolicy extends BasePermissionPolicy
 {
@@ -19,24 +20,64 @@ class ChapelPolicy extends BasePermissionPolicy
 
     public function view(User $user, Chapel $chapel): bool
     {
-        return $this->can($user, 'show') && $user->canAccessChapel($chapel);
+        if (! $this->can($user, 'show')) {
+            return false;
+        }
+
+        $scope = new UserScopeService($user);
+
+        if ($scope->isGlobal()) {
+            return true;
+        }
+
+        return ($chapel->church_id && $scope->churchIds()->contains($chapel->church_id))
+            || ($chapel->community_id && $scope->communityIds()->contains($chapel->community_id));
     }
 
     public function create(User $user): bool
     {
-        return $this->can($user, 'create')
-            && ($this->hasFullScope($user)
-                || $user->allowedCommunityIds()->isNotEmpty()
-                || $user->allowedChurchIds()->isNotEmpty());
+        if (! $this->can($user, 'create')) {
+            return false;
+        }
+
+        if ($this->hasFullScope($user)) {
+            return true;
+        }
+
+        $scope = new UserScopeService($user);
+
+        return $scope->communityIds()->isNotEmpty() || $scope->churchIds()->isNotEmpty();
     }
 
     public function update(User $user, Chapel $chapel): bool
     {
-        return $this->can($user, 'update') && $user->canAccessChapel($chapel);
+        if (! $this->can($user, 'update')) {
+            return false;
+        }
+
+        $scope = new UserScopeService($user);
+
+        if ($scope->isGlobal()) {
+            return true;
+        }
+
+        return ($chapel->church_id && $scope->churchIds()->contains($chapel->church_id))
+            || ($chapel->community_id && $scope->communityIds()->contains($chapel->community_id));
     }
 
     public function delete(User $user, Chapel $chapel): bool
     {
-        return $this->can($user, 'delete') && $user->canAccessChapel($chapel);
+        if (! $this->can($user, 'delete')) {
+            return false;
+        }
+
+        $scope = new UserScopeService($user);
+
+        if ($scope->isGlobal()) {
+            return true;
+        }
+
+        return ($chapel->church_id && $scope->churchIds()->contains($chapel->church_id))
+            || ($chapel->community_id && $scope->communityIds()->contains($chapel->community_id));
     }
 }
