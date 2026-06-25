@@ -276,7 +276,7 @@ const submit = () => {
               Alcance de datos
             </h2>
             <p class="mb-5 text-xs text-slate-400 dark:text-slate-500">
-              Define hasta qué nivel puede ver datos este usuario. Sin asignacion tiene acceso total.
+              Define hasta qué nivel puede ver datos este usuario. Sin asignación tiene acceso total.
             </p>
 
             <!-- Aviso de scope bloqueado -->
