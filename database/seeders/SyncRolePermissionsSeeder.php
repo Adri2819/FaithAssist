@@ -40,7 +40,7 @@ class SyncRolePermissionsSeeder extends Seeder
 
         $coordinador->syncPermissions(array_merge(
             $this->permissionsForModules(['municipios'], $readAndShowActions),
-            $this->permissionsForModules(['comunidades', 'parroquias', 'capillas', 'periodos', 'periodo_movimientos', 'tipos_movimientos_periodo', 'niveles'], $allActions),
+            $this->permissionsForModules(['comunidades', 'parroquias', 'capillas', 'periodos', 'periodo_movimientos', 'tipos_movimientos_periodo', 'niveles', 'usuarios'], $allActions),
             ['municipios.scope.all', 'comunidades.scope.all', 'parroquias.scope.all', 'capillas.scope.all']
         ));
 

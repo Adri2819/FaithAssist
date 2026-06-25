@@ -7,6 +7,7 @@ use App\Http\Requests\Regions\MunicipalityRequest;
 use App\Models\Ecclesiastes\Diocese;
 use App\Models\Regions\Municipality;
 use App\Models\Regions\State;
+use App\Services\UserScopeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,44 +23,24 @@ class MunicipalityController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->input('search', '');
-        $user = $request->user();
-        $hasFullScope = $user->hasModuleFullScope('municipios');
-        $allowedMunicipalityIds = $user->allowedMunicipalityIds();
+        $scope = new UserScopeService($request->user());
 
         $municipalities = Municipality::query()
-            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $allowedMunicipalityIds))
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->municipalityIds()))
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
             ->paginate(15, ['id', 'state_id', 'diocese_id', 'name', 'status'])
             ->withQueryString();
 
-        $stateIds = $hasFullScope
-            ? null
-            : $municipalities->getCollection()
-                ->pluck('state_id')
-                ->filter()
-                ->map(fn (mixed $id): int => (int) $id)
-                ->unique()
-                ->values();
-
-        $dioceseIds = $hasFullScope
-            ? null
-            : $municipalities->getCollection()
-                ->pluck('diocese_id')
-                ->filter()
-                ->map(fn (mixed $id): int => (int) $id)
-                ->unique()
-                ->values();
-
         $states = State::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->stateIds()))
             ->where('status', 'active')
-            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $stateIds ?? []))
             ->orderBy('name')
             ->get(['id', 'name', 'short_name']);
 
         $dioceses = Diocese::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->dioceseIds()))
             ->where('status', 'active')
-            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $dioceseIds ?? []))
             ->orderBy('name')
             ->get(['id', 'name']);
 

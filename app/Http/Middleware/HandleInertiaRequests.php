@@ -49,7 +49,8 @@ class HandleInertiaRequests extends Middleware
 
         $user->loadMissing([
             'profile',
-            'municipality:id,name',
+            'diocese:id,name',
+            'deanery:id,name',
             'church:id,name',
         ]);
 
@@ -72,9 +73,13 @@ class HandleInertiaRequests extends Middleware
                 'paterno' => $user->profile->paterno,
                 'materno' => $user->profile->materno,
             ] : null,
-            'municipality' => $user->municipality ? [
-                'id' => $user->municipality->id,
-                'name' => $user->municipality->name,
+            'diocese' => $user->diocese ? [
+                'id' => $user->diocese->id,
+                'name' => $user->diocese->name,
+            ] : null,
+            'deanery' => $user->deanery ? [
+                'id' => $user->deanery->id,
+                'name' => $user->deanery->name,
             ] : null,
             'church' => $user->church ? [
                 'id' => $user->church->id,
@@ -87,13 +92,15 @@ class HandleInertiaRequests extends Middleware
     {
         if (! $user) {
             return [
-                'municipality_id' => null,
+                'diocese_id' => null,
+                'deanery_id' => null,
                 'church_id' => null,
             ];
         }
 
         return [
-            'municipality_id' => $user->municipality_id,
+            'diocese_id' => $user->diocese_id,
+            'deanery_id' => $user->deanery_id,
             'church_id' => $user->church_id,
         ];
     }

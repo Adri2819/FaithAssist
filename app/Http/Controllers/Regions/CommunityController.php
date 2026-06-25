@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Regions\CommunityRequest;
 use App\Models\Regions\Community;
 use App\Models\Regions\Municipality;
+use App\Services\UserScopeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,22 +23,18 @@ class CommunityController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->input('search', '');
-        $user = $request->user();
-        $hasFullScope = $user->hasModuleFullScope('comunidades');
-        $allowedMunicipalityIds = $user->allowedMunicipalityIds();
+        $scope = new UserScopeService($request->user());
 
-        $communityQuery = Community::query()
-            ->when(! $hasFullScope, fn ($query) => $query->whereIn('municipality_id', $allowedMunicipalityIds))
+        $communities = Community::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('municipality_id', $scope->municipalityIds()))
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
-            ->orderBy('name');
-
-        $communities = $communityQuery
+            ->orderBy('name')
             ->paginate(15, ['id', 'municipality_id', 'name', 'status'])
             ->withQueryString();
 
         $municipalities = Municipality::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->municipalityIds()))
             ->where('status', 'active')
-            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $allowedMunicipalityIds))
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -85,13 +82,11 @@ class CommunityController extends Controller
         $this->authorize('export', Community::class);
 
         $search = $request->input('search', '');
-        $user = $request->user();
-        $hasFullScope = $user->hasModuleFullScope('comunidades');
-        $allowedMunicipalityIds = $user->allowedMunicipalityIds();
+        $scope = new UserScopeService($request->user());
 
         $communities = Community::query()
             ->with(['municipality:id,name'])
-            ->when(! $hasFullScope, fn ($query) => $query->whereIn('municipality_id', $allowedMunicipalityIds))
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('municipality_id', $scope->municipalityIds()))
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
             ->select(['id', 'municipality_id', 'name', 'status'])

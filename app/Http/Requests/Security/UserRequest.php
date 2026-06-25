@@ -25,14 +25,23 @@ class UserRequest extends FormRequest
             'materno' => ['nullable', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'role_id' => ['nullable', 'integer', 'exists:roles,id'],
-            'municipality_id' => ['nullable', 'integer', Rule::exists('municipalities', 'id')],
+            'diocese_id' => ['nullable', 'integer', Rule::exists('dioceses', 'id')],
+            'deanery_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('deaneries', 'id'),
+                Rule::when(
+                    filled($this->input('deanery_id')) && filled($this->input('diocese_id')),
+                    Rule::exists('deaneries', 'id')->where('diocese_id', $this->input('diocese_id'))
+                ),
+            ],
             'church_id' => [
                 'nullable',
                 'integer',
                 Rule::exists('churches', 'id'),
                 Rule::when(
-                    filled($this->input('church_id')) && filled($this->input('municipality_id')),
-                    Rule::exists('churches', 'id')->where('municipality_id', $this->input('municipality_id'))
+                    filled($this->input('church_id')) && filled($this->input('deanery_id')),
+                    Rule::exists('churches', 'id')->where('deanery_id', $this->input('deanery_id'))
                 ),
             ],
             'permissions' => ['nullable', 'array'],
@@ -91,7 +100,8 @@ class UserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'church_id.exists' => 'La parroquia seleccionada no pertenece al municipio asignado.',
+            'deanery_id.exists' => 'El decanato seleccionado no pertenece a la diócesis asignada.',
+            'church_id.exists' => 'La parroquia seleccionada no pertenece al decanato asignado.',
         ];
     }
 }

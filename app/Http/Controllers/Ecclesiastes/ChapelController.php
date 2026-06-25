@@ -7,6 +7,7 @@ use App\Http\Requests\Ecclesiastes\ChapelRequest;
 use App\Models\Ecclesiastes\Chapel;
 use App\Models\Ecclesiastes\Church;
 use App\Models\Regions\Community;
+use App\Services\UserScopeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,62 +23,25 @@ class ChapelController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->input('search', '');
-        $user = $request->user();
-        $hasFullScope = $user->hasModuleFullScope('capillas');
-        $allowedCommunityIds = $user->allowedCommunityIds();
-        $allowedChurchIds = $user->allowedChurchIds();
+        $scope = new UserScopeService($request->user());
 
-        $chapelQuery = Chapel::query()
-            ->when(! $hasFullScope, function ($query) use ($allowedCommunityIds, $allowedChurchIds) {
-                $query->where(function ($scope) use ($allowedCommunityIds, $allowedChurchIds) {
-                    if ($allowedCommunityIds->isNotEmpty()) {
-                        $scope->whereIn('community_id', $allowedCommunityIds);
-                    }
-
-                    if ($allowedChurchIds->isNotEmpty()) {
-                        $method = $allowedCommunityIds->isNotEmpty() ? 'orWhereIn' : 'whereIn';
-                        $scope->{$method}('church_id', $allowedChurchIds);
-                    }
-
-                    if ($allowedCommunityIds->isEmpty() && $allowedChurchIds->isEmpty()) {
-                        $scope->whereRaw('1 = 0');
-                    }
-                });
-            })
-            ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
-            ->orderBy('name');
-
-        $chapels = $chapelQuery
+        $chapels = $scope->applyChapelScope(
+            Chapel::query()
+                ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
+                ->orderBy('name')
+        )
             ->paginate(15, ['id', 'community_id', 'church_id', 'name', 'address', 'status'])
             ->withQueryString();
 
-        $communityOptionIds = $hasFullScope
-            ? null
-            : $allowedCommunityIds
-                ->merge($chapels->getCollection()->pluck('community_id'))
-                ->filter()
-                ->map(fn (mixed $id): int => (int) $id)
-                ->unique()
-                ->values();
-
-        $churchOptionIds = $hasFullScope
-            ? null
-            : $allowedChurchIds
-                ->merge($chapels->getCollection()->pluck('church_id'))
-                ->filter()
-                ->map(fn (mixed $id): int => (int) $id)
-                ->unique()
-                ->values();
-
         $communities = Community::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->communityIds()))
             ->where('status', 'active')
-            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $communityOptionIds ?? []))
             ->orderBy('name')
             ->get(['id', 'name']);
 
         $churches = Church::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->churchIds()))
             ->where('status', 'active')
-            ->when(! $hasFullScope, fn ($query) => $query->whereIn('id', $churchOptionIds ?? []))
             ->orderBy('name')
             ->get(['id', 'name']);
 

@@ -8,6 +8,7 @@ use App\Http\Requests\Operation\PeriodMovementRequest;
 use App\Models\Operation\Period;
 use App\Models\Operation\PeriodMovement;
 use App\Models\Operation\PeriodMovementType;
+use App\Services\UserScopeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,6 +24,7 @@ class PeriodMovementController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->input('search', '');
+        $scope = new UserScopeService($request->user());
 
         $movements = PeriodMovement::query()
             ->with([
@@ -30,6 +32,10 @@ class PeriodMovementController extends Controller
                 'period.diocese:id,name',
                 'periodMovementType:id,name,status',
             ])
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereHas(
+                'period',
+                fn ($p) => $p->whereIn('diocese_id', $scope->dioceseIds())
+            ))
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($builder) use ($search) {
                     $builder
@@ -48,6 +54,7 @@ class PeriodMovementController extends Controller
 
         $periods = Period::query()
             ->with('diocese:id,name')
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('diocese_id', $scope->dioceseIds()))
             ->orderByDesc('start_date')
             ->get(['id', 'diocese_id', 'name', 'years']);
 

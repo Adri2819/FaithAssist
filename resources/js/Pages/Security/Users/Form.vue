@@ -10,16 +10,22 @@ const props = defineProps({
   user:                { type: Object, default: null },
   roles:               { type: Array,  required: true },
   permissionGroups:    { type: Array,  required: true },
-  municipalities:      { type: Array,  default: () => [] },
+  dioceses:            { type: Array,  default: () => [] },
+  deaneries:           { type: Array,  default: () => [] },
   churches:            { type: Array,  default: () => [] },
   selectedRole:        { type: Number, default: null },
   selectedPermissions: { type: Array,  default: () => [] },
-  selectedMunicipality: { type: Number, default: null },
+  selectedDiocese:     { type: Number, default: null },
+  selectedDeanery:     { type: Number, default: null },
   selectedChurch:      { type: Number, default: null },
+  editorScope:         { type: Object, default: () => ({ diocese_id: null, deanery_id: null, church_id: null }) },
 });
 
 const isEditing = computed(() => !!props.user);
 const pageTitle = computed(() => (isEditing.value ? `Editar Usuario` : 'Nuevo Usuario'));
+
+/** El editor tiene scope restringido (no es global): no puede cambiar el alcance. */
+const scopeLocked = computed(() => props.editorScope.diocese_id !== null);
 
 const activeSection = ref('general');
 
@@ -37,8 +43,15 @@ const form = useForm({
   materno:               props.user?.materno ?? '',
   email:                 props.user?.email   ?? '',
   role_id:               props.selectedRole,
-  municipality_id:       props.selectedMunicipality ?? null,
-  church_id:             props.selectedChurch ?? null,
+  diocese_id:            scopeLocked.value && !props.user
+    ? props.editorScope.diocese_id
+    : (props.selectedDiocese ?? null),
+  deanery_id:            scopeLocked.value && !props.user
+    ? props.editorScope.deanery_id
+    : (props.selectedDeanery ?? null),
+  church_id:             scopeLocked.value && !props.user
+    ? props.editorScope.church_id
+    : (props.selectedChurch ?? null),
   permissions:           [...props.selectedPermissions],
   password:              '',
   password_confirmation: '',
@@ -47,24 +60,48 @@ const form = useForm({
 const selectedRoleObj = computed(() => props.roles.find((r) => r.id === form.role_id));
 
 const totalPermissions = computed(() => form.permissions.length);
-const hasMunicipality = computed(() => form.municipality_id !== null);
-const hasChurch = computed(() => form.church_id !== null);
+const hasDiocese = computed(() => form.diocese_id !== null);
+const hasDeanery = computed(() => form.deanery_id !== null);
+const hasScopeSet = computed(() => hasDiocese.value || hasDeanery.value || form.church_id !== null);
 
-/** Iglesias filtradas según el municipio seleccionado. Sin municipio → todas. */
-const filteredChurches = computed(() => {
-  if (form.municipality_id === null) return props.churches;
-  return props.churches.filter((c) => c.municipality_id === form.municipality_id);
+/** Decanatos filtrados según la diócesis seleccionada. */
+const filteredDeaneries = computed(() => {
+  if (form.diocese_id === null) return props.deaneries;
+  return props.deaneries.filter((d) => d.diocese_id === form.diocese_id);
 });
 
-/** Al cambiar municipio, limpiar iglesia si ya no pertenece al nuevo municipio. */
+/** Iglesias filtradas según el decanato seleccionado (o todos si no hay decanato). */
+const filteredChurches = computed(() => {
+  if (form.deanery_id === null) return props.churches;
+  return props.churches.filter((c) => c.deanery_id === form.deanery_id);
+});
+
+/** Al cambiar diócesis, limpiar decanato e iglesia si ya no aplican. */
 watch(
-  () => form.municipality_id,
-  (newMunicipalityId) => {
+  () => form.diocese_id,
+  () => {
+    const deaneryValid = filteredDeaneries.value.some((d) => d.id === form.deanery_id);
+    if (!deaneryValid) form.deanery_id = null;
+  },
+);
+
+/** Al cambiar el rol, actualizar los permisos al listado del nuevo rol (solo en edición). */
+watch(
+  () => form.role_id,
+  (newRoleId, oldRoleId) => {
+    if (oldRoleId === undefined) return; // inicialización, no disparar
+    const role = props.roles.find((r) => r.id === newRoleId);
+    form.permissions = role ? [...(role.permissions ?? [])] : [];
+  },
+);
+
+/** Al cambiar decanato, limpiar iglesia si ya no pertenece al decanato. */
+watch(
+  () => form.deanery_id,
+  () => {
     if (form.church_id === null) return;
-    const stillValid = filteredChurches.value.some((c) => c.id === form.church_id);
-    if (!stillValid) {
-      form.church_id = null;
-    }
+    const churchValid = filteredChurches.value.some((c) => c.id === form.church_id);
+    if (!churchValid) form.church_id = null;
   },
 );
 
@@ -142,10 +179,10 @@ const submit = () => {
                     {{ s.label }}
                   </span>
                   <span
-                    v-if="s.key === 'alcance' && (hasMunicipality || hasChurch)"
+                    v-if="s.key === 'alcance' && hasScopeSet"
                     class="rounded-full bg-rose-700 px-1.5 py-0.5 text-xs font-bold text-white"
                   >
-                    {{ (hasMunicipality ? 1 : 0) + (hasChurch ? 1 : 0) }}
+                    {{ [hasDiocese, hasDeanery, form.church_id !== null].filter(Boolean).length }}
                   </span>
                   <span
                     v-if="s.key === 'roles' && selectedRoleObj"
@@ -214,59 +251,93 @@ const submit = () => {
               Alcance de datos
             </h2>
             <p class="mb-5 text-xs text-slate-400 dark:text-slate-500">
-              Selecciona un municipio y/o una parroquia para restringir la informacion visible. Sin asignacion el usuario tiene acceso total.
+              Define hasta qué nivel puede ver datos este usuario. Sin asignacion tiene acceso total.
             </p>
 
-            <div class="grid gap-4 sm:grid-cols-2">
+            <!-- Aviso de scope bloqueado -->
+            <div
+              v-if="scopeLocked"
+              class="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-700 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-400"
+            >
+              <MapPinned class="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>El alcance se hereda de tu perfil y no puede modificarse.</span>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+              <!-- Diócesis -->
               <div>
                 <label class="mb-1.5 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                   <MapPinned class="h-4 w-4 text-rose-700 dark:text-rose-400" />
-                  Municipio asignado
+                  Diócesis
                 </label>
                 <select
-                  v-model="form.municipality_id"
+                  v-model="form.diocese_id"
                   class="select select-bordered w-full"
-                  :class="{ 'select-error': form.errors.municipality_id }"
+                  :class="{ 'select-error': form.errors.diocese_id }"
+                  :disabled="scopeLocked"
                 >
-                  <option :value="null">— Sin restriccion (acceso total) —</option>
-                  <option v-for="municipality in municipalities" :key="municipality.id" :value="municipality.id">
-                    {{ municipality.name }}
+                  <option :value="null">— Global (sin restriccion) —</option>
+                  <option v-for="diocese in dioceses" :key="diocese.id" :value="diocese.id">
+                    {{ diocese.name }}
                   </option>
                 </select>
-                <p v-if="form.errors.municipality_id" class="mt-1 text-xs text-red-500">{{ form.errors.municipality_id }}</p>
+                <p v-if="form.errors.diocese_id" class="mt-1 text-xs text-red-500">{{ form.errors.diocese_id }}</p>
               </div>
 
+              <!-- Decanato -->
               <div>
                 <label
                   class="mb-1.5 flex items-center gap-2 text-sm font-medium"
-                  :class="hasMunicipality ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'"
+                  :class="hasDiocese ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'"
                 >
-                  <Church class="h-4 w-4" :class="hasMunicipality ? 'text-rose-700 dark:text-rose-400' : 'text-slate-400'" />
-                  Parroquia asignada
+                  <MapPinned class="h-4 w-4" :class="hasDiocese ? 'text-rose-700 dark:text-rose-400' : 'text-slate-400'" />
+                  Decanato
                 </label>
 
-                <div v-if="!hasMunicipality" class="flex h-10 items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 text-xs text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500">
-                  <MapPinned class="h-3.5 w-3.5 shrink-0" />
-                  Selecciona primero un municipio
+                <div v-if="!hasDiocese" class="flex h-10 items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 text-xs text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500">
+                  Selecciona primero una diócesis
                 </div>
+                <template v-else>
+                  <select
+                    v-model="form.deanery_id"
+                    class="select select-bordered w-full"
+                    :class="{ 'select-error': form.errors.deanery_id }"
+                    :disabled="scopeLocked"
+                  >
+                    <option :value="null">— Toda la diócesis —</option>
+                    <option v-for="deanery in filteredDeaneries" :key="deanery.id" :value="deanery.id">
+                      {{ deanery.name }}
+                    </option>
+                  </select>
+                  <p v-if="form.errors.deanery_id" class="mt-1 text-xs text-red-500">{{ form.errors.deanery_id }}</p>
+                </template>
+              </div>
 
+              <!-- Parroquia -->
+              <div>
+                <label
+                  class="mb-1.5 flex items-center gap-2 text-sm font-medium"
+                  :class="hasDeanery ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'"
+                >
+                  <Church class="h-4 w-4" :class="hasDeanery ? 'text-rose-700 dark:text-rose-400' : 'text-slate-400'" />
+                  Parroquia
+                </label>
+
+                <div v-if="!hasDeanery" class="flex h-10 items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 text-xs text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500">
+                  Selecciona primero un decanato
+                </div>
                 <template v-else>
                   <select
                     v-model="form.church_id"
                     class="select select-bordered w-full"
                     :class="{ 'select-error': form.errors.church_id }"
+                    :disabled="scopeLocked"
                   >
-                    <option :value="null">— Sin restriccion (acceso total) —</option>
+                    <option :value="null">— Todo el decanato —</option>
                     <option v-for="church in filteredChurches" :key="church.id" :value="church.id">
                       {{ church.name }}
                     </option>
                   </select>
-                  <p v-if="filteredChurches.length === 0" class="mt-1 text-xs text-amber-500 dark:text-amber-400">
-                    No hay parroquias registradas para este municipio.
-                  </p>
-                  <p v-else class="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                    {{ filteredChurches.length }} parroquia{{ filteredChurches.length !== 1 ? 's' : '' }} disponible{{ filteredChurches.length !== 1 ? 's' : '' }}.
-                  </p>
                   <p v-if="form.errors.church_id" class="mt-1 text-xs text-red-500">{{ form.errors.church_id }}</p>
                 </template>
               </div>
