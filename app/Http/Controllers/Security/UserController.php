@@ -180,7 +180,7 @@ class UserController extends Controller
             ],
             ...$this->formOptions(),
             'selectedRole' => $usuario->roles->first()?->id,
-            'selectedPermissions' => $usuario->getDirectPermissions()
+            'selectedPermissions' => $usuario->getAllPermissions()
                 ->pluck('id')
                 ->intersect($editorPermissionIds)
                 ->values()
