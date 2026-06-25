@@ -47,7 +47,7 @@ class LadaSeeder extends Seeder
             DB::table('ladas')->updateOrInsert(
                 ['code' => $lada['code']],
                 [
-                    'country' => $lada['abbr'],
+                    'country' => $lada['country'],
                     'label'   => sprintf('%s (+%s)', $lada['abbr'], $lada['code']),
                     'status'  => Status::ACTIVE,
                     'updated_at' => now(),
