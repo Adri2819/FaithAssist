@@ -121,11 +121,6 @@ class WhatsappService
 
     private function normalizePhone(string $phone): string
     {
-        $phone = preg_replace('/\D+/', '', $phone);
-        if (strlen($phone) === 10) {
-            return '52'.$phone;
-        }
-
-        return $phone;
+        return preg_replace('/\D+/', '', $phone);
     }
 }
