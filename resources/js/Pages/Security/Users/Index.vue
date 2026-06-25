@@ -119,7 +119,7 @@ watch(searchTerm, (val) => {
             </td>
 
             <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
-              {{ formatScope(user.municipality) }}
+              {{ formatScope(user.diocese) }}
             </td>
 
             <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
