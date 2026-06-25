@@ -59,7 +59,7 @@ class Lada extends Model
             return $configured;
         }
 
-        return static::query()->active()->value('code') ?? '521';
+        return static::query()->active()->orderBy('country')->orderBy('code')->value('code') ?? '521';
     }
 
     public static function normalizeLocal(string $localPhone, string $countryCode): ?string
