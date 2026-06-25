@@ -5,7 +5,13 @@ import { MessageCircle, FileText, Send, History, RefreshCcw, X } from 'lucide-vu
 import AppShell from '../../components/layouts/AppShell.vue';
 import CatalogHeader from '../../components/catalogs/CatalogHeader.vue';
 
+const props = defineProps({
+  countryCodes: { type: Array, default: () => [] },
+  selectedCountryCode: { type: String, default: '521' },
+});
+
 const form = ref({
+  to_country_code: props.selectedCountryCode,
   to_phone: '',
   caption: 'Te compartimos el gafete en PDF.',
   pdf: null,
@@ -21,7 +27,7 @@ const showHistory = ref(false);
 const historyCount = computed(() => history.value.length);
 
 const onlyNumbers = () => {
-  form.value.to_phone = form.value.to_phone.replace(/\D/g, '').slice(0, 10);
+  form.value.to_phone = form.value.to_phone.replace(/\D/g, '').slice(0, 15);
 };
 
 const handleFile = (event) => {
@@ -44,8 +50,8 @@ const sendWhatsapp = async () => {
   successMessage.value = '';
   errorMessage.value = '';
 
-  if (form.value.to_phone.length !== 10) {
-    errorMessage.value = 'El teléfono debe tener 10 dígitos.';
+  if (form.value.to_phone.length < 7) {
+    errorMessage.value = 'El teléfono debe tener al menos 7 dígitos.';
     loading.value = false;
     return;
   }
@@ -57,6 +63,7 @@ const sendWhatsapp = async () => {
   }
 
   const formData = new FormData();
+  formData.append('to_country_code', form.value.to_country_code);
   formData.append('to_phone', form.value.to_phone);
   formData.append('caption', form.value.caption);
   formData.append('pdf', form.value.pdf);
@@ -195,29 +202,30 @@ onMounted(() => {
               Teléfono del destinatario
             </label>
 
-            <div
-              class="flex overflow-hidden rounded-2xl border border-slate-300 bg-slate-50 transition focus-within:border-sky-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-sky-100 dark:border-slate-700 dark:bg-slate-950 dark:focus-within:bg-slate-900"
-            >
-              <span
-                class="flex items-center border-r border-slate-200 px-4 text-sm font-black text-slate-500 dark:border-slate-700 dark:text-slate-400"
+            <div class="flex gap-2">
+              <select
+                v-model="form.to_country_code"
+                class="select select-bordered h-12 w-32 shrink-0 rounded-xl border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               >
-                +52
-              </span>
+                <option v-for="code in countryCodes" :key="code.value" :value="code.value">
+                  {{ code.label }}
+                </option>
+              </select>
 
               <input
                 v-model="form.to_phone"
                 type="text"
-                maxlength="10"
+                maxlength="15"
                 inputmode="numeric"
-                class="w-full bg-transparent px-4 py-3 text-slate-800 outline-none dark:text-slate-50"
-                placeholder="7224978399"
+                class="input input-bordered h-12 w-full rounded-xl border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                placeholder="5512345678"
                 required
                 @input="onlyNumbers"
               />
             </div>
 
             <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-              Escribe solo los 10 digitos. El sistema agregara automaticamente +52.
+              Selecciona la lada y luego escribe el número local (solo dígitos).
             </p>
           </div>
 

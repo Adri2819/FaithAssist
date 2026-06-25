@@ -58,6 +58,7 @@ class WhatsappService
         $this->assertConfigured();
 
         $payload = [
+            'messaging_product' => 'whatsapp',
             'to' => $this->normalizePhone($toPhone),
             'type' => 'document',
             'document' => [
@@ -121,14 +122,10 @@ class WhatsappService
     private function normalizePhone(string $phone): string
     {
         $phone = preg_replace('/\D+/', '', $phone);
-
-        // Si el usuario captura 10 dígitos mexicanos, agregamos lada de México.
-        // Ejemplo: 7224978399 -> 527224978399
         if (strlen($phone) === 10) {
             return '52'.$phone;
         }
 
-        // Si ya viene con 52, se respeta.
         return $phone;
     }
 }
