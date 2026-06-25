@@ -105,7 +105,7 @@ class ForgotPasswordController extends Controller
     {
         $validated = $request->validate([
             'whatsapp_country_code' => ['required', 'string', Rule::exists('ladas', 'code')->where('status', 'active')],
-            'whatsapp_phone' => ['required', 'string', 'max:30', 'regex:/^[0-9\s\-\(\)]{10,15}$/'],
+            'whatsapp_phone' => ['required', 'string', 'max:30', 'regex:/^[0-9\s\-\(\)]{7,15}$/'],
         ]);
 
         $userId = (int) $this->state($request, 'user_id', 0);
