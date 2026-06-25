@@ -27,10 +27,11 @@ class UserRequest extends FormRequest
             'whatsapp_country_code' => ['required', 'string', 'max:5', 'regex:/^[0-9]{1,4}$/'],
             'whatsapp_phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9\s\-\(\)]{10,15}$/', Rule::unique('users', 'whatsapp_phone')->ignore($userId)],
             'role_id' => ['nullable', 'integer', 'exists:roles,id'],
-            'diocese_id' => ['nullable', 'integer', Rule::exists('dioceses', 'id')],
+            'diocese_id' => ['nullable', 'integer', Rule::exists('dioceses', 'id'), 'required_with:deanery_id,church_id'],
             'deanery_id' => [
                 'nullable',
                 'integer',
+                'required_with:church_id',
                 Rule::exists('deaneries', 'id'),
                 Rule::when(
                     filled($this->input('deanery_id')) && filled($this->input('diocese_id')),
