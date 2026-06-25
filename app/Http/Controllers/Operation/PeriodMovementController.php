@@ -18,7 +18,7 @@ class PeriodMovementController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(PeriodMovement::class, 'periodo_movimiento');
+        $this->authorizeResource(PeriodMovement::class, 'movimiento');
     }
 
     public function index(Request $request): Response
