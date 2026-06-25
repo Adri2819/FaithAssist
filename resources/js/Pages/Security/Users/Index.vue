@@ -70,7 +70,7 @@ watch(searchTerm, (val) => {
             <th class="px-4 py-3 font-semibold">Usuario</th>
             <th class="px-4 py-3 font-semibold">Correo</th>
             <th class="px-4 py-3 font-semibold">Rol</th>
-            <th class="px-4 py-3 font-semibold">Municipio</th>
+            <th class="px-4 py-3 font-semibold">Diócesis</th>
             <th class="px-4 py-3 font-semibold">Parroquia</th>
             <th class="px-4 py-3 text-right font-semibold">Acciones</th>
           </tr>
