@@ -44,10 +44,7 @@ const handleTextInput = (event) => {
       :value="value"
       type="text"
       :placeholder="column.label"
-      :class="[
-        'input input-bordered input-sm w-full',
-        column.uppercase !== false ? 'uppercase' : ''
-      ]"
+      :class="['input ui-input input-sm w-full', column.uppercase !== false ? 'uppercase' : '']"
       @input="handleTextInput"
     />
 
@@ -56,45 +53,27 @@ const handleTextInput = (event) => {
       v-else-if="column.type === 'date'"
       v-model="value"
       type="date"
-      class="input input-bordered input-sm w-full"
+      class="input ui-input input-sm w-full"
     />
 
     <!-- SELECT -->
     <select
       v-else-if="column.type === 'select'"
       v-model="value"
-      class="select select-bordered select-sm w-full"
+      class="select ui-select select-sm w-full"
     >
-      <option
-        v-if="column.default === undefined"
-        value=""
-        disabled
-      >
-        Elige una opción
-      </option>
+      <option v-if="column.default === undefined" value="" disabled>Elige una opción</option>
 
-      <option
-        v-for="opt in column.options"
-        :key="opt.value"
-        :value="opt.value"
-      >
+      <option v-for="opt in column.options" :key="opt.value" :value="opt.value">
         {{ opt.label }}
       </option>
     </select>
 
     <!-- FALLBACK -->
-    <input
-      v-else
-      v-model="value"
-      type="text"
-      class="input input-bordered input-sm w-full"
-    />
+    <input v-else v-model="value" type="text" class="input ui-input input-sm w-full" />
 
     <!-- ERROR -->
-    <p
-      v-if="error"
-      class="mt-1 text-xs text-red-600 dark:text-red-400"
-    >
+    <p v-if="error" class="mt-1 text-xs text-red-600 dark:text-red-400">
       {{ error }}
     </p>
   </div>

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
-import { Plus, Search, X } from 'lucide-vue-next';
+import { Download, Plus, Search, X } from 'lucide-vue-next';
 
 import AppPagination from '../AppPagination.vue';
 import CatalogRow from './CatalogRow.vue';
@@ -21,11 +21,7 @@ const props = defineProps({
   exportLabel: { type: String, default: 'Exportar Excel' },
 });
 
-const emit = defineEmits([
-  'row-added',
-  'row-updated',
-  'row-deleted',
-]);
+const emit = defineEmits(['row-added', 'row-updated', 'row-deleted']);
 
 const page = usePage();
 
@@ -62,7 +58,7 @@ watch(searchTerm, (val) => {
       {
         preserveState: true,
         replace: true,
-      }
+      },
     );
   }, 400);
 });
@@ -75,51 +71,34 @@ watch(
     isAdding.value = false;
     clearAddErrors();
     clearEditErrors();
-  }
+  },
 );
 
-const permissions = computed(
-  () => page.props.auth?.permissions ?? []
-);
+const permissions = computed(() => page.props.auth?.permissions ?? []);
 
-const fullScopeAccess = computed(
-  () => page.props.auth?.scope?.full_access ?? {}
-);
+const fullScopeAccess = computed(() => page.props.auth?.scope?.full_access ?? {});
 
 const hasPermission = (action) => {
   if (!props.permissionModule) return true;
 
-  return permissions.value.includes(
-    `${props.permissionModule}.${action}`
-  );
+  return permissions.value.includes(`${props.permissionModule}.${action}`);
 };
 
 const hasModuleFullScope = computed(() => {
   if (!props.permissionModule) return true;
 
-  return fullScopeAccess.value?.[
-    props.permissionModule
-  ] === true;
+  return fullScopeAccess.value?.[props.permissionModule] === true;
 });
 
-const canCreate = computed(() =>
-  hasPermission('create') &&
-  (!props.createRequiresFullScope || hasModuleFullScope.value)
+const canCreate = computed(
+  () => hasPermission('create') && (!props.createRequiresFullScope || hasModuleFullScope.value),
 );
 
-const canUpdate = computed(() =>
-  hasPermission('update')
-);
+const canUpdate = computed(() => hasPermission('update'));
 
-const canDelete = computed(() =>
-  hasPermission('delete')
-);
+const canDelete = computed(() => hasPermission('delete'));
 
-const showActions = computed(() =>
-  canCreate.value ||
-  canUpdate.value ||
-  canDelete.value
-);
+const showActions = computed(() => canCreate.value || canUpdate.value || canDelete.value);
 
 const validateRow = (data) => {
   const errors = {};
@@ -127,15 +106,9 @@ const validateRow = (data) => {
   props.columns.forEach((col) => {
     if (
       col.required &&
-      (
-        data[col.key] === '' ||
-        data[col.key] === null ||
-        data[col.key] === undefined
-      )
+      (data[col.key] === '' || data[col.key] === null || data[col.key] === undefined)
     ) {
-      errors[col.key] = [
-        `El campo ${col.label} es obligatorio.`,
-      ];
+      errors[col.key] = [`El campo ${col.label} es obligatorio.`];
     }
   });
 
@@ -196,9 +169,7 @@ const saveEdit = async (row, payload) => {
   const updated = await updateRow(row.id, payload);
 
   if (updated) {
-    const idx = rows.value.findIndex(
-      (r) => r.id === row.id
-    );
+    const idx = rows.value.findIndex((r) => r.id === row.id);
 
     if (idx !== -1) {
       rows.value[idx] = updated;
@@ -213,9 +184,7 @@ const handleDelete = async (row) => {
   const deleted = await deleteRow(row);
 
   if (deleted) {
-    rows.value = rows.value.filter(
-      (r) => r.id !== row.id
-    );
+    rows.value = rows.value.filter((r) => r.id !== row.id);
 
     emit('row-deleted', row.id);
   }
@@ -224,23 +193,22 @@ const handleDelete = async (row) => {
 
 <template>
   <div>
-    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <label
-        class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-100 sm:w-80 dark:border-slate-700 dark:bg-slate-900"
-      >
+    <div class="ui-table-toolbar">
+      <label class="ui-search sm:w-80">
         <Search class="h-4 w-4 shrink-0 text-slate-400" />
 
         <input
           v-model="searchTerm"
           type="text"
           :placeholder="searchPlaceholder"
-          class="w-full bg-transparent text-sm outline-none"
+          class="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
         />
 
         <button
           v-if="searchTerm"
           type="button"
           @click="searchTerm = ''"
+          class="text-slate-400 transition hover:text-slate-700 dark:hover:text-slate-200"
         >
           <X class="h-3.5 w-3.5" />
         </button>
@@ -249,7 +217,7 @@ const handleDelete = async (row) => {
       <div class="flex items-center gap-2">
         <button
           v-if="canExport"
-          class="btn btn-outline btn-sm gap-1.5"
+          class="ui-btn ui-btn-secondary ui-btn-sm"
           :disabled="loading"
           @click="exportTable"
         >
@@ -259,7 +227,7 @@ const handleDelete = async (row) => {
 
         <button
           v-if="canCreate"
-          class="btn btn-primary btn-sm gap-1.5"
+          class="ui-btn ui-btn-primary ui-btn-sm"
           :disabled="isAdding || editingId !== null || loading"
           @click="startAdd"
         >
@@ -269,20 +237,15 @@ const handleDelete = async (row) => {
       </div>
     </div>
 
-    <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <table class="table w-full">
+    <div class="ui-table-wrap">
+      <table class="ui-table">
         <thead>
-          <tr class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-widest text-slate-500">
-            <th
-              v-for="col in columns"
-              :key="col.key"
-            >
+          <tr>
+            <th v-for="col in columns" :key="col.key">
               {{ col.label }}
             </th>
 
-            <th v-if="showActions">
-              Acciones
-            </th>
+            <th v-if="showActions">Acciones</th>
           </tr>
         </thead>
 
@@ -318,18 +281,13 @@ const handleDelete = async (row) => {
           />
 
           <tr v-if="rows.length === 0 && !isAdding">
-            <td
-              :colspan="columns.length + (showActions ? 1 : 0)"
-              class="px-4 py-12 text-center text-sm text-slate-400"
-            >
+            <td :colspan="columns.length + (showActions ? 1 : 0)" class="ui-table-empty">
               <span v-if="searchTerm">
                 No se encontraron registros para
                 <strong>"{{ searchTerm }}"</strong>
               </span>
 
-              <span v-else>
-                No hay registros.
-              </span>
+              <span v-else> No hay registros. </span>
             </td>
           </tr>
         </tbody>

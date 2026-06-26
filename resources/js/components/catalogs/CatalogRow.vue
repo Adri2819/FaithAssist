@@ -50,35 +50,25 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits([
-  'edit',
-  'delete',
-  'save',
-  'cancel',
-]);
+const emit = defineEmits(['edit', 'delete', 'save', 'cancel']);
 
 const localData = reactive({});
 
 const initializeData = () => {
   props.columns.forEach((col) => {
-    localData[col.key] =
-      props.row?.[col.key] ??
-      col.default ??
-      '';
+    localData[col.key] = props.row?.[col.key] ?? col.default ?? '';
   });
 };
 
 watch(
   () => props.row,
   () => initializeData(),
-  { immediate: true, deep: true }
+  { immediate: true, deep: true },
 );
 
-const getOptionLabel = (col, value) =>
-  col.options?.find((o) => o.value === value)?.label ?? value;
+const getOptionLabel = (col, value) => col.options?.find((o) => o.value === value)?.label ?? value;
 
-const getBadgeClass = (col, value) =>
-  col.badges?.[value] ?? 'badge-ghost';
+const getBadgeClass = (col, value) => col.badges?.[value] ?? 'badge-ghost';
 
 const save = () => {
   emit('save', { ...localData });
@@ -93,44 +83,27 @@ const save = () => {
       'border-b',
       mode === 'create'
         ? 'border-sky-100 bg-sky-50/60 dark:border-sky-900/30 dark:bg-sky-950/20'
-        : 'border-amber-100 bg-amber-50/60 dark:border-amber-900/20 dark:bg-amber-950/10'
+        : 'border-amber-100 bg-amber-50/60 dark:border-amber-900/20 dark:bg-amber-950/10',
     ]"
   >
-    <td
-      v-for="col in columns"
-      :key="col.key"
-      class="px-4 py-2"
-    >
-      <CatalogCellEditor
-        v-model="localData[col.key]"
-        :column="col"
-        :error="errors[col.key]?.[0]"
-      />
+    <td v-for="col in columns" :key="col.key" class="px-4 py-2">
+      <CatalogCellEditor v-model="localData[col.key]" :column="col" :error="errors[col.key]?.[0]" />
     </td>
 
-    <td
-      v-if="showActions"
-      class="px-4 py-2 text-right"
-    >
-      <p
-        v-if="generalError"
-        class="mb-1 text-left text-xs text-red-600 dark:text-red-400"
-      >
+    <td v-if="showActions" class="px-4 py-2 text-right">
+      <p v-if="generalError" class="mb-1 text-left text-xs text-red-600 dark:text-red-400">
         {{ generalError }}
       </p>
 
       <button
-        class="btn btn-success btn-xs mr-1"
+        class="ui-icon-btn ui-icon-btn-sm mr-1 border-emerald-100 bg-emerald-50 text-emerald-700 hover:border-emerald-200 hover:bg-emerald-100 dark:border-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-300"
         :disabled="loading"
         @click="save"
       >
         <Check class="h-3.5 w-3.5" />
       </button>
 
-      <button
-        class="btn btn-ghost btn-xs"
-        @click="emit('cancel')"
-      >
+      <button class="ui-icon-btn ui-icon-btn-sm" @click="emit('cancel')">
         <X class="h-3.5 w-3.5" />
       </button>
     </td>
@@ -148,10 +121,7 @@ const save = () => {
     >
       <span
         v-if="col.badges"
-        :class="[
-          'badge badge-sm font-medium',
-          getBadgeClass(col, row[col.key])
-        ]"
+        :class="['badge badge-sm font-medium', getBadgeClass(col, row[col.key])]"
       >
         {{ getOptionLabel(col, row[col.key]) }}
       </span>
@@ -165,13 +135,10 @@ const save = () => {
       </span>
     </td>
 
-    <td
-      v-if="showActions"
-      class="px-4 py-3 text-right"
-    >
+    <td v-if="showActions" class="px-4 py-3 text-right">
       <button
         v-if="canUpdate"
-        class="btn btn-ghost btn-xs mr-1 text-sky-600 hover:bg-sky-50 hover:text-sky-700 dark:text-sky-400 dark:hover:bg-sky-950/40"
+        class="ui-icon-btn ui-icon-btn-sm ui-icon-btn-info mr-1"
         :disabled="loading"
         @click="emit('edit')"
       >
@@ -180,7 +147,7 @@ const save = () => {
 
       <button
         v-if="canDelete"
-        class="btn btn-ghost btn-xs text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-950/40"
+        class="ui-icon-btn ui-icon-btn-sm ui-icon-btn-danger"
         :disabled="loading"
         @click="emit('delete')"
       >

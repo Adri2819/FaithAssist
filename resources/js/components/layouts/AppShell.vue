@@ -15,7 +15,7 @@ const page = usePage();
 const form = useForm({});
 const menuOpen = ref(false);
 const menuRef = ref(null);
-const { isDark, toggleTheme } = useTheme();
+const { isDark, savingTheme, toggleTheme } = useTheme();
 
 const appName = import.meta.env.VITE_APP_NAME || 'FAITHPASS';
 
@@ -70,25 +70,19 @@ onBeforeUnmount(() => {
 
 <template>
   <Head :title="pageTitle" />
-  <div class="min-h-screen bg-slate-100 transition-colors duration-300 dark:bg-slate-950">
-    <header
-      class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/90"
-    >
-      <div
-        class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
-      >
-        <Link
-          href="/"
-          class="text-lg font-black uppercase tracking-[0.24em] text-slate-800 sm:text-xl dark:text-slate-100 hover:opacity-75 transition-opacity"
-        >
+  <div class="ui-shell">
+    <header class="ui-topbar">
+      <div class="ui-container flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+        <Link href="/" class="ui-brand">
           {{ appName }}
         </Link>
 
         <div class="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800"
+            class="ui-icon-btn rounded-full"
             :aria-label="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+            :disabled="savingTheme"
             @click="toggleTheme"
           >
             <SunMedium v-if="isDark" class="h-5 w-5" />
@@ -98,7 +92,7 @@ onBeforeUnmount(() => {
           <div class="relative" ref="menuRef">
             <button
               type="button"
-              class="flex items-center gap-2 rounded-full border border-slate-300 bg-white px-2 py-1 text-left shadow-sm transition hover:border-slate-400 hover:shadow dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
+              class="flex items-center gap-2 rounded-full border border-slate-300 bg-white px-2 py-1 text-left shadow-sm shadow-slate-900/5 transition hover:border-slate-400 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20 dark:hover:border-slate-600"
               :aria-expanded="menuOpen"
               aria-haspopup="menu"
               @click.stop="toggleMenu"
@@ -109,38 +103,23 @@ onBeforeUnmount(() => {
                 {{ displayName }}
               </span>
 
-              <span
-                v-if="photoUrl"
-                class="h-9 w-9 overflow-hidden rounded-full border border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-800"
-              >
+              <span v-if="photoUrl" class="ui-avatar bg-slate-100 dark:bg-slate-800">
                 <img :src="photoUrl" alt="Foto de perfil" class="h-full w-full object-cover" />
               </span>
 
-              <span
-                v-else
-                class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 bg-slate-800 text-xs font-bold uppercase text-white dark:border-slate-700 dark:bg-slate-100 dark:text-slate-900"
-              >
+              <span v-else class="ui-avatar">
                 {{ initials }}
               </span>
             </button>
 
-            <div
-              v-if="menuOpen"
-              class="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 bg-white py-2 shadow-lg dark:border-slate-800 dark:bg-slate-900"
-              role="menu"
-            >
-              <Link
-                href="/profile"
-                class="block px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-                role="menuitem"
-                @click="closeMenu"
-              >
+            <div v-if="menuOpen" class="ui-menu" role="menu">
+              <Link href="/profile" class="ui-menu-item" role="menuitem" @click="closeMenu">
                 Perfil
               </Link>
 
               <button
                 type="button"
-                class="block w-full px-4 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950/40"
+                class="ui-menu-item ui-menu-item-danger"
                 role="menuitem"
                 :disabled="form.processing"
                 @click="logout"
@@ -153,8 +132,8 @@ onBeforeUnmount(() => {
       </div>
     </header>
 
-    <main class="px-4 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto w-full max-w-7xl">
+    <main class="ui-main">
+      <div class="ui-container">
         <slot />
       </div>
     </main>

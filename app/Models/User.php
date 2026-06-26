@@ -17,7 +17,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'whatsapp_phone', 'password', 'profile_photo_path'])]
+#[Fillable(['name', 'email', 'whatsapp_phone', 'password', 'profile_photo_path', 'ui_theme'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {

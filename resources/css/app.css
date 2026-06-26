@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin "daisyui";
 @import './global-ui.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -9,5 +10,3 @@
 
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 @source "../../storage/framework/views/*.php";
-
-@plugin "daisyui";
