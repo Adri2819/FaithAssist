@@ -3,6 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ConfirmEmailRequest;
+use App\Http\Requests\Auth\ConfirmPhoneRequest;
+use App\Http\Requests\Auth\UpdatePasswordRequest;
+use App\Http\Requests\Auth\VerifyPasswordResetCodeRequest;
+use App\Models\Lada;
 use App\Models\PasswordResetWhatsappCode;
 use App\Models\User;
 use App\Services\MetaWhatsAppService;
@@ -21,24 +26,6 @@ class ForgotPasswordController extends Controller
 {
     private const SESSION_KEY = 'password_recovery';
 
-    private const WHATSAPP_COUNTRY_CODES = [
-        '521' => 'MX (+521)',
-        '52' => 'MX (+52)',
-        '1' => 'US/CA (+1)',
-        '57' => 'CO (+57)',
-        '51' => 'PE (+51)',
-        '54' => 'AR (+54)',
-        '56' => 'CL (+56)',
-        '593' => 'EC (+593)',
-        '503' => 'SV (+503)',
-        '502' => 'GT (+502)',
-        '504' => 'HN (+504)',
-        '505' => 'NI (+505)',
-        '506' => 'CR (+506)',
-        '507' => 'PA (+507)',
-        '58' => 'VE (+58)',
-    ];
-
     /**
      * Paso 1: Mostrar formulario para ingresar correo
      */
@@ -53,11 +40,9 @@ class ForgotPasswordController extends Controller
     /**
      * Paso 1: Confirmar correo y detectar usuario + teléfono
      */
-    public function confirmEmail(Request $request): RedirectResponse
+    public function confirmEmail(ConfirmEmailRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'email' => ['required', 'email'],
-        ]);
+        $validated = $request->validated();
 
         $user = User::query()->where('email', $validated['email'])->first();
 
@@ -107,7 +92,7 @@ class ForgotPasswordController extends Controller
             'countryCodes' => $this->countryCodes(),
             'countryCode' => old(
                 'whatsapp_country_code',
-                (string) config('services.whatsapp.default_country_code', '521')
+                Lada::defaultCode()
             ),
             'phone' => old('whatsapp_phone', ''),
             'registeredPhoneLast4' => $this->last4Digits($registeredPhone),
@@ -117,12 +102,9 @@ class ForgotPasswordController extends Controller
     /**
      * Paso 2: Confirmar teléfono y enviar código
      */
-    public function confirmPhone(Request $request, MetaWhatsAppService $metaWhatsApp): RedirectResponse
+    public function confirmPhone(ConfirmPhoneRequest $request, MetaWhatsAppService $metaWhatsApp): RedirectResponse
     {
-        $validated = $request->validate([
-            'whatsapp_country_code' => ['required', 'string', 'max:5', 'regex:/^[0-9]{1,4}$/'],
-            'whatsapp_phone' => ['required', 'string', 'max:30', 'regex:/^[0-9\s\-\(\)]{10,15}$/'],
-        ]);
+        $validated = $request->validated();
 
         $userId = (int) $this->state($request, 'user_id', 0);
 
@@ -140,9 +122,15 @@ class ForgotPasswordController extends Controller
             ]);
         }
 
-        $countryCode = preg_replace('/\D/', '', $validated['whatsapp_country_code']) ?: (string) config('services.whatsapp.default_country_code', '521');
+        $countryCode = preg_replace('/\D/', '', $validated['whatsapp_country_code']) ?: Lada::defaultCode();
         $phoneLocal = preg_replace('/\D/', '', $validated['whatsapp_phone']) ?: '';
-        $normalizedPhone = $this->normalizePhone($phoneLocal, $countryCode);
+        $normalizedPhone = Lada::normalizeLocal($phoneLocal, $countryCode);
+
+        if (! $normalizedPhone) {
+            throw ValidationException::withMessages([
+                'whatsapp_phone' => ['El número de teléfono no es válido.'],
+            ]);
+        }
 
         $rateLimitKey = sprintf('password-reset:%d|%s', $user->id, $request->ip());
 
@@ -225,11 +213,9 @@ class ForgotPasswordController extends Controller
     /**
      * Paso 3: Validar código ingresado
      */
-    public function verifyCode(Request $request): RedirectResponse
+    public function verifyCode(VerifyPasswordResetCodeRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'code' => ['required', 'digits:6'],
-        ]);
+        $validated = $request->validated();
 
         $userId = (int) $this->state($request, 'user_id', 0);
         $resetCode = PasswordResetWhatsappCode::query()->where('user_id', $userId)->first();
@@ -279,11 +265,9 @@ class ForgotPasswordController extends Controller
     /**
      * Paso 4: Actualizar contraseña
      */
-    public function updatePassword(Request $request): RedirectResponse
+    public function updatePassword(UpdatePasswordRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'password' => ['required', 'confirmed', 'min:8'],
-        ]);
+        $validated = $request->validated();
 
         $userId = (int) $this->state($request, 'user_id', 0);
 
@@ -334,18 +318,7 @@ class ForgotPasswordController extends Controller
 
     private function countryCodes(): array
     {
-        return collect(self::WHATSAPP_COUNTRY_CODES)
-            ->map(fn (string $label, string $code): array => [
-                'value' => $code,
-                'label' => $label,
-            ])
-            ->values()
-            ->all();
-    }
-
-    private function normalizePhone(string $phoneLocal, string $countryCode): string
-    {
-        return '+'.$countryCode.$phoneLocal;
+        return Lada::options();
     }
 
     private function last4Digits(string $phone): ?string

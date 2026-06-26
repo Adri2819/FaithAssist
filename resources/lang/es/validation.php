@@ -130,8 +130,45 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'to_country_code' => [
+            'required' => 'El codigo de pais es obligatorio.',
+            'exists' => 'El codigo de pais seleccionado no es valido.',
+        ],
+        'to_phone' => [
+            'required' => 'El numero de telefono es obligatorio.',
+            'max' => 'El numero de telefono no debe exceder 30 caracteres.',
+            'regex' => 'El numero de telefono no es valido.',
+        ],
+        'caption' => [
+            'max' => 'El mensaje no debe exceder 1000 caracteres.',
+        ],
+        'pdf' => [
+            'required' => 'Debes adjuntar un archivo PDF.',
+            'file' => 'El archivo adjunto no es valido.',
+            'mimetypes' => 'El archivo debe estar en formato PDF.',
+            'max' => 'El archivo PDF no debe superar 20 MB.',
+        ],
+        'email' => [
+            'required' => 'El correo electronico es obligatorio.',
+            'email' => 'Debes ingresar un correo electronico valido.',
+        ],
+        'whatsapp_country_code' => [
+            'required' => 'El codigo de pais es obligatorio.',
+            'exists' => 'El codigo de pais seleccionado no es valido.',
+        ],
+        'whatsapp_phone' => [
+            'required' => 'El numero de WhatsApp es obligatorio.',
+            'max' => 'El numero de WhatsApp no debe exceder 30 caracteres.',
+            'regex' => 'El numero de WhatsApp no es valido.',
+        ],
+        'code' => [
+            'required' => 'El codigo de verificacion es obligatorio.',
+            'digits' => 'El codigo debe tener exactamente 6 digitos.',
+        ],
+        'password' => [
+            'required' => 'La nueva contrasena es obligatoria.',
+            'confirmed' => 'La confirmacion de la contrasena no coincide.',
+            'min' => 'La contrasena debe tener al menos 8 caracteres.',
         ],
     ],
 
@@ -179,8 +216,15 @@ return [
         'start_date' => 'Fecha de inicio',
         'state_id' => 'Estado',
         'status' => 'Estatus',
+        'to_country_code' => 'Codigo de pais',
+        'to_phone' => 'Telefono',
+        'caption' => 'Mensaje',
+        'pdf' => 'Archivo PDF',
         'type' => 'Movimiento',
         'period_movement_type_id' => 'Tipo de movimiento',
+        'whatsapp_country_code' => 'Codigo de pais',
+        'whatsapp_phone' => 'Numero de WhatsApp',
+        'code' => 'Codigo de verificacion',
     ],
 
 ];

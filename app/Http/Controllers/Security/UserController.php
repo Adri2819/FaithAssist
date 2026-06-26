@@ -7,6 +7,7 @@ use App\Http\Requests\Security\UserRequest;
 use App\Models\Ecclesiastes\Church;
 use App\Models\Ecclesiastes\Deanery;
 use App\Models\Ecclesiastes\Diocese;
+use App\Models\Lada;
 use App\Models\Profile;
 use App\Models\User;
 use App\Services\UserScopeService;
@@ -21,24 +22,6 @@ use Spatie\Permission\PermissionRegistrar;
 
 class UserController extends Controller
 {
-    private const WHATSAPP_COUNTRY_CODES = [
-        '521' => 'MX (+521)',
-        '52' => 'MX (+52)',
-        '1' => 'US/CA (+1)',
-        '57' => 'CO (+57)',
-        '51' => 'PE (+51)',
-        '54' => 'AR (+54)',
-        '56' => 'CL (+56)',
-        '593' => 'EC (+593)',
-        '503' => 'SV (+503)',
-        '502' => 'GT (+502)',
-        '504' => 'HN (+504)',
-        '505' => 'NI (+505)',
-        '506' => 'CR (+506)',
-        '507' => 'PA (+507)',
-        '58' => 'VE (+58)',
-    ];
-
     public function index(Request $request): Response
     {
         $search = $request->input('search', '');
@@ -100,7 +83,7 @@ class UserController extends Controller
             'selectedDeanery' => null,
             'selectedChurch' => null,
             'editorScope' => $this->buildEditorScope($editor),
-            'selectedCountryCode' => config('services.whatsapp.default_country_code', '521'),
+            'selectedCountryCode' => Lada::defaultCode(),
             'countryCodes' => $this->getCountryCodes(),
         ]);
     }
@@ -362,13 +345,7 @@ class UserController extends Controller
 
     private function getCountryCodes(): array
     {
-        return collect(self::WHATSAPP_COUNTRY_CODES)
-            ->map(fn (string $label, string $code): array => [
-                'value' => $code,
-                'label' => $label,
-            ])
-            ->values()
-            ->all();
+        return Lada::options();
     }
 
     private function getModuleLabel(string $key): string
@@ -421,7 +398,7 @@ class UserController extends Controller
             return null;
         }
 
-        $countryCode = preg_replace('/\D/', '', (string) ($countryCode ?: config('services.whatsapp.default_country_code', '521'))) ?: '521';
+        $countryCode = preg_replace('/\D/', '', (string) ($countryCode ?: Lada::defaultCode())) ?: Lada::defaultCode();
 
         if (strlen($clean) === 10) {
             return '+'.$countryCode.$clean;
@@ -462,18 +439,6 @@ class UserController extends Controller
 
     private function whatsappCountryCode(?string $phone): string
     {
-        $digits = preg_replace('/\D/', '', (string) $phone) ?: '';
-
-        if ($digits === '') {
-            return (string) config('services.whatsapp.default_country_code', '521');
-        }
-
-        foreach (array_keys(self::WHATSAPP_COUNTRY_CODES) as $code) {
-            if (str_starts_with($digits, $code)) {
-                return $code;
-            }
-        }
-
-        return (string) config('services.whatsapp.default_country_code', '521');
+        return Lada::detectCountryCode($phone);
     }
 }

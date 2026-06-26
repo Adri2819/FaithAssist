@@ -8,6 +8,7 @@ class WhatsappMessage extends Model
 {
     protected $fillable = [
         'to_phone',
+        'country_code',
         'message_type',
         'pdf_path',
         'media_id',

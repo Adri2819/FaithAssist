@@ -134,8 +134,45 @@ return [
   */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'to_country_code' => [
+            'required' => 'The country code field is required.',
+            'exists' => 'The selected country code is invalid.',
+        ],
+        'to_phone' => [
+            'required' => 'The phone number field is required.',
+            'max' => 'The phone number must not be greater than 30 characters.',
+            'regex' => 'The phone number format is invalid.',
+        ],
+        'caption' => [
+            'max' => 'The message must not be greater than 1000 characters.',
+        ],
+        'pdf' => [
+            'required' => 'A PDF file is required.',
+            'file' => 'The attached file is invalid.',
+            'mimetypes' => 'The file must be a PDF document.',
+            'max' => 'The PDF file must not be greater than 20480 kilobytes.',
+        ],
+        'email' => [
+            'required' => 'The email field is required.',
+            'email' => 'Please enter a valid email address.',
+        ],
+        'whatsapp_country_code' => [
+            'required' => 'The country code field is required.',
+            'exists' => 'The selected country code is invalid.',
+        ],
+        'whatsapp_phone' => [
+            'required' => 'The WhatsApp number field is required.',
+            'max' => 'The WhatsApp number must not be greater than 30 characters.',
+            'regex' => 'The WhatsApp number format is invalid.',
+        ],
+        'code' => [
+            'required' => 'The verification code field is required.',
+            'digits' => 'The verification code must be exactly 6 digits.',
+        ],
+        'password' => [
+            'required' => 'The new password field is required.',
+            'confirmed' => 'The password confirmation does not match.',
+            'min' => 'The password must be at least 8 characters.',
         ],
     ],
 
@@ -183,8 +220,15 @@ return [
         'start_date' => 'Start date',
         'state_id' => 'State',
         'status' => 'Status',
+        'to_country_code' => 'Country code',
+        'to_phone' => 'Phone number',
+        'caption' => 'Message',
+        'pdf' => 'PDF file',
         'type' => 'Movement',
         'period_movement_type_id' => 'Movement type',
+        'whatsapp_country_code' => 'Country code',
+        'whatsapp_phone' => 'WhatsApp number',
+        'code' => 'Verification code',
     ],
 
 ];

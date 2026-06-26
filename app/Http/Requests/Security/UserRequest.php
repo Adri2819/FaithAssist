@@ -24,8 +24,8 @@ class UserRequest extends FormRequest
             'paterno' => ['required', 'string', 'max:120'],
             'materno' => ['nullable', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
-            'whatsapp_country_code' => ['required', 'string', 'max:5', 'regex:/^[0-9]{1,4}$/'],
-            'whatsapp_phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9\s\-\(\)]{10,15}$/', Rule::unique('users', 'whatsapp_phone')->ignore($userId)],
+            'whatsapp_country_code' => ['required', 'string', Rule::exists('ladas', 'code')->where('status', 'active')],
+            'whatsapp_phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9\s\-\(\)]{7,15}$/'],
             'role_id' => ['nullable', 'integer', 'exists:roles,id'],
             'diocese_id' => ['nullable', 'integer', Rule::exists('dioceses', 'id'), 'required_with:deanery_id,church_id'],
             'deanery_id' => [
