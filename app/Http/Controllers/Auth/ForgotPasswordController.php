@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ConfirmEmailRequest;
+use App\Http\Requests\Auth\ConfirmPhoneRequest;
+use App\Http\Requests\Auth\UpdatePasswordRequest;
+use App\Http\Requests\Auth\VerifyPasswordResetCodeRequest;
 use App\Models\Lada;
 use App\Models\PasswordResetWhatsappCode;
 use App\Models\User;
@@ -13,7 +17,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -37,11 +40,9 @@ class ForgotPasswordController extends Controller
     /**
      * Paso 1: Confirmar correo y detectar usuario + teléfono
      */
-    public function confirmEmail(Request $request): RedirectResponse
+    public function confirmEmail(ConfirmEmailRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'email' => ['required', 'email'],
-        ]);
+        $validated = $request->validated();
 
         $user = User::query()->where('email', $validated['email'])->first();
 
@@ -101,12 +102,9 @@ class ForgotPasswordController extends Controller
     /**
      * Paso 2: Confirmar teléfono y enviar código
      */
-    public function confirmPhone(Request $request, MetaWhatsAppService $metaWhatsApp): RedirectResponse
+    public function confirmPhone(ConfirmPhoneRequest $request, MetaWhatsAppService $metaWhatsApp): RedirectResponse
     {
-        $validated = $request->validate([
-            'whatsapp_country_code' => ['required', 'string', Rule::exists('ladas', 'code')->where('status', 'active')],
-            'whatsapp_phone' => ['required', 'string', 'max:30', 'regex:/^[0-9\s\-\(\)]{7,15}$/'],
-        ]);
+        $validated = $request->validated();
 
         $userId = (int) $this->state($request, 'user_id', 0);
 
@@ -215,11 +213,9 @@ class ForgotPasswordController extends Controller
     /**
      * Paso 3: Validar código ingresado
      */
-    public function verifyCode(Request $request): RedirectResponse
+    public function verifyCode(VerifyPasswordResetCodeRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'code' => ['required', 'digits:6'],
-        ]);
+        $validated = $request->validated();
 
         $userId = (int) $this->state($request, 'user_id', 0);
         $resetCode = PasswordResetWhatsappCode::query()->where('user_id', $userId)->first();
@@ -269,11 +265,9 @@ class ForgotPasswordController extends Controller
     /**
      * Paso 4: Actualizar contraseña
      */
-    public function updatePassword(Request $request): RedirectResponse
+    public function updatePassword(UpdatePasswordRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'password' => ['required', 'confirmed', 'min:8'],
-        ]);
+        $validated = $request->validated();
 
         $userId = (int) $this->state($request, 'user_id', 0);
 

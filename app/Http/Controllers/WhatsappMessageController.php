@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Whatsapp\SendWhatsappMessageRequest;
 use App\Models\Lada;
 use App\Models\WhatsappMessage;
 use App\Services\WhatsappService;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Throwable;
 
@@ -22,15 +21,10 @@ class WhatsappMessageController extends Controller
         ]);
     }
 
-    public function send(Request $request, WhatsappService $whatsappService)
+    public function send(SendWhatsappMessageRequest $request, WhatsappService $whatsappService)
     {
         $this->authorize('create', WhatsappMessage::class);
-        $validated = $request->validate([
-            'to_country_code' => ['required', 'string', Rule::exists('ladas', 'code')->where('status', 'active')],
-            'to_phone' => ['required', 'string', 'max:30', 'regex:/^[0-9\s\-\(\)]{7,15}$/'],
-            'caption' => ['nullable', 'string', 'max:1000'],
-            'pdf' => ['required', 'file', 'mimetypes:application/pdf', 'max:20480'],
-        ]);
+        $validated = $request->validated();
 
         $normalizedPhone = Lada::normalizeLocal(
             (string) $validated['to_phone'],
