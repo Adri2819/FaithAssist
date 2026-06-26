@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Whatsapp\SendWhatsappMessageRequest;
+use App\Models\Lada;
 use App\Models\WhatsappMessage;
 use App\Services\WhatsappService;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Throwable;
 
@@ -14,22 +15,37 @@ class WhatsappMessageController extends Controller
     {
         $this->authorize('viewAny', WhatsappMessage::class);
 
-        return Inertia::render('Whatsapp/Index');
+        return Inertia::render('Whatsapp/Index', [
+            'countryCodes' => Lada::options(),
+            'selectedCountryCode' => Lada::defaultCode(),
+        ]);
     }
 
-    public function send(Request $request, WhatsappService $whatsappService)
+    public function send(SendWhatsappMessageRequest $request, WhatsappService $whatsappService)
     {
         $this->authorize('create', WhatsappMessage::class);
-        $validated = $request->validate([
-            'to_phone' => ['required', 'string', 'regex:/^\d{10,15}$/'],
-            'caption' => ['nullable', 'string', 'max:1000'],
-            'pdf' => ['required', 'file', 'mimetypes:application/pdf', 'max:20480'],
-        ]);
+        $validated = $request->validated();
+
+        $normalizedPhone = Lada::normalizeLocal(
+            (string) $validated['to_phone'],
+            (string) $validated['to_country_code']
+        );
+
+        if (! $normalizedPhone) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'No se pudo validar el número de teléfono.',
+                'errors' => [
+                    'to_phone' => ['El número de teléfono no es válido.'],
+                ],
+            ], 422);
+        }
 
         $path = $request->file('pdf')->store('whatsapp/gafetes');
 
         $message = WhatsappMessage::create([
-            'to_phone' => $validated['to_phone'],
+            'to_phone' => $normalizedPhone,
+            'country_code' => (string) $validated['to_country_code'],
             'message_type' => 'document',
             'pdf_path' => $path,
             'status' => 'pending',
@@ -37,7 +53,7 @@ class WhatsappMessageController extends Controller
 
         try {
             $result = $whatsappService->uploadAndSendPdf(
-                toPhone: $validated['to_phone'],
+                toPhone: $normalizedPhone,
                 storagePath: $path,
                 filename: $request->file('pdf')->getClientOriginalName(),
                 caption: $validated['caption'] ?? 'Te compartimos el gafete en PDF.'
@@ -66,9 +82,18 @@ class WhatsappMessageController extends Controller
 
             report($e);
 
+            $userMessage = 'No se pudo enviar el PDF por WhatsApp.';
+
+            if (
+                str_contains($e->getMessage(), 'Recipient phone number not in allowed list')
+                || str_contains($e->getMessage(), '131030')
+            ) {
+                $userMessage = 'No se pudo enviar el PDF. El número ingresado no está autorizado para recibir mensajes. Verifica el número.';
+            }
+
             return response()->json([
                 'ok' => false,
-                'message' => 'No se pudo enviar el PDF por WhatsApp.',
+                'message' => $userMessage,
                 'error' => app()->environment('local') ? $e->getMessage() : null,
             ], 500);
         }
