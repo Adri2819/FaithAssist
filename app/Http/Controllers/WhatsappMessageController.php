@@ -82,9 +82,18 @@ class WhatsappMessageController extends Controller
 
             report($e);
 
+            $userMessage = 'No se pudo enviar el PDF por WhatsApp.';
+
+            if (
+                str_contains($e->getMessage(), 'Recipient phone number not in allowed list')
+                || str_contains($e->getMessage(), '131030')
+            ) {
+                $userMessage = 'No se pudo enviar el PDF. El número ingresado no está autorizado para recibir mensajes. Verifica el número.';
+            }
+
             return response()->json([
                 'ok' => false,
-                'message' => 'No se pudo enviar el PDF por WhatsApp.',
+                'message' => $userMessage,
                 'error' => app()->environment('local') ? $e->getMessage() : null,
             ], 500);
         }

@@ -96,8 +96,8 @@ const sendWhatsapp = async () => {
     console.error('Error al enviar WhatsApp:', error);
 
     errorMessage.value =
-      error.error ||
       error.message ||
+      error.error ||
       'No se pudo enviar el PDF por WhatsApp.';
   } finally {
     loading.value = false;
