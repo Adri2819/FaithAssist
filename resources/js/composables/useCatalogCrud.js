@@ -1,8 +1,9 @@
 import { ref } from 'vue';
-import Swal from 'sweetalert2';
+import { useAlerts } from './useAlerts';
 
 export function useCatalogCrud({ baseUrl, storeUrl }) {
   const loading = ref(false);
+  const alerts = useAlerts();
 
   const addErrors = ref({});
   const editErrors = ref({});
@@ -10,8 +11,7 @@ export function useCatalogCrud({ baseUrl, storeUrl }) {
   const addGeneralError = ref('');
   const editGeneralError = ref('');
 
-  const getCsrf = () =>
-    document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+  const getCsrf = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
   const apiFetch = async (url, method, data = null) => {
     const response = await fetch(url, {
@@ -38,27 +38,13 @@ export function useCatalogCrud({ baseUrl, storeUrl }) {
     return json;
   };
 
-  const toast = (icon, title) => {
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon,
-      title,
-      showConfirmButton: false,
-      timer: 2500,
-      timerProgressBar: true,
-    });
-  };
-
   const parseErrors = (err) => {
     const fieldErrors = err?.errors ?? {};
     const hasFieldErrors = Object.keys(fieldErrors).length > 0;
 
     return {
       fieldErrors,
-      generalError: hasFieldErrors
-        ? ''
-        : (err?.message ?? 'Ocurrió un error inesperado.'),
+      generalError: hasFieldErrors ? '' : (err?.message ?? 'Ocurrió un error inesperado.'),
     };
   };
 
@@ -79,7 +65,7 @@ export function useCatalogCrud({ baseUrl, storeUrl }) {
     try {
       const json = await apiFetch(storeUrl, 'POST', payload);
 
-      toast('success', json.message ?? 'Registro creado correctamente.');
+      alerts.success(json.message ?? 'Registro creado correctamente.');
 
       return json.data;
     } catch (err) {
@@ -101,7 +87,7 @@ export function useCatalogCrud({ baseUrl, storeUrl }) {
     try {
       const json = await apiFetch(`${baseUrl}/${id}`, 'PUT', payload);
 
-      toast('success', json.message ?? 'Registro actualizado correctamente.');
+      alerts.success(json.message ?? 'Registro actualizado correctamente.');
 
       return json.data;
     } catch (err) {
@@ -117,16 +103,7 @@ export function useCatalogCrud({ baseUrl, storeUrl }) {
   };
 
   const deleteRow = async (row) => {
-    const result = await Swal.fire({
-      title: 'Eliminar registro',
-      text: 'Esta acción no se puede deshacer.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-    });
+    const result = await alerts.confirmDelete();
 
     if (!result.isConfirmed) return false;
 
@@ -135,11 +112,11 @@ export function useCatalogCrud({ baseUrl, storeUrl }) {
     try {
       const json = await apiFetch(`${baseUrl}/${row.id}`, 'DELETE');
 
-      toast('success', json.message ?? 'Registro eliminado correctamente.');
+      alerts.success(json.message ?? 'Registro eliminado correctamente.');
 
       return true;
     } catch (err) {
-      toast('error', err?.message ?? 'Ocurrió un error inesperado.');
+      alerts.error(err?.message ?? 'Ocurrió un error inesperado.');
       return false;
     } finally {
       loading.value = false;

@@ -1,5 +1,6 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { useAlerts } from './useAlerts';
 
 const THEMES = ['light', 'dark'];
 
@@ -28,6 +29,7 @@ export function applyTheme(theme) {
 
 export function useTheme() {
   const page = usePage();
+  const alerts = useAlerts();
   const theme = ref(getInitialTheme(page.props.auth?.user?.ui_theme));
   const savingTheme = ref(false);
 
@@ -78,7 +80,7 @@ export function useTheme() {
     } catch (error) {
       savingTheme.value = false;
       console.error(error);
-      window.alert('No se pudo guardar tu preferencia de tema. Intenta de nuevo.');
+      alerts.error('No se pudo guardar tu preferencia de tema. Intenta de nuevo.');
     }
   };
 
