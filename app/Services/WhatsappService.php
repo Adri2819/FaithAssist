@@ -26,7 +26,7 @@ class WhatsappService
         $this->assertConfigured();
 
         if (!Storage::exists($storagePath)) {
-            throw new RuntimeException("No existe el archivo PDF: {$storagePath}");
+            throw new RuntimeException('No se encontró el archivo PDF seleccionado. Vuelve a cargarlo e inténtalo de nuevo.');
         }
 
         $absolutePath = Storage::path($storagePath);
@@ -43,7 +43,7 @@ class WhatsappService
             ]);
 
         if (!$response->successful()) {
-            throw new RuntimeException('Error al subir PDF a Meta: ' . $response->body());
+            throw new RuntimeException('No se pudo preparar el PDF para su envío. Intenta de nuevo en unos minutos.');
         }
 
         return $response->json('id');
@@ -76,7 +76,7 @@ class WhatsappService
             ->post($this->endpoint("/{$this->phoneNumberId}/messages"), $payload);
 
         if (!$response->successful()) {
-            throw new RuntimeException('Error al enviar WhatsApp: ' . $response->body());
+            throw new RuntimeException($this->friendlyMessageFromResponse($response->body()));
         }
 
         return [
@@ -110,7 +110,7 @@ class WhatsappService
     private function assertConfigured(): void
     {
         if (! $this->token || ! $this->phoneNumberId) {
-            throw new RuntimeException('Faltan credenciales de Meta WhatsApp en el archivo .env');
+            throw new RuntimeException('El servicio de mensajería no está disponible en este momento. Intenta de nuevo más tarde.');
         }
     }
 
@@ -122,5 +122,24 @@ class WhatsappService
     private function normalizePhone(string $phone): string
     {
         return preg_replace('/\D+/', '', $phone);
+    }
+
+    private function friendlyMessageFromResponse(string $responseBody): string
+    {
+        $decoded = json_decode($responseBody, true);
+        $error = is_array($decoded) ? ($decoded['error'] ?? []) : [];
+        $code = is_array($error) ? ($error['code'] ?? null) : null;
+        $message = is_array($error) ? (string) ($error['message'] ?? '') : '';
+        $details = is_array($error) ? (string) ($error['error_data']['details'] ?? '') : '';
+
+        if (
+            $code === 131030
+            || str_contains($message, 'Recipient phone number not in allowed list')
+            || str_contains($details, 'no está en la lista de autorizados')
+        ) {
+            return 'No se pudo enviar el PDF. El número ingresado no está autorizado para recibir mensajes. Verifica el número.';
+        }
+
+        return 'No se pudo enviar el PDF por WhatsApp. Intenta de nuevo en unos minutos.';
     }
 }
