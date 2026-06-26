@@ -93,7 +93,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('periodo-movimientos', PeriodMovementController::class)
         ->only(['index', 'store', 'update', 'destroy'])
-        ->parameters(['periodo-movimientos' => 'periodo_movimiento']);
+        ->parameters(['periodo-movimientos' => 'movimiento']);
 
     Route::resource('tipos-movimientos-periodo', PeriodMovementTypeController::class)
         ->only(['index', 'store', 'update', 'destroy'])

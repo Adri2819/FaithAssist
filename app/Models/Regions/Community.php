@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
@@ -52,14 +51,7 @@ class Community extends Model
         return $this->belongsTo(Municipality::class, 'municipality_id');
     }
 
-    public function users(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'scopes', 'scope_id', 'user_id')
-            ->using(\App\Models\Scope::class)
-            ->wherePivot('scope_type', \App\Models\Scope::TYPE_COMMUNITY)
-            ->withPivotValue('scope_type', \App\Models\Scope::TYPE_COMMUNITY)
-            ->withTimestamps();
-    }
+    // Community no tiene usuarios directamente asignados en el nuevo modelo de scopes.
 
     public function creator(): BelongsTo
     {

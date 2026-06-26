@@ -40,14 +40,23 @@ class ChapelRequest extends FormRequest
             function ($validator): void {
                 $user = $this->user();
 
-                if (! $user || $user->hasModuleFullScope('capillas')) {
+                if (! $user) {
+                    return;
+                }
+
+                $scope = new \App\Services\UserScopeService($user);
+
+                if ($scope->isGlobal() || $user->can('capillas.scope.all')) {
                     return;
                 }
 
                 $communityId = $this->integer('community_id') ?: null;
                 $churchId = $this->filled('church_id') ? $this->integer('church_id') : null;
 
-                if ($user->canAccessCommunityId($communityId) || $user->canAccessChurchId($churchId)) {
+                $communityOk = $communityId && $scope->communityIds()->contains($communityId);
+                $churchOk = $churchId && $scope->churchIds()->contains($churchId);
+
+                if ($communityOk || $churchOk) {
                     return;
                 }
 

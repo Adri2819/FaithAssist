@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Ecclesiastes\DioceseRequest;
 use App\Models\Ecclesiastes\Diocese;
 use App\Models\Regions\State;
+use App\Services\UserScopeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,17 +19,20 @@ class DioceseController extends Controller
         $this->authorizeResource(Diocese::class, 'diocesis');
     }
 
-        public function index(Request $request): Response
+    public function index(Request $request): Response
     {
         $search = $request->input('search', '');
+        $scope = new UserScopeService($request->user());
 
         $dioceses = Diocese::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->dioceseIds()))
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
             ->paginate(15, ['id', 'state_id', 'name', 'bishop', 'status'])
             ->withQueryString();
 
         $states = State::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->stateIds()))
             ->where('status', 'active')
             ->orderBy('name')
             ->get(['id', 'name', 'short_name']);

@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Security;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Security\UserRequest;
 use App\Models\Ecclesiastes\Church;
+use App\Models\Ecclesiastes\Deanery;
+use App\Models\Ecclesiastes\Diocese;
 use App\Models\Lada;
 use App\Models\Profile;
-use App\Models\Regions\Municipality;
 use App\Models\User;
+use App\Services\UserScopeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -23,9 +25,24 @@ class UserController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->input('search', '');
+        $editor = $request->user();
+        $scope = new UserScopeService($editor);
 
         $users = User::query()
-            ->with(['profile', 'roles', 'assignedMunicipalities:id,name', 'assignedChurches:id,name'])
+            ->with(['profile', 'roles', 'diocese:id,name', 'deanery:id,name', 'church:id,name'])
+            ->when(! $scope->isGlobal(), function ($q) use ($editor) {
+                $q->where(function ($sub) use ($editor) {
+                    if ($editor->diocese_id !== null) {
+                        $sub->where('diocese_id', $editor->diocese_id);
+                    }
+                    if ($editor->deanery_id !== null) {
+                        $sub->where('deanery_id', $editor->deanery_id);
+                    }
+                    if ($editor->church_id !== null) {
+                        $sub->where('church_id', $editor->church_id);
+                    }
+                });
+            })
             ->when($search, function ($q) use ($search) {
                 $q->whereHas('profile', fn ($p) => $p->where('name', 'like', "%{$search}%")
                     ->orWhere('paterno', 'like', "%{$search}%")
@@ -42,8 +59,9 @@ class UserController extends Controller
                 'initials' => $this->resolveInitials($user),
                 'full_name' => $this->resolveFullName($user),
                 'role' => $user->roles->first()?->name,
-                'municipalities' => $user->assignedMunicipalities->pluck('name')->values()->all(),
-                'churches' => $user->assignedChurches->pluck('name')->values()->all(),
+                'diocese' => $user->diocese?->name,
+                'deanery' => $user->deanery?->name,
+                'church' => $user->church?->name,
             ]);
 
         return Inertia::render('Security/Users/Index', [
@@ -54,13 +72,17 @@ class UserController extends Controller
 
     public function create(): Response
     {
+        $editor = auth()->user();
+
         return Inertia::render('Security/Users/Form', [
             'user' => null,
             ...$this->formOptions(),
             'selectedRole' => null,
             'selectedPermissions' => [],
-            'selectedMunicipalities' => [],
-            'selectedChurches' => [],
+            'selectedDiocese' => null,
+            'selectedDeanery' => null,
+            'selectedChurch' => null,
+            'editorScope' => $this->buildEditorScope($editor),
             'selectedCountryCode' => Lada::defaultCode(),
             'countryCodes' => $this->getCountryCodes(),
         ]);
@@ -68,6 +90,9 @@ class UserController extends Controller
 
     public function store(UserRequest $request): RedirectResponse
     {
+        $editor = $request->user();
+        [$dioceseId, $deaneryId, $churchId] = $this->resolveScope($editor, $request);
+
         $user = User::create([
             'name' => trim("{$request->name} {$request->paterno} ".($request->materno ?? '')),
             'email' => $request->email,
@@ -76,6 +101,9 @@ class UserController extends Controller
                 $request->input('whatsapp_country_code')
             ),
             'password' => Hash::make($request->password),
+            'diocese_id' => $dioceseId,
+            'deanery_id' => $deaneryId,
+            'church_id' => $churchId,
         ]);
 
         Profile::create([
@@ -85,16 +113,20 @@ class UserController extends Controller
             'materno' => $request->materno,
         ]);
 
-        if ($request->role_id) {
-            $user->syncRoles([$request->role_id]);
+        $allowedRoleIds = $this->getAllowedRoles($editor)->pluck('id');
+        $roleId = $request->role_id && $allowedRoleIds->contains($request->role_id)
+            ? $request->role_id
+            : null;
+
+        if ($roleId) {
+            $user->syncRoles([$roleId]);
         }
 
-        $permIds = array_filter((array) $request->input('permissions', []));
-        $user->syncPermissions(
-            empty($permIds) ? [] : Permission::whereIn('id', $permIds)->get()
-        );
-        $user->assignedMunicipalities()->sync($request->input('municipality_ids', []));
-        $user->assignedChurches()->sync($request->input('church_ids', []));
+        $editorPermissionIds = $editor->getAllPermissions()->pluck('id');
+        $submittedIds = collect(array_filter((array) $request->input('permissions', [])));
+        $safeIds = $submittedIds->intersect($editorPermissionIds)->all();
+
+        $user->syncPermissions(empty($safeIds) ? [] : Permission::whereIn('id', $safeIds)->get());
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
@@ -107,9 +139,13 @@ class UserController extends Controller
         $usuario->loadMissing([
             'profile',
             'roles',
-            'assignedMunicipalities:id,name',
-            'assignedChurches:id,name',
+            'diocese:id,name',
+            'deanery:id,name',
+            'church:id,name',
         ]);
+
+        $editor = auth()->user();
+        $editorPermissionIds = $editor->getAllPermissions()->pluck('id');
 
         return Inertia::render('Security/Users/Form', [
             'user' => [
@@ -127,9 +163,15 @@ class UserController extends Controller
             ],
             ...$this->formOptions(),
             'selectedRole' => $usuario->roles->first()?->id,
-            'selectedPermissions' => $usuario->getAllPermissions()->pluck('id')->toArray(),
-            'selectedMunicipalities' => $usuario->assignedMunicipalities->pluck('id')->toArray(),
-            'selectedChurches' => $usuario->assignedChurches->pluck('id')->toArray(),
+            'selectedPermissions' => $usuario->getAllPermissions()
+                ->pluck('id')
+                ->intersect($editorPermissionIds)
+                ->values()
+                ->toArray(),
+            'selectedDiocese' => $usuario->diocese_id,
+            'selectedDeanery' => $usuario->deanery_id,
+            'selectedChurch' => $usuario->church_id,
+            'editorScope' => $this->buildEditorScope($editor),
             'selectedCountryCode' => $this->whatsappCountryCode($usuario->whatsapp_phone),
             'countryCodes' => $this->getCountryCodes(),
         ]);
@@ -137,6 +179,9 @@ class UserController extends Controller
 
     public function update(UserRequest $request, User $usuario): RedirectResponse
     {
+        $editor = $request->user();
+        [$dioceseId, $deaneryId, $churchId] = $this->resolveScope($editor, $request);
+
         $usuario->update([
             'email' => $request->email,
             'whatsapp_phone' => $this->normalizeWhatsAppPhone(
@@ -144,6 +189,9 @@ class UserController extends Controller
                 $request->input('whatsapp_country_code')
             ),
             'name' => trim("{$request->name} {$request->paterno} ".($request->materno ?? '')),
+            'diocese_id' => $dioceseId,
+            'deanery_id' => $deaneryId,
+            'church_id' => $churchId,
         ]);
 
         if ($request->filled('password')) {
@@ -157,14 +205,31 @@ class UserController extends Controller
             'materno' => $request->materno,
         ])->save();
 
-        $usuario->syncRoles($request->role_id ? [$request->role_id] : []);
+        $allowedRoleIds = $this->getAllowedRoles($editor)->pluck('id');
+        $roleId = $request->role_id && $allowedRoleIds->contains($request->role_id)
+            ? $request->role_id
+            : null;
 
-        $permIds = array_filter((array) $request->input('permissions', []));
-        $usuario->syncPermissions(
-            empty($permIds) ? [] : Permission::whereIn('id', $permIds)->get()
-        );
-        $usuario->assignedMunicipalities()->sync($request->input('municipality_ids', []));
-        $usuario->assignedChurches()->sync($request->input('church_ids', []));
+        $usuario->syncRoles($roleId ? [$roleId] : []);
+
+        // Permissions granted via the new role — no need to duplicate as direct permissions.
+        $rolePermissionIds = $usuario->getPermissionsViaRoles()->pluck('id');
+
+        $editorPermissionIds = $editor->getAllPermissions()->pluck('id');
+
+        // Preserve direct permissions the target has that the editor cannot manage.
+        $preservedPerms = $usuario->getDirectPermissions()
+            ->filter(fn (Permission $p) => ! $editorPermissionIds->contains($p->id));
+
+        // Grant submitted permissions that are (a) within editor scope and (b) not already in the role.
+        $submittedIds = collect(array_filter((array) $request->input('permissions', [])));
+        $extraIds = $submittedIds->intersect($editorPermissionIds)->diff($rolePermissionIds);
+        $grantedPerms = $extraIds->isNotEmpty()
+            ? Permission::whereIn('id', $extraIds->all())->get()
+            : collect();
+
+        $finalPerms = $preservedPerms->merge($grantedPerms)->unique('id');
+        $usuario->syncPermissions($finalPerms);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
@@ -172,9 +237,46 @@ class UserController extends Controller
             ->with('success', 'Usuario actualizado correctamente.');
     }
 
-    private function getGroupedPermissions(): array
+    /**
+     * Resolve scope FKs for store/update.
+     * If editor has a restricted scope, force the new user into that same scope.
+     *
+     * @return array{int|null, int|null, int|null}  [diocese_id, deanery_id, church_id]
+     */
+    private function resolveScope(User $editor, \Illuminate\Http\Request $request): array
     {
+        $scope = new UserScopeService($editor);
+
+        if (! $scope->isGlobal()) {
+            return [
+                $editor->diocese_id,
+                $editor->deanery_id,
+                $editor->church_id,
+            ];
+        }
+
+        return [
+            $request->input('diocese_id'),
+            $request->input('deanery_id'),
+            $request->input('church_id'),
+        ];
+    }
+
+    private function buildEditorScope(User $editor): array
+    {
+        return [
+            'diocese_id' => $editor->diocese_id,
+            'deanery_id' => $editor->deanery_id,
+            'church_id' => $editor->church_id,
+        ];
+    }
+
+    private function getGroupedPermissions(User $editor): array
+    {
+        $editorPermissionIds = $editor->getAllPermissions()->pluck('id');
+
         return Permission::query()
+            ->whereIn('id', $editorPermissionIds)
             ->orderBy('module_key')
             ->orderBy('name')
             ->get(['id', 'name', 'description', 'module_key'])
@@ -188,19 +290,56 @@ class UserController extends Controller
             ->toArray();
     }
 
+    private function getAllowedRoles(User $editor): \Illuminate\Support\Collection
+    {
+        $editorPermissionIds = $editor->getAllPermissions()->pluck('id');
+
+        return Role::with('permissions:id')
+            ->orderBy('name')
+            ->get(['id', 'name', 'description'])
+            ->filter(function (Role $role) use ($editorPermissionIds): bool {
+                return $role->permissions->every(
+                    fn ($p) => $editorPermissionIds->contains($p->id)
+                );
+            })
+            ->map(fn (Role $role) => [
+                'id' => $role->id,
+                'name' => $role->name,
+                'description' => $role->description,
+                'permissions' => $role->permissions->pluck('id')->values(),
+            ])
+            ->values();
+    }
+
     private function formOptions(): array
     {
+        $editor = auth()->user();
+        $scope = new UserScopeService($editor);
+
+        $dioceses = Diocese::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->dioceseIds()))
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $deaneries = Deanery::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->deaneryIds()))
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get(['id', 'name', 'diocese_id']);
+
+        $churches = Church::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->churchIds()))
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get(['id', 'name', 'deanery_id']);
+
         return [
-            'roles' => Role::orderBy('name')->get(['id', 'name', 'description']),
-            'permissionGroups' => $this->getGroupedPermissions(),
-            'municipalities' => Municipality::query()
-                ->where('status', 'active')
-                ->orderBy('name')
-                ->get(['id', 'name']),
-            'churches' => Church::query()
-                ->where('status', 'active')
-                ->orderBy('name')
-                ->get(['id', 'name']),
+            'roles' => $this->getAllowedRoles($editor),
+            'permissionGroups' => $this->getGroupedPermissions($editor),
+            'dioceses' => $dioceses,
+            'deaneries' => $deaneries,
+            'churches' => $churches,
         ];
     }
 
