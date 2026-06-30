@@ -26,6 +26,7 @@ class PermissionsSeeder extends Seeder
             'periodo_movimientos' => 'operation',
             'tipos_movimientos_periodo' => 'operation',
             'niveles' => 'operation',
+            'children' => 'catechism',
             'roles' => 'security',
             'usuarios' => 'security',
         ];
@@ -54,6 +55,7 @@ class PermissionsSeeder extends Seeder
             ['name' => 'comunidades.export', 'module_key' => 'regions', 'description' => 'Permite exportar comunidades a CSV'],
             ['name' => 'parroquias.scope.all', 'module_key' => 'ecclesiastes', 'description' => 'Permite ver todas las parroquias'],
             ['name' => 'capillas.scope.all', 'module_key' => 'ecclesiastes', 'description' => 'Permite ver todas las capillas'],
+            ['name' => 'children.scope.all', 'module_key' => 'catechism', 'description' => 'Permite ver todos los niños'],
             ['name' => 'whatsapp.send', 'module_key' => 'whatsapp', 'description' => 'Permite enviar mensajes por WhatsApp'],
         ] as $permission) {
             Permission::query()->updateOrCreate(

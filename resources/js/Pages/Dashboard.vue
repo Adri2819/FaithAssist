@@ -65,12 +65,12 @@ const modules = computed(() =>
       ],
     },
     {
-      name: 'Eclesiasticos',
+      name: 'Eclesiásticos',
       accent: 'from-blue-200 via-sky-100 to-slate-100',
       titleClass: 'text-sky-700',
       items: [
         {
-          label: 'Diocesis',
+          label: 'Diócesis',
           icon: Landmark,
           href: '/diocesis',
           moduleKey: 'diocesis',
@@ -117,12 +117,18 @@ const modules = computed(() =>
       ],
     },
     {
+      name: 'Catechism',
+      accent: 'from-amber-200 via-orange-100 to-slate-100',
+      titleClass: 'text-sky-700',
+      items: [{ label: 'Niños', icon: Users, href: '/children', moduleKey: 'children' }],
+    },
+    {
       name: 'Seguridad',
       accent: 'from-blue-200 via-sky-100 to-slate-100',
       titleClass: 'text-sky-700',
       items: [
         {
-          label: 'Modulos',
+          label: 'Módulos',
           icon: LayoutGrid,
           href: '/modulos',
           moduleKey: 'modulos',

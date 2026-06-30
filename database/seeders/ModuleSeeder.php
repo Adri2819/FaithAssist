@@ -15,8 +15,9 @@ class ModuleSeeder extends Seeder
     {
         $superadmin = User::query()->where('email', 'superadmin@faithassistqr.test')->first();
 
-        if (!$superadmin) {
+        if (! $superadmin) {
             $this->command?->warn('No se encontro el usuario Superadmin. Ejecuta UsersPerRoleSeeder primero.');
+
             return;
         }
 
@@ -40,8 +41,12 @@ class ModuleSeeder extends Seeder
                 'name' => 'Operación',
                 'description' => 'Módulo para la gestión de operaciones y actividades.',
                 'key' => 'operation',
-            ]
-            // Agrega más módulos aquí si es necesario
+            ],
+            [
+                'name' => 'Catechism',
+                'description' => 'Módulo para la gestión de catecismo.',
+                'key' => 'catechism',
+            ],
         ];
 
         foreach ($modules as $module) {
