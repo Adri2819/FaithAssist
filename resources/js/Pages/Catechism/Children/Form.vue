@@ -265,7 +265,7 @@ const submit = () => {
                 v-model="form.observations"
                 label="Observaciones"
                 as="textarea"
-                placeholder="Notas medicas, familiares o administrativas"
+                placeholder="Notas médicas, familiares o administrativas"
                 :error="form.errors.observations"
               />
 
