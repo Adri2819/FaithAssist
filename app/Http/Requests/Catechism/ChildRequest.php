@@ -71,6 +71,20 @@ class ChildRequest extends FormRequest
                 $churchId = $this->integer('church_id') ?: null;
                 $communityId = $this->integer('community_id') ?: null;
 
+                if ($churchId && $communityId) {
+                    $churchMunicipalityId = \App\Models\Ecclesiastes\Church::whereKey($churchId)->value('municipality_id');
+                    $communityMunicipalityId = \App\Models\Regions\Community::whereKey($communityId)->value('municipality_id');
+
+                    if ($churchMunicipalityId && $communityMunicipalityId && $churchMunicipalityId !== $communityMunicipalityId) {
+                        $validator->errors()->add(
+                            'community_id',
+                            'La comunidad seleccionada no pertenece al municipio de la iglesia.'
+                        );
+
+                        return;
+                    }
+                }
+
                 $churchOk = $churchId && $scope->churchIds()->contains($churchId);
                 $communityOk = $communityId && $scope->communityIds()->contains($communityId);
 
