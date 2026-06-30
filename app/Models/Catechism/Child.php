@@ -89,6 +89,6 @@ class Child extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('status', 'active');
+        return $query->where('status', \App\Globals\Status::ACTIVE);
     }
 }
