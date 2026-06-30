@@ -36,9 +36,7 @@ class ChildController extends Controller
         $scope = new UserScopeService($request->user());
 
         $query = Child::query()
-            ->with(['church:id,name,municipality_id', 'community:id,name,municipality_id'])
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($builder) use ($search) {
+            ->when($search !== '', function ($query) use ($search) {
                     $builder->where('code', 'like', "%{$search}%")
                         ->orWhere('name', 'like', "%{$search}%")
                         ->orWhere('paterno', 'like', "%{$search}%")
