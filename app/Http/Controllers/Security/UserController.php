@@ -127,7 +127,7 @@ class UserController extends Controller
         $submittedIds = collect(array_filter((array) $request->input('permissions', [])));
         $safeIds = $submittedIds->intersect($editorPermissionIds)->all();
 
-        $user->syncPermissions(empty($safeIds) ? [] : Permission::whereIn('id', $safeIds)->get());
+        $user->syncPermissions(empty($safeIds) ? collect() : Permission::whereIn('id', $safeIds)->get());
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
@@ -211,7 +211,7 @@ class UserController extends Controller
             ? $request->role_id
             : null;
 
-        $usuario->syncRoles($roleId ? [$roleId] : []);
+        $usuario->syncRoles($roleId ? [$roleId] : collect());
 
         // Permissions granted via the new role — no need to duplicate as direct permissions.
         $rolePermissionIds = $usuario->getPermissionsViaRoles()->pluck('id');

@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 const props = defineProps({
-  modelValue: { type: [String, Number, Boolean], default: null },
+  modelValue: { type: [String, Number, Boolean, Array], default: null },
   label: { type: String, required: true },
   error: { type: String, default: '' },
   placeholder: { type: String, default: '' },
@@ -12,11 +12,20 @@ const props = defineProps({
   required: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
   numberValue: { type: Boolean, default: false },
+  multiple: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:modelValue']);
 
 const update = (event) => {
+  if (props.multiple) {
+    const values = Array.from(event.target.selectedOptions).map((option) =>
+      props.numberValue ? Number(option.value) : option.value,
+    );
+    emit('update:modelValue', values);
+    return;
+  }
+
   const value = event.target.value;
 
   if (props.as === 'select' && value === '') {
@@ -44,10 +53,11 @@ const controlClass = computed(() => [
       v-if="as === 'select'"
       :value="modelValue ?? ''"
       :disabled="disabled"
+      :multiple="multiple"
       :class="controlClass"
       @change="update"
     >
-      <option v-if="placeholder" value="">{{ placeholder }}</option>
+      <option v-if="placeholder && !multiple" value="">{{ placeholder }}</option>
       <option v-for="option in options" :key="option.value" :value="option.value">
         {{ option.label }}
       </option>

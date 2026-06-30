@@ -17,6 +17,7 @@ const props = defineProps({
   statuses: { type: Array, default: () => [] },
   sexes: { type: Array, default: () => [] },
   bloodTypes: { type: Array, default: () => [] },
+  levels: { type: Array, default: () => [] },
 });
 
 const isEditing = computed(() => !!props.child);
@@ -46,6 +47,7 @@ const form = useForm({
   observations: props.child?.observations ?? '',
   privacy_terms: props.child?.privacy_terms ?? false,
   status: props.child?.status ?? 'active',
+  level_ids: props.child?.levels?.map((level) => level.id) ?? [],
 });
 
 const selectedChurch = computed(() =>
@@ -69,6 +71,26 @@ const communityOptions = computed(() =>
     label: community.name,
   })),
 );
+const levelOptions = computed(() => {
+  if (!selectedChurch.value?.diocese_id) {
+    return [];
+  }
+
+  return props.levels
+    .filter((level) => level.diocese_id === selectedChurch.value.diocese_id)
+    .map((level) => ({
+      value: level.id,
+      label: level.name,
+    }));
+});
+const currentLevelNames = computed(() =>
+  props.child?.levels?.length ? props.child.levels.map((level) => level.name).join(', ') : 'Sin nivel asignado',
+);
+const levelEmptyMessage = computed(() =>
+  selectedChurch.value?.diocese_id
+    ? 'No hay niveles activos disponibles para la diócesis de la parroquia seleccionada.'
+    : 'Selecciona una parroquia para cargar los niveles de su diócesis.',
+);
 const filteredCommunities = computed(() => {
   if (!selectedChurch.value?.municipality_id) return props.communities;
 
@@ -77,14 +99,29 @@ const filteredCommunities = computed(() => {
   );
 });
 
+const toggleLevel = (levelId) => {
+  const normalizedId = Number(levelId);
+  if (form.level_ids.includes(normalizedId)) {
+    form.level_ids = form.level_ids.filter((id) => id !== normalizedId);
+    return;
+  }
+
+  form.level_ids = [...form.level_ids, normalizedId];
+};
+
 watch(
   () => form.church_id,
   () => {
-    if (form.community_id === null) return;
-    const communityValid = filteredCommunities.value.some(
-      (community) => community.id === form.community_id,
+    if (form.community_id !== null) {
+      const communityValid = filteredCommunities.value.some(
+        (community) => community.id === form.community_id,
+      );
+      if (!communityValid) form.community_id = null;
+    }
+
+    form.level_ids = form.level_ids.filter((levelId) =>
+      levelOptions.value.some((level) => level.value === levelId),
     );
-    if (!communityValid) form.community_id = null;
   },
 );
 
@@ -213,6 +250,56 @@ const submit = () => {
                 :options="statuses"
                 :error="form.errors.status"
                 required
+              />
+              <div v-if="!isEditing" class="md:col-span-2">
+                <div class="mb-2 flex items-center justify-between gap-3">
+                  <label class="block text-sm font-bold text-slate-600 dark:text-slate-300">
+                    Niveles <span class="text-red-500">*</span>
+                  </label>
+                  <span class="text-xs font-semibold text-slate-400">
+                    {{ form.level_ids.length }} seleccionado(s)
+                  </span>
+                </div>
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <button
+                    v-for="level in levelOptions"
+                    :key="level.value"
+                    type="button"
+                    class="rounded-2xl border p-4 text-left transition"
+                    :class="
+                      form.level_ids.includes(level.value)
+                        ? 'border-rose-500 bg-rose-50 text-rose-800 shadow-sm dark:border-rose-400 dark:bg-rose-950/30 dark:text-rose-200'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-rose-200 hover:bg-rose-50/60 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-rose-700'
+                    "
+                    @click="toggleLevel(level.value)"
+                  >
+                    <span class="flex items-center gap-3">
+                      <span
+                        class="flex h-5 w-5 items-center justify-center rounded border text-xs font-bold"
+                        :class="
+                          form.level_ids.includes(level.value)
+                            ? 'border-rose-500 bg-rose-600 text-white'
+                            : 'border-slate-300 text-transparent dark:border-slate-600'
+                        "
+                      >
+                        ✓
+                      </span>
+                      <span class="font-semibold">{{ level.label }}</span>
+                    </span>
+                  </button>
+                </div>
+                <p v-if="form.errors.level_ids" class="mt-2 text-xs font-semibold text-red-500">
+                  {{ form.errors.level_ids }}
+                </p>
+                <p v-if="levelOptions.length === 0" class="mt-2 text-sm font-semibold text-slate-400">
+                  {{ levelEmptyMessage }}
+                </p>
+              </div>
+              <UnderlineField
+                v-else
+                :model-value="currentLevelNames"
+                label="Niveles asignados"
+                disabled
               />
             </div>
           </UnderlineSection>

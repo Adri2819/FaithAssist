@@ -6,6 +6,10 @@ use App\Globals\BloodType;
 use App\Globals\Sex;
 use App\Globals\Status;
 use App\Http\Requests\Concerns\UppercasesFields;
+use App\Models\Ecclesiastes\Church;
+use App\Models\Operation\Level;
+use App\Models\Regions\Community;
+use App\Services\CatechismPeriodMovementService;
 use App\Services\UserScopeService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -49,6 +53,10 @@ class ChildRequest extends FormRequest
                 Status::WITHDRAW,
                 Status::SUSPENDED,
             ])],
+            'level_ids' => $this->isMethod('post')
+                ? ['required', 'array', 'min:1']
+                : ['nullable', 'array'],
+            'level_ids.*' => ['integer', Rule::exists('levels', 'id')->whereNull('deleted_at')],
         ];
     }
 
@@ -63,17 +71,19 @@ class ChildRequest extends FormRequest
                 }
 
                 $scope = new UserScopeService($user);
+                $churchId = $this->integer('church_id') ?: null;
 
                 if ($scope->isGlobal()) {
+                    $this->validateInitialLevels($validator, $churchId);
+
                     return;
                 }
 
-                $churchId = $this->integer('church_id') ?: null;
                 $communityId = $this->integer('community_id') ?: null;
 
                 if ($churchId && $communityId) {
-                    $churchMunicipalityId = \App\Models\Ecclesiastes\Church::whereKey($churchId)->value('municipality_id');
-                    $communityMunicipalityId = \App\Models\Regions\Community::whereKey($communityId)->value('municipality_id');
+                    $churchMunicipalityId = Church::whereKey($churchId)->value('municipality_id');
+                    $communityMunicipalityId = Community::whereKey($communityId)->value('municipality_id');
 
                     if ($churchMunicipalityId && $communityMunicipalityId && $churchMunicipalityId !== $communityMunicipalityId) {
                         $validator->errors()->add(
@@ -89,11 +99,47 @@ class ChildRequest extends FormRequest
                 $communityOk = $communityId && $scope->communityIds()->contains($communityId);
 
                 if ($churchOk || $communityOk) {
+                    $this->validateInitialLevels($validator, $churchId);
+
                     return;
                 }
 
+                $validator->errors()->add(
+                    'church_id',
                     'El niño debe pertenecer a una iglesia o comunidad dentro del alcance del usuario.'
+                );
             },
         ];
+    }
+
+    private function validateInitialLevels($validator, ?int $churchId): void
+    {
+        if (! $this->isMethod('post') || ! $churchId || $validator->errors()->isNotEmpty()) {
+            return;
+        }
+
+        $church = Church::query()->with('deanery:id,diocese_id')->find($churchId);
+        $dioceseId = $church?->deanery?->diocese_id;
+        $levelIds = collect($this->input('level_ids', []))->filter()->unique()->values();
+
+        if (! $dioceseId || $levelIds->isEmpty()) {
+            return;
+        }
+
+        $validLevelCount = Level::query()
+            ->whereIn('id', $levelIds)
+            ->where('diocese_id', $dioceseId)
+            ->where('status', Status::ACTIVE)
+            ->count();
+
+        if ($validLevelCount !== $levelIds->count()) {
+            $validator->errors()->add('level_ids', 'Los niveles seleccionados deben pertenecer a la diócesis de la parroquia.');
+
+            return;
+        }
+
+        if (! app(CatechismPeriodMovementService::class)->activeMovementForChurch($church, CatechismPeriodMovementService::INSCRIPTIONS)) {
+            $validator->errors()->add('church_id', 'No hay un movimiento de inscripciones activo para la parroquia seleccionada.');
+        }
     }
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Catechism\ChildController;
+use App\Http\Controllers\Catechism\ReinscriptionController;
 use App\Http\Controllers\Ecclesiastes\ChapelController;
 use App\Http\Controllers\Ecclesiastes\ChurchController;
 use App\Http\Controllers\Ecclesiastes\DeaneryController;
@@ -107,6 +108,9 @@ Route::middleware('auth')->group(function () {
     // Catechism
     Route::resource('children', ChildController::class)
         ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+
+    Route::resource('reinscripciones', ReinscriptionController::class)
+        ->only(['index', 'store']);
 
     // Seguridad
     Route::resource('modulos', ModuleController::class)

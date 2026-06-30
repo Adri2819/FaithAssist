@@ -6,6 +6,12 @@ use App\Globals\BloodType;
 use App\Globals\Sex;
 use App\Globals\Status;
 use App\Models\Catechism\Child;
+use App\Models\Catechism\ChildLevelAssignment;
+use App\Models\Operation\Level;
+use App\Models\Operation\Period;
+use App\Models\Operation\PeriodMovement;
+use App\Models\Operation\PeriodMovementType;
+use App\Services\CatechismPeriodMovementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Concerns\ControllerTestHelpers;
 use Tests\TestCase;
@@ -65,10 +71,13 @@ class ChildControllerTest extends TestCase
     public function test_store_creates_child_with_generated_code(): void
     {
         $chain = $this->createChain();
+        $level = $this->createLevel($chain);
+        $secondLevel = $this->createLevel($chain, ['name' => 'SEGUNDO']);
+        $this->createActiveMovement($chain, CatechismPeriodMovementService::INSCRIPTIONS);
         $user = $this->makeGlobalUser('children.create', 'children.scope.all');
 
         $this->actingAs($user)
-            ->post('/children', $this->payload($chain))
+            ->post('/children', $this->payload($chain, ['level_ids' => [$level->id, $secondLevel->id]]))
             ->assertRedirect('/children');
 
         $this->assertDatabaseHas('children', [
@@ -77,17 +86,38 @@ class ChildControllerTest extends TestCase
             'materno' => 'GOMEZ',
             'code' => now()->format('Y')."-JPG-20180314-CH{$chain['church']->id}-0001",
         ]);
+        $this->assertDatabaseHas('child_level_assignments', [
+            'level_id' => $level->id,
+            'status' => Status::ACTIVE,
+        ]);
+        $this->assertDatabaseHas('child_level_assignments', [
+            'level_id' => $secondLevel->id,
+            'status' => Status::ACTIVE,
+        ]);
     }
 
     public function test_privacy_terms_must_be_accepted(): void
     {
         $chain = $this->createChain();
+        $level = $this->createLevel($chain);
+        $this->createActiveMovement($chain, CatechismPeriodMovementService::INSCRIPTIONS);
         $user = $this->makeGlobalUser('children.create', 'children.scope.all');
-        $payload = $this->payload($chain, ['privacy_terms' => false]);
+        $payload = $this->payload($chain, ['privacy_terms' => false, 'level_ids' => [$level->id]]);
 
         $this->actingAs($user)
             ->post('/children', $payload)
             ->assertSessionHasErrors('privacy_terms');
+    }
+
+    public function test_store_requires_active_inscription_movement(): void
+    {
+        $chain = $this->createChain();
+        $level = $this->createLevel($chain);
+        $user = $this->makeGlobalUser('children.create', 'children.scope.all');
+
+        $this->actingAs($user)
+            ->post('/children', $this->payload($chain, ['level_ids' => [$level->id]]))
+            ->assertSessionHasErrors('church_id');
     }
 
     public function test_church_scoped_user_sees_children_in_own_scope_only(): void
@@ -155,11 +185,34 @@ class ChildControllerTest extends TestCase
                 ->where('filters.municipality_id', $chain1['municipality']->id));
     }
 
+    public function test_index_filters_by_level(): void
+    {
+        $chain = $this->createChain();
+        $level1 = $this->createLevel($chain, ['name' => 'PRIMERO']);
+        $level2 = $this->createLevel($chain, ['name' => 'SEGUNDO']);
+        $movement = $this->createActiveMovement($chain, CatechismPeriodMovementService::INSCRIPTIONS);
+        $child1 = Child::query()->create($this->childRow($chain, ['code' => '2026-AAA-20180314-CH1-0001']));
+        $child2 = Child::query()->create($this->childRow($chain, ['code' => '2026-BBB-20180314-CH1-0002']));
+
+        $this->assignLevel($child1, $level1, $movement);
+        $this->assignLevel($child2, $level2, $movement);
+
+        $user = $this->makeGlobalUser('children.read');
+
+        $this->actingAs($user)->get("/children?level_id={$level2->id}")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('children.total', 1)
+                ->where('filters.level_id', $level2->id));
+    }
+
     public function test_invalid_enum_values_are_rejected(): void
     {
         $chain = $this->createChain();
+        $level = $this->createLevel($chain);
+        $this->createActiveMovement($chain, CatechismPeriodMovementService::INSCRIPTIONS);
         $user = $this->makeGlobalUser('children.create', 'children.scope.all');
-        $payload = $this->payload($chain, ['sex' => 'other', 'blood_type' => 'z_positive']);
+        $payload = $this->payload($chain, ['sex' => 'other', 'blood_type' => 'z_positive', 'level_ids' => [$level->id]]);
 
         $this->actingAs($user)
             ->post('/children', $payload)
@@ -220,6 +273,7 @@ class ChildControllerTest extends TestCase
             'observations' => 'Sin observaciones',
             'privacy_terms' => true,
             'status' => Status::ACTIVE,
+            'level_ids' => [],
         ], $overrides);
     }
 
@@ -238,5 +292,49 @@ class ChildControllerTest extends TestCase
             'privacy_terms' => true,
             'status' => Status::ACTIVE,
         ], $overrides);
+    }
+
+    private function createLevel(array $chain, array $overrides = []): Level
+    {
+        return Level::query()->create(array_merge([
+            'diocese_id' => $chain['diocese']->id,
+            'name' => 'NIVEL TEST',
+            'status' => Status::ACTIVE,
+        ], $overrides));
+    }
+
+    private function createActiveMovement(array $chain, string $typeName): PeriodMovement
+    {
+        $type = PeriodMovementType::query()->create([
+            'name' => $typeName,
+            'status' => Status::ACTIVE,
+        ]);
+        $period = Period::query()->create([
+            'diocese_id' => $chain['diocese']->id,
+            'name' => 'PERIODO TEST',
+            'start_date' => now()->subMonth()->toDateString(),
+            'end_date' => now()->addMonth()->toDateString(),
+            'status' => Status::IN_PROGRESS,
+        ]);
+
+        return PeriodMovement::query()->create([
+            'period_id' => $period->id,
+            'period_movement_type_id' => $type->id,
+            'status' => Status::IN_PROGRESS,
+            'start_date' => now()->subWeek()->toDateString(),
+            'end_date' => now()->addWeek()->toDateString(),
+        ]);
+    }
+
+    private function assignLevel(Child $child, Level $level, PeriodMovement $movement): ChildLevelAssignment
+    {
+        return ChildLevelAssignment::query()->create([
+            'child_id' => $child->id,
+            'level_id' => $level->id,
+            'period_id' => $movement->period_id,
+            'period_movement_id' => $movement->id,
+            'status' => Status::ACTIVE,
+            'assigned_at' => now()->toDateString(),
+        ]);
     }
 }

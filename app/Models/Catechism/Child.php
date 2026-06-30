@@ -2,8 +2,10 @@
 
 namespace App\Models\Catechism;
 
+use App\Globals\Status;
 use App\Models\Concerns\LogsActivityTrail;
 use App\Models\Ecclesiastes\Church;
+use App\Models\Operation\Level;
 use App\Models\Regions\Community;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -12,6 +14,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
@@ -72,6 +76,33 @@ class Child extends Model
         return $this->belongsTo(Community::class, 'community_id');
     }
 
+    public function levelAssignments(): HasMany
+    {
+        return $this->hasMany(ChildLevelAssignment::class, 'child_id');
+    }
+
+    public function activeLevelAssignments(): HasMany
+    {
+        return $this->levelAssignments()->where('status', Status::ACTIVE);
+    }
+
+    public function reinscriptions(): HasMany
+    {
+        return $this->hasMany(ChildReinscription::class, 'child_id');
+    }
+
+    public function levels(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Level::class,
+            'child_level_assignments',
+            'child_id',
+            'level_id'
+        )
+            ->withPivot(['id', 'period_id', 'period_movement_id', 'status', 'assigned_at', 'ended_at'])
+            ->withTimestamps();
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -89,6 +120,6 @@ class Child extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('status', \App\Globals\Status::ACTIVE);
+        return $query->where('status', Status::ACTIVE);
     }
 }

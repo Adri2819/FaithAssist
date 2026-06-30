@@ -9,9 +9,10 @@ import AppShell from '../../../components/layouts/AppShell.vue';
 const props = defineProps({
   children: { type: Object, required: true },
   search: { type: String, default: '' },
-  filters: { type: Object, default: () => ({ church_id: null, municipality_id: null }) },
+  filters: { type: Object, default: () => ({ church_id: null, municipality_id: null, level_id: null }) },
   churches: { type: Array, default: () => [] },
   municipalities: { type: Array, default: () => [] },
+  levels: { type: Array, default: () => [] },
   statusLabels: { type: Object, default: () => ({}) },
   sexLabels: { type: Object, default: () => ({}) },
   bloodTypeLabels: { type: Object, default: () => ({}) },
@@ -20,10 +21,11 @@ const props = defineProps({
 const searchTerm = ref(props.search);
 const selectedChurch = ref(props.filters.church_id);
 const selectedMunicipality = ref(props.filters.municipality_id);
+const selectedLevel = ref(props.filters.level_id);
 let debounce = null;
 
 const activeFilters = computed(
-  () => !!searchTerm.value || !!selectedChurch.value || !!selectedMunicipality.value,
+  () => !!searchTerm.value || !!selectedChurch.value || !!selectedMunicipality.value || !!selectedLevel.value,
 );
 
 const reload = () => {
@@ -31,12 +33,13 @@ const reload = () => {
     search: searchTerm.value || undefined,
     church_id: selectedChurch.value || undefined,
     municipality_id: selectedMunicipality.value || undefined,
+    level_id: selectedLevel.value || undefined,
   };
 
   router.get('/children', params, { preserveState: true, replace: true });
 };
 
-watch([searchTerm, selectedChurch, selectedMunicipality], () => {
+watch([searchTerm, selectedChurch, selectedMunicipality, selectedLevel], () => {
   clearTimeout(debounce);
   debounce = setTimeout(reload, 400);
 });
@@ -45,6 +48,7 @@ const clearFilters = () => {
   searchTerm.value = '';
   selectedChurch.value = null;
   selectedMunicipality.value = null;
+  selectedLevel.value = null;
 };
 
 const destroyChild = (child) => {
@@ -91,7 +95,7 @@ const destroyChild = (child) => {
         </button>
       </div>
 
-      <div class="grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr]">
+      <div class="grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <label
           class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-100 dark:border-slate-700 dark:bg-slate-950 dark:focus-within:border-sky-600 dark:focus-within:ring-sky-900/40"
         >
@@ -121,6 +125,13 @@ const destroyChild = (child) => {
             {{ church.name }}
           </option>
         </select>
+
+        <select v-model="selectedLevel" class="select select-bordered w-full">
+          <option :value="null">Todos los niveles</option>
+          <option v-for="level in levels" :key="level.id" :value="level.id">
+            {{ level.name }}
+          </option>
+        </select>
       </div>
     </section>
 
@@ -135,6 +146,7 @@ const destroyChild = (child) => {
             <th class="px-4 py-3 font-semibold">Código</th>
             <th class="px-4 py-3 font-semibold">Nombre</th>
             <th class="px-4 py-3 font-semibold">Iglesia</th>
+            <th class="px-4 py-3 font-semibold">Niveles</th>
             <th class="px-4 py-3 font-semibold">Comunidad</th>
             <th class="px-4 py-3 font-semibold">Nacimiento</th>
             <th class="px-4 py-3 font-semibold">Estado</th>
@@ -166,6 +178,10 @@ const destroyChild = (child) => {
               </div>
             </td>
             <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{{ child.church }}</td>
+            <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+              <span v-if="child.levels.length">{{ child.levels.map((level) => level.name).join(', ') }}</span>
+              <span v-else class="text-slate-400">Sin nivel</span>
+            </td>
             <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
               {{ child.community }}
             </td>
@@ -202,7 +218,7 @@ const destroyChild = (child) => {
 
           <tr v-if="children.data.length === 0">
             <td
-              colspan="7"
+              colspan="8"
               class="px-4 py-12 text-center text-sm text-slate-400 dark:text-slate-500"
             >
               <span v-if="activeFilters"

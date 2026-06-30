@@ -8,12 +8,16 @@ use App\Globals\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Catechism\ChildRequest;
 use App\Models\Catechism\Child;
+use App\Models\Catechism\ChildLevelAssignment;
 use App\Models\Ecclesiastes\Church;
 use App\Models\Lada;
+use App\Models\Operation\Level;
 use App\Models\Regions\Community;
 use App\Models\Regions\Municipality;
+use App\Services\CatechismPeriodMovementService;
 use App\Services\ChildCodeGenerator;
 use App\Services\UserScopeService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -33,11 +37,15 @@ class ChildController extends Controller
         $search = $request->input('search', '');
         $churchId = $request->integer('church_id') ?: null;
         $municipalityId = $request->integer('municipality_id') ?: null;
+        $levelId = $request->integer('level_id') ?: null;
         $scope = new UserScopeService($request->user());
 
         $query = Child::query()
+            ->with(['church:id,name', 'community:id,name', 'activeLevelAssignments.level:id,name'])
             ->when($search !== '', function ($query) use ($search) {
-                    $builder->where('code', 'like', "%{$search}%")
+                $query->where(function ($builder) use ($search) {
+                    $builder
+                        ->where('code', 'like', "%{$search}%")
                         ->orWhere('name', 'like', "%{$search}%")
                         ->orWhere('paterno', 'like', "%{$search}%")
                         ->orWhere('materno', 'like', "%{$search}%")
@@ -48,6 +56,10 @@ class ChildController extends Controller
                 });
             })
             ->when($churchId, fn ($query) => $query->where('church_id', $churchId))
+            ->when($levelId, fn ($query) => $query->whereHas(
+                'activeLevelAssignments',
+                fn ($assignment) => $assignment->where('level_id', $levelId)
+            ))
             ->when($municipalityId, function ($query) use ($municipalityId) {
                 $query->where(function ($builder) use ($municipalityId) {
                     $builder->whereHas('church', fn ($church) => $church->where('municipality_id', $municipalityId))
@@ -71,9 +83,11 @@ class ChildController extends Controller
             'filters' => [
                 'church_id' => $churchId,
                 'municipality_id' => $municipalityId,
+                'level_id' => $levelId,
             ],
             'churches' => $filterOptions['churches'],
             'municipalities' => $filterOptions['municipalities'],
+            'levels' => $filterOptions['levels'],
             'statusLabels' => $this->statusLabels(),
             'sexLabels' => $this->sexLabels(),
             'bloodTypeLabels' => $this->bloodTypeLabels(),
@@ -88,19 +102,40 @@ class ChildController extends Controller
         ]);
     }
 
-    public function store(ChildRequest $request, ChildCodeGenerator $codeGenerator): RedirectResponse
-    {
+    public function store(
+        ChildRequest $request,
+        ChildCodeGenerator $codeGenerator,
+        CatechismPeriodMovementService $movementService
+    ): RedirectResponse {
         $data = $request->validated();
+        $levelIds = collect($data['level_ids'] ?? [])->unique()->values();
+        $movement = $movementService->requireActiveMovementForChurch(
+            (int) $data['church_id'],
+            CatechismPeriodMovementService::INSCRIPTIONS
+        );
 
-        DB::transaction(function () use (&$data, $codeGenerator): void {
+        DB::transaction(function () use (&$data, $levelIds, $movement, $codeGenerator, $request): void {
             for ($attempt = 0; $attempt < 3; $attempt++) {
                 $data['code'] = $codeGenerator->generate($data);
 
                 try {
-                    Child::create($data);
+                    $child = Child::create(Arr::except($data, ['level_ids']));
+
+                    foreach ($levelIds as $levelId) {
+                        ChildLevelAssignment::create([
+                            'child_id' => $child->id,
+                            'level_id' => $levelId,
+                            'period_id' => $movement->period_id,
+                            'period_movement_id' => $movement->id,
+                            'status' => Status::ACTIVE,
+                            'assigned_at' => now()->toDateString(),
+                            'created_by' => $request->user()?->id,
+                            'updated_by' => $request->user()?->id,
+                        ]);
+                    }
 
                     return;
-                } catch (\Illuminate\Database\QueryException $e) {
+                } catch (QueryException $e) {
                     $sqlState = $e->errorInfo[0] ?? null;
                     $message = $e->getMessage();
 
@@ -122,7 +157,7 @@ class ChildController extends Controller
 
     public function edit(Request $request, Child $child): Response
     {
-        $child->loadMissing(['church:id,name', 'community:id,name']);
+        $child->loadMissing(['church:id,name', 'community:id,name', 'activeLevelAssignments.level:id,name']);
 
         return Inertia::render('Catechism/Children/Form', [
             'child' => $this->serializeChild($child),
@@ -170,6 +205,7 @@ class ChildController extends Controller
                 ->where('status', Status::ACTIVE)
                 ->orderBy('name')
                 ->get(['id', 'municipality_id', 'name']),
+            'levels' => $filterOptions['levels'],
             'countryCodes' => Lada::options(),
             'defaultCountryCode' => Lada::defaultCode(),
             'statuses' => $this->options($this->statusLabels()),
@@ -202,6 +238,15 @@ class ChildController extends Controller
             'status' => $child->status,
             'church' => $child->church?->name,
             'community' => $child->community?->name,
+            'levels' => $child->activeLevelAssignments
+                ->map(fn (ChildLevelAssignment $assignment): array => [
+                    'id' => $assignment->level?->id,
+                    'name' => $assignment->level?->name,
+                    'assignment_id' => $assignment->id,
+                ])
+                ->filter(fn (array $level): bool => $level['id'] !== null)
+                ->values()
+                ->all(),
             'created_at' => $child->created_at?->format('d/m/Y'),
         ];
     }
@@ -212,15 +257,28 @@ class ChildController extends Controller
 
         return [
             'churches' => Church::query()
+                ->with('deanery:id,diocese_id')
                 ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->churchIds()))
                 ->where('status', Status::ACTIVE)
                 ->orderBy('name')
-                ->get(['id', 'municipality_id', 'name']),
+                ->get(['id', 'deanery_id', 'municipality_id', 'name'])
+                ->map(fn (Church $church): array => [
+                    'id' => $church->id,
+                    'municipality_id' => $church->municipality_id,
+                    'diocese_id' => $church->deanery?->diocese_id,
+                    'name' => $church->name,
+                ])
+                ->values(),
             'municipalities' => Municipality::query()
                 ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->municipalityIds()))
                 ->where('status', Status::ACTIVE)
                 ->orderBy('name')
                 ->get(['id', 'name']),
+            'levels' => Level::query()
+                ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('diocese_id', $scope->dioceseIds()))
+                ->where('status', Status::ACTIVE)
+                ->orderBy('name')
+                ->get(['id', 'diocese_id', 'name']),
         ];
     }
 
