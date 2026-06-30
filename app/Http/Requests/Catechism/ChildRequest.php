@@ -78,10 +78,7 @@ class ChildRequest extends FormRequest
                     return;
                 }
 
-                $validator->errors()->add(
-                    'church_id',
-                    'El child debe pertenecer a una iglesia o comunidad dentro del alcance del usuario.'
-                );
+                    'El niño debe pertenecer a una iglesia o comunidad dentro del alcance del usuario.'
             },
         ];
     }
