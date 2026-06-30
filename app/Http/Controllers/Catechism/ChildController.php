@@ -93,8 +93,27 @@ class ChildController extends Controller
         $data = $request->validated();
 
         DB::transaction(function () use (&$data, $codeGenerator): void {
-            $data['code'] = $codeGenerator->generate($data);
-            Child::create($data);
+            for ($attempt = 0; $attempt < 3; $attempt++) {
+                $data['code'] = $codeGenerator->generate($data);
+
+                try {
+                    Child::create($data);
+
+                    return;
+                } catch (\Illuminate\Database\QueryException $e) {
+                    $sqlState = $e->errorInfo[0] ?? null;
+                    $message = $e->getMessage();
+
+                    $isUniqueViolation = in_array($sqlState, ['23000', '23505'], true)
+                        && (str_contains($message, 'children.code') || str_contains($message, 'children_code_unique'));
+
+                    if (! $isUniqueViolation) {
+                        throw $e;
+                    }
+                }
+            }
+
+            throw new \RuntimeException('Unable to generate a unique child code.');
         });
 
         return redirect()->route('children.index')
