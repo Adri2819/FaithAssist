@@ -199,4 +199,36 @@ class UserScopeService
             }
         });
     }
+
+    /**
+     * Apply child visibility filter to an existing query builder.
+     * Children are visible when their church OR community is in scope.
+     */
+    public function applyChildScope(Builder $query): Builder
+    {
+        if ($this->isGlobal()) {
+            return $query;
+        }
+
+        $allowedChurchIds = $this->churchIds();
+        $allowedCommunityIds = $this->communityIds();
+
+        return $query->where(function (Builder $scope) use ($allowedChurchIds, $allowedCommunityIds): void {
+            $hasChurches = $allowedChurchIds->isNotEmpty();
+            $hasCommunities = $allowedCommunityIds->isNotEmpty();
+
+            if ($hasChurches) {
+                $scope->whereIn('church_id', $allowedChurchIds);
+            }
+
+            if ($hasCommunities) {
+                $method = $hasChurches ? 'orWhereIn' : 'whereIn';
+                $scope->{$method}('community_id', $allowedCommunityIds);
+            }
+
+            if (! $hasChurches && ! $hasCommunities) {
+                $scope->whereRaw('1 = 0');
+            }
+        });
+    }
 }

@@ -95,6 +95,7 @@ class HandleInertiaRequests extends Middleware
                 'diocese_id' => null,
                 'deanery_id' => null,
                 'church_id' => null,
+                'full_access' => [],
             ];
         }
 
@@ -102,6 +103,13 @@ class HandleInertiaRequests extends Middleware
             'diocese_id' => $user->diocese_id,
             'deanery_id' => $user->deanery_id,
             'church_id' => $user->church_id,
+            'full_access' => $user->getAllPermissions()
+                ->pluck('name')
+                ->filter(fn (string $permission): bool => str_ends_with($permission, '.scope.all'))
+                ->mapWithKeys(fn (string $permission): array => [
+                    str($permission)->before('.scope.all')->toString() => true,
+                ])
+                ->all(),
         ];
     }
 

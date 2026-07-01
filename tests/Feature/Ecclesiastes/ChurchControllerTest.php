@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Ecclesiastes;
 
-use App\Models\Ecclesiastes\Church;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Concerns\ControllerTestHelpers;
 use Tests\TestCase;
@@ -30,9 +29,9 @@ class ChurchControllerTest extends TestCase
         $user = $this->makeGlobalUser('parroquias.read');
 
         $this->actingAs($user)
-            ->postJson('/parroquias', [
+            ->post('/parroquias', [
                 'municipality_id' => $chain['municipality']->id,
-                'name'            => 'X',
+                'name' => 'X',
                 'status' => 'active',
             ])
             ->assertForbidden();
@@ -48,9 +47,9 @@ class ChurchControllerTest extends TestCase
         $user = $this->makeDioceseUser($chain['diocese'], 'parroquias.create');
 
         $this->actingAs($user)
-            ->postJson('/parroquias', [
+            ->post('/parroquias', [
                 'municipality_id' => $chain['municipality']->id,
-                'name'            => 'NUEVA',
+                'name' => 'NUEVA',
                 'status' => 'active',
             ])
             ->assertForbidden();
@@ -95,41 +94,78 @@ class ChurchControllerTest extends TestCase
             ->assertInertia(fn ($page) => $page->component('Ecclesiastes/Churches/Index'));
     }
 
-    public function test_store_creates_church_and_returns_201(): void
+    public function test_index_exposes_full_scope_access_for_create_button(): void
+    {
+        $user = $this->makeGlobalUser('parroquias.read', 'parroquias.create', 'parroquias.scope.all');
+
+        $this->actingAs($user)->get('/parroquias')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Ecclesiastes/Churches/Index')
+                ->where('auth.scope.full_access.parroquias', true));
+    }
+
+    public function test_create_returns_inertia_response(): void
+    {
+        $chain = $this->createChain();
+        $user = $this->makeGlobalUser('parroquias.create', 'parroquias.scope.all');
+
+        $this->actingAs($user)->get('/parroquias/create')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Ecclesiastes/Churches/Form')
+                ->where('church', null)
+                ->where('municipalities.0.id', $chain['municipality']->id)
+                ->where('deaneries.0.id', $chain['deanery']->id));
+    }
+
+    public function test_edit_returns_inertia_response(): void
+    {
+        $chain = $this->createChain();
+        $user = $this->makeGlobalUser('parroquias.update');
+
+        $this->actingAs($user)->get("/parroquias/{$chain['church']->id}/edit")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Ecclesiastes/Churches/Form')
+                ->where('church.id', $chain['church']->id));
+    }
+
+    public function test_store_creates_church_and_redirects(): void
     {
         $chain = $this->createChain();
         $user = $this->makeGlobalUser('parroquias.create', 'parroquias.scope.all');
 
         $response = $this->actingAs($user)
-            ->postJson('/parroquias', [
+            ->post('/parroquias', [
                 'municipality_id' => $chain['municipality']->id,
-                'deanery_id'      => $chain['deanery']->id,
-                'name'            => 'PARROQUIA NUEVA',
+                'deanery_id' => $chain['deanery']->id,
+                'name' => 'PARROQUIA NUEVA',
                 'status' => 'active',
             ]);
 
-        $response->assertCreated()
-            ->assertJsonPath('success', true)
-            ->assertJsonPath('data.name', 'PARROQUIA NUEVA');
+        $response->assertRedirect('/parroquias');
 
         $this->assertDatabaseHas('churches', ['name' => 'PARROQUIA NUEVA']);
     }
 
-    public function test_update_modifies_church_and_returns_200(): void
+    public function test_update_modifies_church_and_redirects(): void
     {
         $chain = $this->createChain();
         $user = $this->makeGlobalUser('parroquias.update');
 
         $response = $this->actingAs($user)
-            ->putJson("/parroquias/{$chain['church']->id}", [
+            ->put("/parroquias/{$chain['church']->id}", [
                 'municipality_id' => $chain['municipality']->id,
-                'name'            => 'PARROQUIA ACTUALIZADA',
+                'name' => 'PARROQUIA ACTUALIZADA',
                 'status' => 'active',
             ]);
 
-        $response->assertOk()
-            ->assertJsonPath('success', true)
-            ->assertJsonPath('data.name', 'PARROQUIA ACTUALIZADA');
+        $response->assertRedirect('/parroquias');
+        $this->assertDatabaseHas('churches', [
+            'id' => $chain['church']->id,
+            'name' => 'PARROQUIA ACTUALIZADA',
+        ]);
     }
 
     public function test_destroy_soft_deletes_church_and_returns_200(): void

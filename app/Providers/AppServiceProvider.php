@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Catechism\Child;
 use App\Models\Ecclesiastes\Chapel;
 use App\Models\Ecclesiastes\Church;
 use App\Models\Ecclesiastes\Deanery;
@@ -16,6 +17,7 @@ use App\Models\Regions\Municipality;
 use App\Models\Regions\State;
 use App\Models\WhatsappMessage;
 use App\Policies\ChapelPolicy;
+use App\Policies\ChildPolicy;
 use App\Policies\ChurchPolicy;
 use App\Policies\CommunityPolicy;
 use App\Policies\DeaneryPolicy;
@@ -49,6 +51,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Module::class, ModulePolicy::class);
+        Gate::policy(Child::class, ChildPolicy::class);
         Gate::policy(Permission::class, PermissionPolicy::class);
         Gate::policy(State::class, StatePolicy::class);
         Gate::policy(Municipality::class, MunicipalityPolicy::class);

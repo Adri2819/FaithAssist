@@ -4,6 +4,7 @@ namespace Tests\Feature\Security;
 
 use App\Models\Profile;
 use App\Models\User;
+use Database\Seeders\LadaSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Concerns\ControllerTestHelpers;
 use Tests\TestCase;
@@ -12,25 +13,32 @@ class UserControllerTest extends TestCase
 {
     use ControllerTestHelpers, RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(LadaSeeder::class);
+    }
+
     /**
      * Minimal valid payload for creating a user.
      */
     private function validUserPayload(array $overrides = []): array
     {
         return array_merge([
-            'name'                  => 'Juan',
-            'paterno'               => 'Pérez',
-            'materno'               => null,
-            'email'                 => 'juan.perez@example.com',
+            'name' => 'Juan',
+            'paterno' => 'Pérez',
+            'materno' => null,
+            'email' => 'juan.perez@example.com',
             'whatsapp_country_code' => '52',
-            'whatsapp_phone'        => '3310000001',
-            'password'              => 'Password1!',
+            'whatsapp_phone' => '3310000001',
+            'password' => 'Password1!',
             'password_confirmation' => 'Password1!',
-            'role_id'               => null,
-            'diocese_id'            => null,
-            'deanery_id'            => null,
-            'church_id'             => null,
-            'permissions'           => [],
+            'role_id' => null,
+            'diocese_id' => null,
+            'deanery_id' => null,
+            'church_id' => null,
+            'permissions' => [],
         ], $overrides);
     }
 
@@ -137,9 +145,9 @@ class UserControllerTest extends TestCase
 
         $this->actingAs($editor)
             ->put("/usuarios/{$target->id}", $this->validUserPayload([
-                'email'       => $target->email,
-                'name'        => 'Carlos',
-                'paterno'     => 'González',
+                'email' => $target->email,
+                'name' => 'Carlos',
+                'paterno' => 'González',
                 'whatsapp_phone' => '3320000002',
             ]))
             ->assertRedirect('/usuarios');
