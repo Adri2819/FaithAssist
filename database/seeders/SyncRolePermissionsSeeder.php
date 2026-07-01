@@ -42,14 +42,16 @@ class SyncRolePermissionsSeeder extends Seeder
             $this->permissionsForModules(['municipios'], $readAndShowActions),
             $this->permissionsForModules(['comunidades', 'parroquias', 'capillas', 'periodos', 'periodo_movimientos', 'tipos_movimientos_periodo', 'niveles', 'usuarios'], $allActions),
             ['municipios.scope.all', 'comunidades.scope.all', 'comunidades.export', 'parroquias.scope.all', 'capillas.scope.all']
+            $this->permissionsForModules(['comunidades', 'parroquias', 'capillas', 'periodos', 'periodo_movimientos', 'tipos_movimientos_periodo', 'niveles', 'children', 'usuarios'], $allActions),
+            ['municipios.scope.all', 'comunidades.scope.all', 'parroquias.scope.all', 'capillas.scope.all']
         ));
 
         $catequista->syncPermissions(
-            $this->permissionsForModules(['parroquias', 'capillas', 'niveles'], $readAndShowActions)
+            $this->permissionsForModules(['parroquias', 'capillas', 'niveles', 'children'], $readAndShowActions)
         );
 
         $capturista->syncPermissions(
-            $this->permissionsForModules(['capillas', 'niveles'], $readAndShowActions)
+            $this->permissionsForModules(['capillas', 'niveles', 'children'], $readAndShowActions)
         );
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();

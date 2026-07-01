@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\UserScopeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -221,7 +222,7 @@ class UserController extends Controller
             ? $request->role_id
             : null;
 
-        $usuario->syncRoles($roleId ? [$roleId] : []);
+        $usuario->syncRoles($roleId ? [$roleId] : collect());
 
         $editorPermissionIds = $editor->getAllPermissions()->pluck('id');
         $rolePermissionIds = $usuario->getPermissionsViaRoles()->pluck('id');
@@ -263,9 +264,9 @@ class UserController extends Controller
      * Resolve scope FKs for store/update.
      * If editor has a restricted scope, force the new user into that same scope.
      *
-     * @return array{int|null, int|null, int|null}  [diocese_id, deanery_id, church_id]
+     * @return array{int|null, int|null, int|null} [diocese_id, deanery_id, church_id]
      */
-    private function resolveScope(User $editor, \Illuminate\Http\Request $request): array
+    private function resolveScope(User $editor, Request $request): array
     {
         $scope = new UserScopeService($editor);
 
@@ -312,7 +313,7 @@ class UserController extends Controller
             ->toArray();
     }
 
-    private function getAllowedRoles(User $editor): \Illuminate\Support\Collection
+    private function getAllowedRoles(User $editor): Collection
     {
         $editorPermissionIds = $editor->getAllPermissions()->pluck('id');
 
@@ -378,6 +379,7 @@ class UserController extends Controller
             'security' => 'Seguridad',
             'whatsapp' => 'WhatsApp',
             'operation' => 'Operación',
+            'catechism' => 'Catecismo',
             default => ucfirst($key),
         };
     }
