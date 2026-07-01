@@ -84,6 +84,7 @@ class ReinscriptionRequest extends FormRequest
 
             $alreadyReinscribed = ChildReinscription::query()
                 ->where('child_id', $child->id)
+                ->where('period_id', $movement->period_id)
                 ->exists();
 
             if ($alreadyReinscribed) {
