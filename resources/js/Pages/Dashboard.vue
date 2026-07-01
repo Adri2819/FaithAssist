@@ -117,10 +117,9 @@ const modules = computed(() =>
       ],
     },
     {
-      name: 'Catechism',
+      name: 'Catecismo',
       accent: 'from-amber-200 via-orange-100 to-slate-100',
       titleClass: 'text-sky-700',
-      items: [
         { label: 'Niños', icon: Users, href: '/children', moduleKey: 'children' },
         {
           label: 'Reinscripciones',
