@@ -142,7 +142,7 @@ class ReinscriptionController extends Controller
             ])
             ->where('status', Status::ACTIVE)
             ->whereHas('activeLevelAssignments')
-            ->whereDoesntHave('reinscriptions');
+            ->whereDoesntHave('reinscriptions', fn ($q) => $q->whereHas('period', fn ($p) => $p->where('status', Status::IN_PROGRESS)));
 
         return $scope->isGlobal() ? $query : $scope->applyChildScope($query);
     }
