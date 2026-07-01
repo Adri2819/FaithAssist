@@ -58,6 +58,6 @@ class CommunityPolicy extends BasePermissionPolicy
 
     public function export(User $user): bool
     {
-        return $user->getDirectPermissions()->contains('name', 'comunidades.export');
+        return $this->can($user, 'export');
     }
 }
