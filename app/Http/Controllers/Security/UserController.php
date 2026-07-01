@@ -357,7 +357,7 @@ class UserController extends Controller
             'security' => 'Seguridad',
             'whatsapp' => 'WhatsApp',
             'operation' => 'Operación',
-            'catechism' => 'Catechism',
+            'catechism' => 'Catecismo',
             default => ucfirst($key),
         };
     }

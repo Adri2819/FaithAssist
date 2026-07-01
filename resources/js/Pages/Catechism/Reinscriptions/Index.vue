@@ -1,7 +1,12 @@
 <script setup>
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { ArrowLeftRight, Filter, Search, X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+
+const page = usePage();
+const canCreate = computed(() =>
+  (page.props.auth?.permissions ?? []).includes('reinscripciones.create'),
+);
 import AppPagination from '../../../components/AppPagination.vue';
 import CatalogHeader from '../../../components/catalogs/CatalogHeader.vue';
 import AppShell from '../../../components/layouts/AppShell.vue';
@@ -90,7 +95,7 @@ const clearFilters = () => {
             <th class="px-4 py-3 font-semibold">Niño</th>
             <th class="px-4 py-3 font-semibold">Parroquia</th>
             <th class="px-4 py-3 font-semibold">Niveles actuales</th>
-            <th class="px-4 py-3 text-right font-semibold">Acción</th>
+            <th v-if="canCreate" class="px-4 py-3 text-right font-semibold">Acción</th>
           </tr>
         </thead>
         <tbody>
@@ -116,7 +121,7 @@ const clearFilters = () => {
             <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
               {{ child.levels.map((level) => level.name).join(', ') }}
             </td>
-            <td class="px-4 py-3 text-right">
+            <td v-if="canCreate" class="px-4 py-3 text-right">
               <Link
                 :href="`/reinscripciones/${child.id}/create`"
                 class="btn btn-primary btn-xs"
@@ -128,7 +133,7 @@ const clearFilters = () => {
 
           <tr v-if="children.data.length === 0">
             <td
-              colspan="5"
+              :colspan="canCreate ? 5 : 4"
               class="px-4 py-12 text-center text-sm text-slate-400 dark:text-slate-500"
             >
               <span v-if="activeFilters">No se encontraron niños con los filtros seleccionados.</span>

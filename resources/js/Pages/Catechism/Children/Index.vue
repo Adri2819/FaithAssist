@@ -1,5 +1,5 @@
 <script setup>
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { Filter, Pencil, Plus, Search, Trash2, Users, X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import AppPagination from '../../../components/AppPagination.vue';
@@ -51,6 +51,13 @@ const clearFilters = () => {
   selectedLevel.value = null;
 };
 
+const page = usePage();
+const permissions = computed(() => page.props.auth?.permissions ?? []);
+const hasPermission = (action) => permissions.value.includes(`children.${action}`);
+const canCreate = computed(() => hasPermission('create'));
+const canUpdate = computed(() => hasPermission('update'));
+const canDelete = computed(() => hasPermission('delete'));
+
 const destroyChild = (child) => {
   if (!confirm(`Eliminar el registro de ${child.full_name}?`)) return;
   router.delete(`/children/${child.id}`, { preserveScroll: true });
@@ -67,7 +74,7 @@ const destroyChild = (child) => {
       :icon="Users"
     />
 
-    <div class="mb-4 flex justify-end">
+    <div v-if="canCreate" class="mb-4 flex justify-end">
       <Link href="/children/create" class="btn btn-primary btn-sm gap-1.5">
         <Plus class="h-4 w-4" />
         Nuevo niño
@@ -150,7 +157,7 @@ const destroyChild = (child) => {
             <th class="px-4 py-3 font-semibold">Comunidad</th>
             <th class="px-4 py-3 font-semibold">Nacimiento</th>
             <th class="px-4 py-3 font-semibold">Estado</th>
-            <th class="px-4 py-3 text-right font-semibold">Acciones</th>
+            <th v-if="canUpdate || canDelete" class="px-4 py-3 text-right font-semibold">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -195,9 +202,10 @@ const destroyChild = (child) => {
                 {{ statusLabels[child.status] ?? child.status }}
               </span>
             </td>
-            <td class="px-4 py-3 text-right">
+            <td v-if="canUpdate || canDelete" class="px-4 py-3 text-right">
               <div class="inline-flex items-center gap-1">
                 <Link
+                  v-if="canUpdate"
                   :href="`/children/${child.id}/edit`"
                   class="btn btn-ghost btn-xs text-sky-600 hover:bg-sky-50 hover:text-sky-700 dark:text-sky-400 dark:hover:bg-sky-950/40"
                   title="Editar niño"
@@ -205,6 +213,7 @@ const destroyChild = (child) => {
                   <Pencil class="h-3.5 w-3.5" />
                 </Link>
                 <button
+                  v-if="canDelete"
                   type="button"
                   class="btn btn-ghost btn-xs text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/40"
                   title="Eliminar niño"
@@ -218,7 +227,7 @@ const destroyChild = (child) => {
 
           <tr v-if="children.data.length === 0">
             <td
-              colspan="8"
+              :colspan="(canUpdate || canDelete) ? 8 : 7"
               class="px-4 py-12 text-center text-sm text-slate-400 dark:text-slate-500"
             >
               <span v-if="activeFilters"
