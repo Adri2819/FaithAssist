@@ -53,8 +53,7 @@ class ReinscriptionRequest extends FormRequest
 
             $dioceseId = $child->church?->deanery?->diocese_id;
             $currentLevelIds = $child->activeLevelAssignments->pluck('level_id')->unique()->values();
-            $toLevelIds = collect($this->input('to_level_ids', []))->filter()->unique()->values();
-
+            $toLevelIds = collect($this->input('to_level_ids', []))->map(fn ($id) => (int) $id)->filter()->unique()->values();
             if ($currentLevelIds->isEmpty()) {
                 $validator->errors()->add('child_id', 'El niño seleccionado no tiene niveles activos para reinscribir.');
 
