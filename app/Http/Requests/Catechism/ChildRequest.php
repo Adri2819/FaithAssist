@@ -72,13 +72,6 @@ class ChildRequest extends FormRequest
 
                 $scope = new UserScopeService($user);
                 $churchId = $this->integer('church_id') ?: null;
-
-                if ($scope->isGlobal()) {
-                    $this->validateInitialLevels($validator, $churchId);
-
-                    return;
-                }
-
                 $communityId = $this->integer('community_id') ?: null;
 
                 if ($churchId && $communityId) {
@@ -93,6 +86,12 @@ class ChildRequest extends FormRequest
 
                         return;
                     }
+                }
+
+                if ($scope->isGlobal()) {
+                    $this->validateInitialLevels($validator, $churchId);
+
+                    return;
                 }
 
                 $churchOk = $churchId && $scope->churchIds()->contains($churchId);
