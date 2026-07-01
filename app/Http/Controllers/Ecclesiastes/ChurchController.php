@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Ecclesiastes;
 
+use App\Globals\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ecclesiastes\ChurchRequest;
 use App\Models\Ecclesiastes\Church;
@@ -9,6 +10,7 @@ use App\Models\Ecclesiastes\Deanery;
 use App\Models\Regions\Municipality;
 use App\Services\UserScopeService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,52 +28,52 @@ class ChurchController extends Controller
         $scope = new UserScopeService($request->user());
 
         $churches = Church::query()
+            ->with(['municipality:id,name', 'deanery:id,name'])
             ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->churchIds()))
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->paginate(15, ['id', 'municipality_id', 'deanery_id', 'name', 'alias', 'email', 'phone', 'address', 'status'])
-            ->withQueryString();
-
-        $municipalities = Municipality::query()
-            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->municipalityIds()))
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
-        $deaneries = Deanery::query()
-            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->deaneryIds()))
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get(['id', 'name']);
+            ->paginate(15)
+            ->withQueryString()
+            ->through(fn (Church $church): array => $this->serializeChurch($church));
 
         return Inertia::render('Ecclesiastes/Churches/Index', [
             'churches' => $churches,
-            'municipalities' => $municipalities,
-            'deaneries' => $deaneries,
             'search' => $search,
         ]);
     }
 
-    public function store(ChurchRequest $request): JsonResponse
+    public function create(Request $request): Response
     {
-        $church = Church::create($request->validated());
-
-        return response()->json([
-            'success' => true,
-            'data' => $church->only(['id', 'municipality_id', 'deanery_id', 'name', 'alias', 'email', 'phone', 'address', 'status']),
-            'message' => 'Parroquia creada correctamente.',
-        ], 201);
+        return Inertia::render('Ecclesiastes/Churches/Form', [
+            'church' => null,
+            ...$this->formOptions($request),
+        ]);
     }
 
-    public function update(ChurchRequest $request, Church $parroquia): JsonResponse
+    public function store(ChurchRequest $request): RedirectResponse
+    {
+        Church::create($request->validated());
+
+        return redirect()->route('parroquias.index')
+            ->with('success', 'Parroquia creada correctamente.');
+    }
+
+    public function edit(Request $request, Church $parroquia): Response
+    {
+        $parroquia->loadMissing(['municipality:id,name', 'deanery:id,name']);
+
+        return Inertia::render('Ecclesiastes/Churches/Form', [
+            'church' => $this->serializeChurch($parroquia),
+            ...$this->formOptions($request),
+        ]);
+    }
+
+    public function update(ChurchRequest $request, Church $parroquia): RedirectResponse
     {
         $parroquia->update($request->validated());
 
-        return response()->json([
-            'success' => true,
-            'data' => $parroquia->fresh()->only(['id', 'municipality_id', 'deanery_id', 'name', 'alias', 'email', 'phone', 'address', 'status']),
-            'message' => 'Parroquia actualizada correctamente.',
-        ]);
+        return redirect()->route('parroquias.index')
+            ->with('success', 'Parroquia actualizada correctamente.');
     }
 
     public function destroy(Church $parroquia): JsonResponse
@@ -82,5 +84,44 @@ class ChurchController extends Controller
             'success' => true,
             'message' => 'Parroquia eliminada correctamente.',
         ]);
+    }
+
+    private function formOptions(Request $request): array
+    {
+        $scope = new UserScopeService($request->user());
+
+        return [
+            'municipalities' => Municipality::query()
+                ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->municipalityIds()))
+                ->where('status', Status::ACTIVE)
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'deaneries' => Deanery::query()
+                ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->deaneryIds()))
+                ->where('status', Status::ACTIVE)
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'statuses' => [
+                ['value' => Status::ACTIVE, 'label' => 'Activo'],
+                ['value' => Status::INACTIVE, 'label' => 'Inactivo'],
+            ],
+        ];
+    }
+
+    private function serializeChurch(Church $church): array
+    {
+        return [
+            'id' => $church->id,
+            'municipality_id' => $church->municipality_id,
+            'deanery_id' => $church->deanery_id,
+            'name' => $church->name,
+            'alias' => $church->alias,
+            'email' => $church->email,
+            'phone' => $church->phone,
+            'address' => $church->address,
+            'status' => $church->status,
+            'municipality' => $church->municipality?->name,
+            'deanery' => $church->deanery?->name,
+        ];
     }
 }

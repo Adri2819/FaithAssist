@@ -11,6 +11,7 @@ use App\Models\Catechism\ChildReinscription;
 use App\Models\Operation\Level;
 use App\Services\CatechismPeriodMovementService;
 use App\Services\UserScopeService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,19 +25,8 @@ class ReinscriptionController extends Controller
         abort_unless($request->user()->can('reinscripciones.read'), 403);
 
         $search = $request->input('search', '');
-        $scope = new UserScopeService($request->user());
 
-        $query = Child::query()
-            ->with([
-                'church:id,name,deanery_id',
-                'church.deanery:id,diocese_id',
-                'community:id,name',
-                'activeLevelAssignments.level:id,name,diocese_id',
-            ])
-            ->where('status', Status::ACTIVE)
-            ->whereHas('activeLevelAssignments')
-            ->whereDoesntHave('reinscriptions', fn ($reinscriptions) => $reinscriptions
-                ->whereHas('period', fn ($period) => $period->where('status', Status::IN_PROGRESS)))
+        $query = $this->eligibleChildrenQuery($request)
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($builder) use ($search) {
                     $builder
@@ -51,42 +41,33 @@ class ReinscriptionController extends Controller
             ->orderBy('materno')
             ->orderBy('name');
 
-        $children = ($scope->isGlobal() ? $query : $scope->applyChildScope($query))
+        $children = $query
             ->paginate(15)
             ->withQueryString()
-            ->through(fn (Child $child): array => [
-                'id' => $child->id,
-                'code' => $child->code,
-                'full_name' => trim(collect([$child->name, $child->paterno, $child->materno])->filter()->implode(' ')),
-                'church' => $child->church?->name,
-                'community' => $child->community?->name,
-                'diocese_id' => $child->church?->deanery?->diocese_id,
-                'birthdate' => $child->birthdate?->format('Y-m-d'),
-                'sex' => $child->sex,
-                'email' => $child->email,
-                'phone' => $child->phone,
-                'emergency_phone' => $child->emergency_phone,
-                'blood_type' => $child->blood_type,
-                'observations' => $child->observations,
-                'levels' => $child->activeLevelAssignments
-                    ->map(fn (ChildLevelAssignment $assignment): array => [
-                        'assignment_id' => $assignment->id,
-                        'id' => $assignment->level?->id,
-                        'name' => $assignment->level?->name,
-                    ])
-                    ->filter(fn (array $level): bool => $level['id'] !== null)
-                    ->values()
-                    ->all(),
-            ]);
+            ->through(fn (Child $child): array => $this->serializeChild($child));
 
         return Inertia::render('Catechism/Reinscriptions/Index', [
             'children' => $children,
+            'search' => $search,
+        ]);
+    }
+
+    public function create(Request $request, Child $child): Response
+    {
+        abort_unless($request->user()->can('reinscripciones.create'), 403);
+
+        $scope = new UserScopeService($request->user());
+        $child = $this->eligibleChildrenQuery($request)
+            ->whereKey($child->id)
+            ->firstOrFail();
+
+        return Inertia::render('Catechism/Reinscriptions/Form', [
+            'child' => $this->serializeChild($child),
             'levels' => Level::query()
                 ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('diocese_id', $scope->dioceseIds()))
                 ->where('status', Status::ACTIVE)
                 ->orderBy('name')
                 ->get(['id', 'diocese_id', 'name']),
-            'search' => $search,
         ]);
     }
 
@@ -94,7 +75,11 @@ class ReinscriptionController extends Controller
     {
         $data = $request->validated();
         $child = Child::query()
-            ->with(['church.deanery:id,diocese_id', 'activeLevelAssignments'])
+            ->with([
+                'church:id,name,deanery_id',
+                'church.deanery:id,diocese_id',
+                'activeLevelAssignments',
+            ])
             ->findOrFail($data['child_id']);
         $movement = $movementService->requireActiveMovementForChurch(
             $child->church,
@@ -143,5 +128,50 @@ class ReinscriptionController extends Controller
 
         return redirect()->route('reinscripciones.index')
             ->with('success', 'Reinscripción registrada correctamente.');
+    }
+
+    private function eligibleChildrenQuery(Request $request): Builder
+    {
+        $scope = new UserScopeService($request->user());
+        $query = Child::query()
+            ->with([
+                'church:id,name,deanery_id',
+                'church.deanery:id,diocese_id',
+                'community:id,name',
+                'activeLevelAssignments.level:id,name,diocese_id',
+            ])
+            ->where('status', Status::ACTIVE)
+            ->whereHas('activeLevelAssignments')
+            ->whereDoesntHave('reinscriptions');
+
+        return $scope->isGlobal() ? $query : $scope->applyChildScope($query);
+    }
+
+    private function serializeChild(Child $child): array
+    {
+        return [
+            'id' => $child->id,
+            'code' => $child->code,
+            'full_name' => trim(collect([$child->name, $child->paterno, $child->materno])->filter()->implode(' ')),
+            'church' => $child->church?->name,
+            'community' => $child->community?->name,
+            'diocese_id' => $child->church?->deanery?->diocese_id,
+            'birthdate' => $child->birthdate?->format('Y-m-d'),
+            'sex' => $child->sex,
+            'email' => $child->email,
+            'phone' => $child->phone,
+            'emergency_phone' => $child->emergency_phone,
+            'blood_type' => $child->blood_type,
+            'observations' => $child->observations,
+            'levels' => $child->activeLevelAssignments
+                ->map(fn (ChildLevelAssignment $assignment): array => [
+                    'assignment_id' => $assignment->id,
+                    'id' => $assignment->level?->id,
+                    'name' => $assignment->level?->name,
+                ])
+                ->filter(fn (array $level): bool => $level['id'] !== null)
+                ->values()
+                ->all(),
+        ];
     }
 }

@@ -81,7 +81,7 @@ Route::middleware('auth')->group(function () {
         ->parameters(['decanatos' => 'decanato']);
 
     Route::resource('parroquias', ChurchController::class)
-        ->only(['index', 'store', 'update', 'destroy'])
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
         ->parameters(['parroquias' => 'parroquia']);
 
     Route::resource('capillas', ChapelController::class)
@@ -109,6 +109,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('children', ChildController::class)
         ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
+    Route::get('reinscripciones/{child}/create', [ReinscriptionController::class, 'create'])
+        ->name('reinscripciones.create');
     Route::resource('reinscripciones', ReinscriptionController::class)
         ->only(['index', 'store']);
 

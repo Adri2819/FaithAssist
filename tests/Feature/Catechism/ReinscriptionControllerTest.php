@@ -37,6 +37,25 @@ class ReinscriptionControllerTest extends TestCase
             ->assertInertia(fn ($page) => $page->component('Catechism/Reinscriptions/Index'));
     }
 
+    public function test_create_returns_reinscription_form_page(): void
+    {
+        $chain = $this->createChain();
+        $fromLevel = $this->createLevel($chain, ['name' => 'PRIMERO']);
+        $toLevel = $this->createLevel($chain, ['name' => 'SEGUNDO']);
+        $movement = $this->createActiveMovement($chain, CatechismPeriodMovementService::INSCRIPTIONS);
+        $child = Child::query()->create($this->childRow($chain));
+        $this->assignLevel($child, $fromLevel, $movement);
+        $user = $this->makeGlobalUser('reinscripciones.create');
+
+        $this->actingAs($user)->get("/reinscripciones/{$child->id}/create")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Catechism/Reinscriptions/Form')
+                ->where('child.id', $child->id)
+                ->where('levels.0.id', $fromLevel->id)
+                ->where('levels.1.id', $toLevel->id));
+    }
+
     public function test_store_requires_active_reinscription_movement(): void
     {
         $chain = $this->createChain();
