@@ -109,7 +109,7 @@ const hasModuleFullScope = computed(() => {
 const canExport = computed(() => {
   if (!props.exportUrl || !props.exportPermission) return false;
 
-  return directPermissions.value.includes(props.exportPermission);
+  return permissions.value.includes(props.exportPermission);
 });
 
 const exportTable = () => {
