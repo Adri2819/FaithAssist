@@ -35,7 +35,8 @@ class ReinscriptionController extends Controller
             ])
             ->where('status', Status::ACTIVE)
             ->whereHas('activeLevelAssignments')
-            ->whereDoesntHave('reinscriptions')
+            ->whereDoesntHave('reinscriptions', fn ($reinscriptions) => $reinscriptions
+                ->whereHas('period', fn ($period) => $period->where('status', Status::IN_PROGRESS)))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($builder) use ($search) {
                     $builder
