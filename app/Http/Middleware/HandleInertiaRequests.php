@@ -30,17 +30,19 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $authUser = $request->user()?->fresh();
-
         return [
             ...parent::share($request),
-            'auth' => fn (): array => [
-                'user' => $this->buildAuthUserPayload($authUser),
-                'permissions' => $authUser?->getAllPermissions()->pluck('name')->values()->all() ?? [],
-                'direct_permissions' => $authUser?->getDirectPermissions()->pluck('name')->values()->all() ?? [],
-                'roles' => $authUser?->getRoleNames()->values()->all() ?? [],
-                'scope' => $this->buildScopePayload($authUser),
-            ],
+            'auth' => function () use ($request): array {
+                $authUser = $request->user()?->fresh();
+
+                return [
+                    'user' => $this->buildAuthUserPayload($authUser),
+                    'permissions' => $authUser?->getAllPermissions()->pluck('name')->values()->all() ?? [],
+                    'direct_permissions' => $authUser?->getDirectPermissions()->pluck('name')->values()->all() ?? [],
+                    'roles' => $authUser?->getRoleNames()->values()->all() ?? [],
+                    'scope' => $this->buildScopePayload($authUser),
+                ];
+            },
         ];
     }
 
