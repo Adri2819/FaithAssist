@@ -25,6 +25,14 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        $theme = $request->validated('theme');
+
+        if ($theme && $request->user()?->ui_theme !== $theme) {
+            $request->user()->forceFill([
+                'ui_theme' => $theme,
+            ])->save();
+        }
+
         return redirect()->intended(route('home', absolute: false));
     }
 
