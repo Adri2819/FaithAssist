@@ -59,6 +59,7 @@ export function useTheme() {
 
     if (!response.ok) {
       theme.value = previousValue;
+      savingTheme.value = false;
       throw new Error('No se pudo guardar la preferencia de tema.');
     }
 
