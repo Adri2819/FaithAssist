@@ -112,11 +112,11 @@ export function useCatalogCrud({ baseUrl, storeUrl }) {
     try {
       const json = await apiFetch(`${baseUrl}/${row.id}`, 'DELETE');
 
-      alerts.success(json.message ?? 'Registro eliminado correctamente.');
+      void alerts.success(json.message ?? 'Registro eliminado correctamente.');
 
       return true;
     } catch (err) {
-      alerts.error(err?.message ?? 'Ocurrió un error inesperado.');
+      void alerts.error(err?.message ?? 'Ocurrió un error inesperado.');
       return false;
     } finally {
       loading.value = false;
