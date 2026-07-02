@@ -8,6 +8,9 @@ use App\Models\Ecclesiastes\Church;
 use App\Models\Ecclesiastes\Deanery;
 use App\Models\Ecclesiastes\Diocese;
 use App\Models\Module;
+use App\Models\Masses\Mass;
+use App\Models\Masses\MassAttendance;
+use App\Models\Masses\Weekend;
 use App\Models\Operation\Level;
 use App\Models\Operation\Period;
 use App\Models\Operation\PeriodMovement;
@@ -23,6 +26,8 @@ use App\Policies\CommunityPolicy;
 use App\Policies\DeaneryPolicy;
 use App\Policies\DiocesePolicy;
 use App\Policies\LevelPolicy;
+use App\Policies\MassAttendancePolicy;
+use App\Policies\MassPolicy;
 use App\Policies\ModulePolicy;
 use App\Policies\MunicipalityPolicy;
 use App\Policies\PeriodMovementPolicy;
@@ -30,6 +35,7 @@ use App\Policies\PeriodMovementTypePolicy;
 use App\Policies\PeriodPolicy;
 use App\Policies\PermissionPolicy;
 use App\Policies\StatePolicy;
+use App\Policies\WeekendPolicy;
 use App\Policies\WhatsappMessagePolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -65,5 +71,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Period::class, PeriodPolicy::class);
         Gate::policy(PeriodMovement::class, PeriodMovementPolicy::class);
         Gate::policy(PeriodMovementType::class, PeriodMovementTypePolicy::class);
+        Gate::policy(Weekend::class, WeekendPolicy::class);
+        Gate::policy(Mass::class, MassPolicy::class);
+        Gate::policy(MassAttendance::class, MassAttendancePolicy::class);
     }
 }

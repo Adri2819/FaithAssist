@@ -8,6 +8,9 @@ use App\Http\Controllers\Ecclesiastes\ChapelController;
 use App\Http\Controllers\Ecclesiastes\ChurchController;
 use App\Http\Controllers\Ecclesiastes\DeaneryController;
 use App\Http\Controllers\Ecclesiastes\DioceseController;
+use App\Http\Controllers\Masses\MassAttendanceController;
+use App\Http\Controllers\Masses\MassController;
+use App\Http\Controllers\Masses\WeekendController;
 use App\Http\Controllers\Operation\LevelController;
 use App\Http\Controllers\Operation\PeriodController;
 use App\Http\Controllers\Operation\PeriodMovementController;
@@ -104,6 +107,20 @@ Route::middleware('auth')->group(function () {
     Route::resource('niveles', LevelController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['niveles' => 'nivel']);
+
+    // Misas
+    Route::resource('fines-semana-misas', WeekendController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['fines-semana-misas' => 'weekend']);
+
+    Route::resource('misas', MassController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['misas' => 'misa']);
+
+    Route::get('misas/{misa}/asistencias', [MassAttendanceController::class, 'index'])
+        ->name('misas.asistencias.index');
+    Route::post('misas/{misa}/asistencias/scan', [MassAttendanceController::class, 'scan'])
+        ->name('misas.asistencias.scan');
 
     // Catechism
     Route::resource('children', ChildController::class)

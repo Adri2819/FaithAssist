@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Security;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Security\UserRequest;
+use App\Models\Ecclesiastes\Chapel;
 use App\Models\Ecclesiastes\Church;
 use App\Models\Ecclesiastes\Deanery;
 use App\Models\Ecclesiastes\Diocese;
@@ -30,7 +31,7 @@ class UserController extends Controller
         $scope = new UserScopeService($editor);
 
         $users = User::query()
-            ->with(['profile', 'roles', 'diocese:id,name', 'deanery:id,name', 'church:id,name'])
+            ->with(['profile', 'roles', 'diocese:id,name', 'deanery:id,name', 'church:id,name', 'chapel:id,name'])
             ->when(! $scope->isGlobal(), function ($q) use ($editor) {
                 $q->where(function ($sub) use ($editor) {
                     if ($editor->diocese_id !== null) {
@@ -41,6 +42,9 @@ class UserController extends Controller
                     }
                     if ($editor->church_id !== null) {
                         $sub->where('church_id', $editor->church_id);
+                    }
+                    if ($editor->chapel_id !== null) {
+                        $sub->where('chapel_id', $editor->chapel_id);
                     }
                 });
             })
@@ -63,6 +67,7 @@ class UserController extends Controller
                 'diocese' => $user->diocese?->name,
                 'deanery' => $user->deanery?->name,
                 'church' => $user->church?->name,
+                'chapel' => $user->chapel?->name,
             ]);
 
         return Inertia::render('Security/Users/Index', [
@@ -83,6 +88,7 @@ class UserController extends Controller
             'selectedDiocese' => null,
             'selectedDeanery' => null,
             'selectedChurch' => null,
+            'selectedChapel' => null,
             'editorScope' => $this->buildEditorScope($editor),
             'selectedCountryCode' => Lada::defaultCode(),
             'countryCodes' => $this->getCountryCodes(),
@@ -92,7 +98,7 @@ class UserController extends Controller
     public function store(UserRequest $request): RedirectResponse
     {
         $editor = $request->user();
-        [$dioceseId, $deaneryId, $churchId] = $this->resolveScope($editor, $request);
+        [$dioceseId, $deaneryId, $churchId, $chapelId] = $this->resolveScope($editor, $request);
 
         $user = User::create([
             'name' => trim("{$request->name} {$request->paterno} ".($request->materno ?? '')),
@@ -105,6 +111,7 @@ class UserController extends Controller
             'diocese_id' => $dioceseId,
             'deanery_id' => $deaneryId,
             'church_id' => $churchId,
+            'chapel_id' => $chapelId,
         ]);
 
         Profile::create([
@@ -143,6 +150,7 @@ class UserController extends Controller
             'diocese:id,name',
             'deanery:id,name',
             'church:id,name',
+            'chapel:id,name',
         ]);
 
         $editor = auth()->user();
@@ -172,6 +180,7 @@ class UserController extends Controller
             'selectedDiocese' => $usuario->diocese_id,
             'selectedDeanery' => $usuario->deanery_id,
             'selectedChurch' => $usuario->church_id,
+            'selectedChapel' => $usuario->chapel_id,
             'editorScope' => $this->buildEditorScope($editor),
             'selectedCountryCode' => $this->whatsappCountryCode($usuario->whatsapp_phone),
             'countryCodes' => $this->getCountryCodes(),
@@ -181,7 +190,7 @@ class UserController extends Controller
     public function update(UserRequest $request, User $usuario): RedirectResponse
     {
         $editor = $request->user();
-        [$dioceseId, $deaneryId, $churchId] = $this->resolveScope($editor, $request);
+        [$dioceseId, $deaneryId, $churchId, $chapelId] = $this->resolveScope($editor, $request);
 
         $usuario->update([
             'email' => $request->email,
@@ -193,6 +202,7 @@ class UserController extends Controller
             'diocese_id' => $dioceseId,
             'deanery_id' => $deaneryId,
             'church_id' => $churchId,
+            'chapel_id' => $chapelId,
         ]);
 
         if ($request->filled('password')) {
@@ -242,7 +252,7 @@ class UserController extends Controller
      * Resolve scope FKs for store/update.
      * If editor has a restricted scope, force the new user into that same scope.
      *
-     * @return array{int|null, int|null, int|null} [diocese_id, deanery_id, church_id]
+     * @return array{int|null, int|null, int|null, int|null} [diocese_id, deanery_id, church_id, chapel_id]
      */
     private function resolveScope(User $editor, Request $request): array
     {
@@ -253,6 +263,7 @@ class UserController extends Controller
                 $editor->diocese_id,
                 $editor->deanery_id,
                 $editor->church_id,
+                $editor->chapel_id,
             ];
         }
 
@@ -260,6 +271,7 @@ class UserController extends Controller
             $request->input('diocese_id'),
             $request->input('deanery_id'),
             $request->input('church_id'),
+            $request->input('chapel_id'),
         ];
     }
 
@@ -269,6 +281,7 @@ class UserController extends Controller
             'diocese_id' => $editor->diocese_id,
             'deanery_id' => $editor->deanery_id,
             'church_id' => $editor->church_id,
+            'chapel_id' => $editor->chapel_id,
         ];
     }
 
@@ -335,12 +348,19 @@ class UserController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'deanery_id']);
 
+        $chapels = Chapel::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->chapelIds()))
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get(['id', 'name', 'church_id']);
+
         return [
             'roles' => $this->getAllowedRoles($editor),
             'permissionGroups' => $this->getGroupedPermissions($editor),
             'dioceses' => $dioceses,
             'deaneries' => $deaneries,
             'churches' => $churches,
+            'chapels' => $chapels,
         ];
     }
 
@@ -358,6 +378,7 @@ class UserController extends Controller
             'whatsapp' => 'WhatsApp',
             'operation' => 'Operación',
             'catechism' => 'Catecismo',
+            'masses' => 'Misas',
             default => ucfirst($key),
         };
     }

@@ -28,6 +28,9 @@ class PermissionsSeeder extends Seeder
             'niveles' => 'operation',
             'children' => 'catechism',
             'reinscripciones' => 'catechism',
+            'weekends' => 'masses',
+            'masses' => 'masses',
+            'mass_attendance' => 'masses',
             'roles' => 'security',
             'usuarios' => 'security',
         ];
@@ -58,6 +61,9 @@ class PermissionsSeeder extends Seeder
             ['name' => 'capillas.scope.all', 'module_key' => 'ecclesiastes', 'description' => 'Permite ver todas las capillas'],
             ['name' => 'children.scope.all', 'module_key' => 'catechism', 'description' => 'Permite ver todos los niños'],
             ['name' => 'reinscripciones.scope.all', 'module_key' => 'catechism', 'description' => 'Permite ver todas las reinscripciones'],
+            ['name' => 'weekends.scope.all', 'module_key' => 'masses', 'description' => 'Permite ver todos los fines de semana de misas'],
+            ['name' => 'masses.scope.all', 'module_key' => 'masses', 'description' => 'Permite ver todas las misas'],
+            ['name' => 'mass_attendance.scope.all', 'module_key' => 'masses', 'description' => 'Permite ver todas las asistencias a misas'],
             ['name' => 'whatsapp.send', 'module_key' => 'whatsapp', 'description' => 'Permite enviar mensajes por WhatsApp'],
         ] as $permission) {
             Permission::query()->updateOrCreate(

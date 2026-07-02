@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Models\Ecclesiastes;
+namespace App\Models\Masses;
 
 use App\Models\Concerns\LogsActivityTrail;
-use App\Models\Regions\Community;
+use App\Models\Ecclesiastes\Church;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,10 +14,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'name',
-    'address',
-    'community_id',
     'church_id',
+    'name',
+    'starts_at',
+    'ends_at',
     'status',
     'created_by',
     'updated_by',
@@ -26,31 +25,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 ])]
 #[Hidden([
     'deleted_at',
-    'created_at',
-    'updated_at',
 ])]
-class Chapel extends Model
+class Weekend extends Model
 {
     use HasFactory, LogsActivityTrail, SoftDeletes;
 
-    protected $table = 'chapels';
-
-    protected $primaryKey = 'id';
-    protected $keyType = 'int';
-    public $incrementing = true;
-
-    public $timestamps = true;
+    protected $table = 'weekends';
 
     protected function casts(): array
     {
         return [
+            'starts_at' => 'date:Y-m-d',
+            'ends_at' => 'date:Y-m-d',
             'status' => 'string',
         ];
-    }
-
-    public function community(): BelongsTo
-    {
-        return $this->belongsTo(Community::class, 'community_id');
     }
 
     public function church(): BelongsTo
@@ -58,9 +46,9 @@ class Chapel extends Model
         return $this->belongsTo(Church::class, 'church_id');
     }
 
-    public function users(): HasMany
+    public function masses(): HasMany
     {
-        return $this->hasMany(User::class, 'chapel_id');
+        return $this->hasMany(Mass::class, 'weekend_id');
     }
 
     public function creator(): BelongsTo
@@ -76,10 +64,5 @@ class Chapel extends Model
     public function deleter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by');
-    }
-
-    public function scopeActivos(Builder $query): Builder
-    {
-        return $query->where('status', 'ACTIVE');
     }
 }
