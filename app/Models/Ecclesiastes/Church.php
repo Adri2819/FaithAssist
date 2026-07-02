@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
@@ -63,13 +62,9 @@ class Church extends Model
         return $this->belongsTo(Deanery::class, 'deanery_id');
     }
 
-    public function users(): BelongsToMany
+    public function users(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->belongsToMany(User::class, 'scopes', 'scope_id', 'user_id')
-            ->using(\App\Models\Scope::class)
-            ->wherePivot('scope_type', \App\Models\Scope::TYPE_CHURCH)
-            ->withPivotValue('scope_type', \App\Models\Scope::TYPE_CHURCH)
-            ->withTimestamps();
+        return $this->hasMany(User::class, 'church_id');
     }
 
     public function creator(): BelongsTo

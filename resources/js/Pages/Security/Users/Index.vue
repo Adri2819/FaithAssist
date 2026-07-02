@@ -11,10 +11,7 @@ const props = defineProps({
   search: { type: String, default: '' },
 });
 
-const formatScopeList = (items) => {
-  if (!items?.length) return 'Sin asignaciones';
-  return items.join(', ');
-};
+const formatScope = (name) => name ?? 'Acceso total';
 
 const searchTerm = ref(props.search);
 let debounce = null;
@@ -73,8 +70,8 @@ watch(searchTerm, (val) => {
             <th class="px-4 py-3 font-semibold">Usuario</th>
             <th class="px-4 py-3 font-semibold">Correo</th>
             <th class="px-4 py-3 font-semibold">Rol</th>
-            <th class="px-4 py-3 font-semibold">Municipios</th>
-            <th class="px-4 py-3 font-semibold">Parroquias</th>
+            <th class="px-4 py-3 font-semibold">Diócesis</th>
+            <th class="px-4 py-3 font-semibold">Parroquia</th>
             <th class="px-4 py-3 text-right font-semibold">Acciones</th>
           </tr>
         </thead>
@@ -122,11 +119,11 @@ watch(searchTerm, (val) => {
             </td>
 
             <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
-              {{ formatScopeList(user.municipalities) }}
+              {{ formatScope(user.diocese) }}
             </td>
 
             <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
-              {{ formatScopeList(user.churches) }}
+              {{ formatScope(user.church) }}
             </td>
 
             <!-- Actions -->

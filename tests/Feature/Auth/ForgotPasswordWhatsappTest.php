@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Models\PasswordResetWhatsappCode;
 use App\Models\User;
+use Database\Seeders\LadaSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -12,6 +13,13 @@ use Tests\TestCase;
 class ForgotPasswordWhatsappTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(LadaSeeder::class);
+    }
 
     public function test_it_confirms_email_and_detects_phone(): void
     {

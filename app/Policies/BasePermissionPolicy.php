@@ -10,7 +10,7 @@ abstract class BasePermissionPolicy
 
     protected function hasFullScope(User $user): bool
     {
-        return $user->hasModuleFullScope($this->permissionModule());
+        return $user->can($this->permissionModule().'.scope.all');
     }
 
     protected function can(User $user, string $action): bool

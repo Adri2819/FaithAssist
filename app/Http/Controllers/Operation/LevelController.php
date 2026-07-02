@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Operation\LevelRequest;
 use App\Models\Ecclesiastes\Diocese;
 use App\Models\Operation\Level;
+use App\Services\UserScopeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,9 +22,11 @@ class LevelController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->input('search', '');
+        $scope = new UserScopeService($request->user());
 
         $levels = Level::query()
             ->with('diocese:id,name')
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('diocese_id', $scope->dioceseIds()))
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($builder) use ($search) {
                     $builder->where('name', 'like', "%{$search}%")
@@ -33,8 +36,9 @@ class LevelController extends Controller
             ->orderBy('name')
             ->paginate(15, ['id', 'diocese_id', 'name', 'description', 'status'])
             ->withQueryString();
-        
+
         $dioceses = Diocese::query()
+            ->when(! $scope->isGlobal(), fn ($q) => $q->whereIn('id', $scope->dioceseIds()))
             ->where('status', 'active')
             ->orderBy('name')
             ->get(['id', 'name']);

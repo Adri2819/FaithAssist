@@ -49,8 +49,9 @@ class HandleInertiaRequests extends Middleware
 
         $user->loadMissing([
             'profile',
-            'assignedMunicipalities:id,name',
-            'assignedChurches:id,name',
+            'diocese:id,name',
+            'deanery:id,name',
+            'church:id,name',
         ]);
 
         $profileName = trim(collect([
@@ -73,20 +74,18 @@ class HandleInertiaRequests extends Middleware
                 'paterno' => $user->profile->paterno,
                 'materno' => $user->profile->materno,
             ] : null,
-            'municipalities' => $user->assignedMunicipalities
-                ->map(fn ($municipality): array => [
-                    'id' => $municipality->id,
-                    'name' => $municipality->name,
-                ])
-                ->values()
-                ->all(),
-            'churches' => $user->assignedChurches
-                ->map(fn ($church): array => [
-                    'id' => $church->id,
-                    'name' => $church->name,
-                ])
-                ->values()
-                ->all(),
+            'diocese' => $user->diocese ? [
+                'id' => $user->diocese->id,
+                'name' => $user->diocese->name,
+            ] : null,
+            'deanery' => $user->deanery ? [
+                'id' => $user->deanery->id,
+                'name' => $user->deanery->name,
+            ] : null,
+            'church' => $user->church ? [
+                'id' => $user->church->id,
+                'name' => $user->church->name,
+            ] : null,
         ];
     }
 
@@ -94,21 +93,24 @@ class HandleInertiaRequests extends Middleware
     {
         if (! $user) {
             return [
-                'municipality_ids' => [],
-                'church_ids' => [],
+                'diocese_id' => null,
+                'deanery_id' => null,
+                'church_id' => null,
                 'full_access' => [],
             ];
         }
 
         return [
-            'municipality_ids' => $user->allowedMunicipalityIds()->all(),
-            'church_ids' => $user->allowedChurchIds()->all(),
-            'full_access' => [
-                'municipios' => $user->hasModuleFullScope('municipios'),
-                'comunidades' => $user->hasModuleFullScope('comunidades'),
-                'parroquias' => $user->hasModuleFullScope('parroquias'),
-                'capillas' => $user->hasModuleFullScope('capillas'),
-            ],
+            'diocese_id' => $user->diocese_id,
+            'deanery_id' => $user->deanery_id,
+            'church_id' => $user->church_id,
+            'full_access' => $user->getAllPermissions()
+                ->pluck('name')
+                ->filter(fn (string $permission): bool => str_ends_with($permission, '.scope.all'))
+                ->mapWithKeys(fn (string $permission): array => [
+                    str($permission)->before('.scope.all')->toString() => true,
+                ])
+                ->all(),
         ];
     }
 
