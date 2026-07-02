@@ -87,7 +87,7 @@ export function useCatalogCrud({ baseUrl, storeUrl }) {
     try {
       const json = await apiFetch(`${baseUrl}/${id}`, 'PUT', payload);
 
-      alerts.success(json.message ?? 'Registro actualizado correctamente.');
+      void alerts.success(json.message ?? 'Registro actualizado correctamente.');
 
       return json.data;
     } catch (err) {
