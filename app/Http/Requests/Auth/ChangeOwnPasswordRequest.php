@@ -30,21 +30,21 @@ class ChangeOwnPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'current_password.required' => 'Ingresa tu contrasena actual.',
-            'current_password.current_password' => 'La contrasena actual no es correcta.',
-            'password.required' => 'Ingresa una nueva contrasena.',
-            'password.min' => 'La nueva contrasena debe tener al menos 8 caracteres.',
-            'password.regex' => 'La nueva contrasena debe incluir mayuscula, minuscula y numero.',
-            'password.confirmed' => 'La confirmacion de contrasena no coincide.',
+            'current_password.required' => 'Ingresa tu contraseña actual.',
+            'current_password.current_password' => 'La contraseña actual no es correcta.',
+            'password.required' => 'Ingresa una nueva contraseña.',
+            'password.min' => 'La nueva contraseña debe tener al menos 8 caracteres.',
+            'password.regex' => 'La nueva contraseña debe incluir mayúscula, minúscula y número.',
+            'password.confirmed' => 'La confirmación de contraseña no coincide.',
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'current_password' => 'contrasena actual',
-            'password' => 'nueva contrasena',
-            'password_confirmation' => 'confirmacion de contrasena',
+            'current_password' => 'contraseña actual',
+            'password' => 'nueva contraseña',
+            'password_confirmation' => 'confirmación de contraseña',
         ];
     }
 }
