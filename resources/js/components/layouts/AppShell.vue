@@ -15,9 +15,7 @@ const page = usePage();
 const form = useForm({});
 const menuOpen = ref(false);
 const menuRef = ref(null);
-const theme = useTheme();
-const isDark = computed(() => theme?.isDark?.value ?? false);
-const toggleTheme = () => theme?.toggleTheme?.();
+const { isDark = ref(false), toggleTheme = () => {} } = useTheme() ?? {};
 
 const appName = import.meta.env.VITE_APP_NAME || 'FAITHPASS';
 
