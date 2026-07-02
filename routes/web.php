@@ -55,6 +55,9 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Profile/Show');
     })->name('profile.show');
 
+    Route::get('/profile/password', [AuthController::class, 'showChangePasswordForm'])->name('profile.password.edit');
+    Route::patch('/profile/password', [AuthController::class, 'updatePassword'])->name('profile.password.update');
+
     Route::patch('/profile/theme', [UserThemeController::class, 'update'])->name('profile.theme.update');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
