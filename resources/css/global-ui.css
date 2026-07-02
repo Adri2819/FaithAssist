@@ -232,6 +232,66 @@
     @apply mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-slate-700 to-blue-900 text-white shadow-lg shadow-slate-400/30 dark:from-slate-200 dark:to-sky-400 dark:text-slate-950 dark:shadow-slate-950/30;
   }
 
+  .ui-auth-kicker {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400;
+  }
+
+  .ui-auth-back-link {
+    @apply text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white;
+  }
+
+  .ui-auth-step {
+    @apply mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400;
+  }
+
+  .ui-auth-step-index {
+    @apply inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900;
+  }
+
+  .ui-auth-title {
+    @apply text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100;
+  }
+
+  .ui-auth-subtitle {
+    @apply mt-2 text-sm text-slate-600 dark:text-slate-300;
+  }
+
+  .ui-auth-progress-on {
+    @apply h-1.5 rounded-full bg-slate-900 dark:bg-slate-100;
+  }
+
+  .ui-auth-progress-off {
+    @apply h-1.5 rounded-full bg-slate-200 dark:bg-slate-700;
+  }
+
+  .ui-auth-info {
+    @apply mb-4 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2.5 text-sm text-slate-700 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-slate-200;
+  }
+
+  .ui-auth-note {
+    @apply mb-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-200;
+  }
+
+  .ui-auth-success {
+    @apply mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300;
+  }
+
+  .ui-auth-error {
+    @apply mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300;
+  }
+
+  .ui-auth-label {
+    @apply mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200;
+  }
+
+  .ui-auth-help {
+    @apply mb-3 text-xs text-slate-500 dark:text-slate-400;
+  }
+
+  .ui-auth-code-input {
+    @apply h-14 w-12 rounded-xl border-2 border-slate-300 bg-white text-center text-xl font-black text-slate-900 shadow-sm transition focus:border-slate-800 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 sm:w-14;
+  }
+
   .ui-dashboard-card {
     @apply overflow-hidden rounded-4xl border border-slate-200 bg-white shadow-[0_16px_50px_-30px_rgba(15,23,42,0.35)] transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_16px_50px_-30px_rgba(0,0,0,0.6)];
   }
