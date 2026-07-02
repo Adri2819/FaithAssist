@@ -57,6 +57,8 @@ class AuthController extends Controller
 
     public function updatePassword(ChangeOwnPasswordRequest $request): RedirectResponse
     {
+        Auth::logoutOtherDevices($request->validated('current_password'));
+
         $request->user()->forceFill([
             'password' => Hash::make($request->validated('password')),
         ])->save();
