@@ -110,7 +110,7 @@ const clearForm = () => {
               <h2
                 class="text-sm font-bold uppercase tracking-[0.22em] text-slate-600 dark:text-slate-300"
               >
-                Manten Segura tu cuenta
+                Mantén segura tu cuenta
               </h2>
 
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
