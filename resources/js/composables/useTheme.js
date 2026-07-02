@@ -81,8 +81,7 @@ export function useTheme() {
     } catch (error) {
       savingTheme.value = false;
       console.error(error);
-      alerts.error('No se pudo guardar tu preferencia de tema. Intenta de nuevo.');
-    }
+      void alerts.error('No se pudo guardar tu preferencia de tema. Intenta de nuevo.');
   };
 
   onMounted(() => {
