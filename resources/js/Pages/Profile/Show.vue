@@ -104,7 +104,7 @@ const initials = computed(() => {
           class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-blue-500 bg-white px-4 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 hover:text-blue-700 dark:border-blue-400 dark:bg-slate-900 dark:text-blue-300 dark:hover:bg-slate-800"
         >
           <KeyRound class="h-4 w-4" />
-          Cambiar contrasena
+          Cambiar contraseña
         </Link>
       </div>
     </section>
