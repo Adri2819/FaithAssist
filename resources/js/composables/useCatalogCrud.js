@@ -65,7 +65,7 @@ export function useCatalogCrud({ baseUrl, storeUrl }) {
     try {
       const json = await apiFetch(storeUrl, 'POST', payload);
 
-      alerts.success(json.message ?? 'Registro creado correctamente.');
+      void alerts.success(json.message ?? 'Registro creado correctamente.');
 
       return json.data;
     } catch (err) {
