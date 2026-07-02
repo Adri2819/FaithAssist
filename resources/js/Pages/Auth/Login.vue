@@ -15,7 +15,7 @@ import {
 import { useTheme } from '../../composables/useTheme';
 
 const showPassword = ref(false);
-const { isDark, toggleTheme } = useTheme();
+const { isDark = ref(false), toggleTheme = () => {} } = useTheme() ?? {};
 
 defineProps({
   status: {

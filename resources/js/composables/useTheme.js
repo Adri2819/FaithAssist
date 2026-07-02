@@ -15,7 +15,13 @@ export function getInitialTheme() {
     return 'light';
   }
 
-  const savedTheme = window.localStorage.getItem(STORAGE_KEY);
+  let savedTheme = null;
+
+  try {
+    savedTheme = window.localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return getSystemTheme();
+  }
 
   return savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : getSystemTheme();
 }
@@ -43,7 +49,9 @@ export function useTheme() {
     applyTheme(value);
 
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(STORAGE_KEY, value);
+      try {
+        window.localStorage.setItem(STORAGE_KEY, value);
+      } catch {}
     }
   };
 
