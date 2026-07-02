@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
   CircleHelp,
   Eye,
@@ -15,7 +15,7 @@ import {
 import { useTheme } from '../../composables/useTheme';
 
 const showPassword = ref(false);
-const { isDark, savingTheme, toggleTheme } = useTheme();
+const { theme, isDark, savingTheme, toggleTheme } = useTheme();
 
 defineProps({
   status: {
@@ -28,7 +28,16 @@ const form = useForm({
   email: '',
   password: '',
   remember: false,
+  theme: theme.value,
 });
+
+watch(
+  theme,
+  (value) => {
+    form.theme = value;
+  },
+  { immediate: true },
+);
 
 const forgotPasswordHref = computed(() => {
   const email = form.email.trim();
@@ -51,21 +60,6 @@ const submit = () => {
   <Head title="Iniciar sesion" />
 
   <main class="ui-auth-page">
-    <div class="pointer-events-none absolute inset-0">
-      <div
-        class="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-slate-400/35 blur-3xl dark:bg-slate-700/20"
-      ></div>
-      <div
-        class="absolute -right-16 top-1/4 h-72 w-72 rounded-full bg-blue-300/35 blur-3xl dark:bg-sky-800/20"
-      ></div>
-      <div
-        class="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-slate-300/30 blur-3xl dark:bg-slate-800/20"
-      ></div>
-      <div
-        class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.04),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_55%)]"
-      ></div>
-    </div>
-
     <div class="absolute right-4 top-4 z-10 sm:right-6 sm:top-6">
       <button
         type="button"

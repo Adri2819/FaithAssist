@@ -34,11 +34,11 @@
   }
 
   .ui-topbar {
-    @apply sticky top-0 z-30 border-b border-slate-200 bg-white/90 shadow-sm shadow-slate-900/5 backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/85 dark:shadow-black/20;
+    @apply sticky top-0 z-30 border-b border-blue-500 bg-blue-600/95 shadow-sm shadow-blue-900/20 backdrop-blur-xl transition-colors duration-300 dark:border-blue-400 dark:bg-blue-600/90 dark:shadow-blue-950/30;
   }
 
   .ui-brand {
-    @apply text-lg font-black uppercase tracking-[0.24em] text-slate-800 transition-opacity hover:opacity-75 sm:text-xl dark:text-slate-100;
+    @apply text-lg font-black uppercase tracking-[0.24em] text-white transition-opacity hover:opacity-80 sm:text-xl dark:text-white;
   }
 
   /* Surfaces */
@@ -221,11 +221,11 @@
 
   /* Page-specific reusable patterns */
   .ui-auth-page {
-    @apply relative min-h-screen overflow-hidden bg-linear-to-br from-slate-100 via-slate-200 to-blue-100 px-4 py-6 transition-colors duration-300 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 sm:px-6 sm:py-10 lg:px-8;
+    @apply relative min-h-screen overflow-hidden bg-blue-600 px-4 py-6 transition-colors duration-300 dark:bg-blue-600 sm:px-6 sm:py-10 lg:px-8;
   }
 
   .ui-auth-card {
-    @apply card w-full max-w-xl border border-slate-200/80 bg-white/90 shadow-[0_24px_80px_-28px_rgba(15,23,42,0.35)] backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-[0_24px_80px_-28px_rgba(0,0,0,0.55)];
+    @apply card w-full max-w-xl rounded-[1.75rem] border border-slate-200/80 bg-white/90 shadow-[0_24px_80px_-28px_rgba(15,23,42,0.35)] backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-[0_24px_80px_-28px_rgba(0,0,0,0.55)];
   }
 
   .ui-auth-logo {
